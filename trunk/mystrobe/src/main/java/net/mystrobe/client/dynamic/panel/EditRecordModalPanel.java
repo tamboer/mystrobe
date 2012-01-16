@@ -144,6 +144,7 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 					EditRecordModalPanel.this.dataViewPanel.resetRecord();
 				}
 				
+                target.add(feedbackPanel);
 				target.add(dataViewPanel);
 			}
 		};
