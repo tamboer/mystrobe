@@ -20,8 +20,8 @@
 
 import net.mystrobe.client.IDataBean;
 
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
@@ -45,26 +45,24 @@ public class TextFieldPanel<T> extends DynamicFormComponentPanel{
 	
 	private static final String TEXT_FIELD_LABEL_ID = "textField_label";
 	
-	private String propertyName;
-	
 	private TextField<T> textField;
 	
 	public String getInputPropertyName() {
 		return propertyName;
 	}
 
-	public TextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> label, boolean required, int maxLength) {
-		super(id, model);
-		
-		this.propertyName = propertyName;
-		
-		add(new Label(TEXT_FIELD_LABEL_ID, label));
+	public TextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly, int maxLength) {
+		super(id, model, propertyName, required, readOnly);
 		
 		textField = new TextField<T>(TEXT_FIELD_ID, model);
 		textField.setRequired(required);
-		textField.setOutputMarkupId(true);
-		textField.setLabel(label);
 		
+		FormComponentLabel label = new DynamicFormComponentLabel(TEXT_FIELD_LABEL_ID, textField, required);
+        label.setDefaultModel(labelModel);
+		add(label);
+		
+		textField.setOutputMarkupId(true);
+		textField.setLabel(labelModel);
 		textField.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		add(textField);

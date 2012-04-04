@@ -124,7 +124,10 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
     	if( !this.dataLinkParameters.isEmpty() ) {
     		for (DataLinkParameters dataLinkParameter : this.dataLinkParameters.keySet()) {
     			Object columnFilterValue =  this.dataLinkParameters.get(dataLinkParameter); 
-	    		dataRequestFilters.add(new FilterParameter(dataLinkParameter.getMappedListenerColumnName(), FilterOperator.EQ, (Serializable) columnFilterValue));
+    			
+    			if (columnFilterValue != null) {
+    				dataRequestFilters.add(new FilterParameter(dataLinkParameter.getMappedListenerColumnName(), FilterOperator.EQ, (Serializable) columnFilterValue));
+    			}
 	         }
     	}
     	
@@ -157,29 +160,15 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
     			filterParamsIterator.remove();
     		}
     	}
+    	
+    	setFilters();
     }
     
     public void updateColumnFilter(IFilterParameter filterParameter) {
     	
-    	boolean found = false;
-    	for (Iterator<IFilterParameter> filterParamsIterator = this.filters.iterator(); filterParamsIterator.hasNext();) {
-    		IFilterParameter parameter = filterParamsIterator.next();
-    		
-    		if (filterParameter.getColumn().equals(parameter.getColumn())) {
-    			
-    			if (!found) {
-    				parameter.setOperator(filterParameter.getOperator());
-    				parameter.setValue(filterParameter.getValue());
-    				found = true;
-    			} else {
-    				filterParamsIterator.remove();
-    			}
-    		}
-    	}
+    	removeColumnFilters(filterParameter.getColumn());
     	
-    	if (!found) {
-    		this.filters.add(filterParameter);
-    	}
+    	this.filters.add(filterParameter);
     	
     	setFilters();
     }
@@ -287,24 +276,19 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
 	}
 	
 	private void storeOption(String optionName, Serializable optionValue) {
-		boolean optionAlreadySet = false;
 		
 		for (Iterator<IFilterParameter> optionsIterator = this.options.iterator(); optionsIterator.hasNext();) {
 			IFilterParameter option = optionsIterator.next();
 			
 			//replace old value if option was already added
 			if (option.getColumn().equals(optionName)) {
-				option.setValue(optionValue);
-				optionAlreadySet = true;
-				break;
+				optionsIterator.remove();
 			}
 		}
 		
-		if (!optionAlreadySet) {
-			IFilterParameter filterParameter = new FilterParameter(optionName, FilterOperator.EQ, optionValue);
-			options.add(filterParameter);
-		}
-		
+		IFilterParameter filterParameter = new FilterParameter(optionName, FilterOperator.EQ, optionValue);
+		options.add(filterParameter);
+	
 		setFilters();
 	}
 	

@@ -25,7 +25,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.AppendingStringBuffer;
 
 /**
- * Ajax onChange aware radio
+ * Ajax onClick aware radio
  * 
  * @author TVH Group NV
  *
@@ -45,7 +45,7 @@ public class AjaxRadio<T> extends Radio<T> {
 	
 	private void addAjaxBehavior(final RadioGroup<T> group) {
 		
-		add(new AjaxEventBehavior("onchange"){
+		add(new AjaxEventBehavior("onclick"){
 			
 			private static final long serialVersionUID = 1L;
 

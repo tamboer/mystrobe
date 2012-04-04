@@ -25,6 +25,7 @@ import net.mystrobe.client.IDAOMessage;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
 import net.mystrobe.client.MessageType;
+import net.mystrobe.client.UpdateStates;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.navigation.CRUDAjaxOperationsPanel;
 import net.mystrobe.client.dynamic.navigation.CRUDOperationsPanel;
@@ -87,6 +88,10 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 			} catch (IllegalAccessException e) {
 				logger.error("Can not instantiate bean class.", e);
 			}
+		}
+		
+		if (ModalWindowUpdateMode.Add.equals(windowUpdateMode) && initRecordValuesMap != null) {
+			this.dataObjectAdaptor.setDataInitialValues(initRecordValuesMap);
 		}
 		
 		IModel<T> dataBeanModel = new Model<T>(dataBean);
@@ -160,7 +165,7 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 	    }
 	    
 	    if (ModalWindowUpdateMode.Add.equals(windowUpdateMode)) {
-	    	dataViewPanel.addRecord(initRecordValuesMap);
+	    	this.dataViewPanel.updateMode(UpdateStates.UpdateBegin);
 	    } else if (ModalWindowUpdateMode.Edit.equals(windowUpdateMode)) {
 	    	dataViewPanel.editRecord();
 	    }
@@ -201,9 +206,6 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 		logger.debug("EditRecordModalPanel hash " + hashCode() + " after detach datasource id" + this.dataObjectAdaptor.getSchema().getDAOId()  
 				+ " hash " + dataObjectAdaptor.hashCode() + " row id " + (dataObjectAdaptor.getData() != null ? dataObjectAdaptor.getData().getRowId() : "null"));		
 	}
-
-	
-
 	
 }
 

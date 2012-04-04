@@ -102,7 +102,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	protected UpdateStates updateState = UpdateStates.UpdateComplete;
 	protected boolean isDisabled = false;
 	
-	boolean offlineMode = false; 
+	protected boolean offlineMode = false; 
 	
 	/**
 	 * Default data set schema attached to the data object.

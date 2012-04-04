@@ -20,6 +20,7 @@
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Date;
@@ -51,12 +52,11 @@ public class NamingHelper {
     	Map<String, DecimalFormat> result = decimalFormatsCacheMap.get();
     	
     	if (result == null) {
-    		result = new HashMap<String, DecimalFormat>(2);
+    		result = new HashMap<String, DecimalFormat>(4);
     		decimalFormatsCacheMap.set(result);
     	} 
     	return result;
     }
-	
 	
 	public static String getFieldName( String columnName ) {
         if( columnName == null ) throw new IllegalArgumentException("argument [columnName] cannot be null");
@@ -135,7 +135,7 @@ public class NamingHelper {
         return null;
     }
     
-    public static String getFormattedOutputValue(Object value, String serverDateFormat, LocalizationProperties localizationProperties) {
+    public static String getFormattedOutputValue(final Object value, final String serverDateFormat, final LocalizationProperties localizationProperties) {
     	
     	if ( value instanceof BigDecimal ) {
         	
@@ -164,8 +164,21 @@ public class NamingHelper {
         	return (Boolean) value ? "yes" : "no";
         	
         } else if (value instanceof Date) {
-        	String formatDate = serverDateFormat != null ? serverDateFormat : localizationProperties.getFormatDate();
+        	
+        	String formatDate;
+        	if (value instanceof Timestamp) {
+        		if (serverDateFormat == null) {
+        			String timeZoneFormatKey = (new StringBuilder(localizationProperties.getDateFormat()).append(localizationProperties.getNumericalSeparator())).toString();
+        			formatDate = StringToJavaNativeUtil.timeZoneFormatsMap.get(timeZoneFormatKey);
+        		} else {
+        			formatDate = serverDateFormat;
+        		}
+        	} else {
+        		formatDate = serverDateFormat != null ? serverDateFormat : localizationProperties.getFormatDate();
+        	}
+        	
         	String result = StringToJavaNativeUtil.formatDate(((Date)value), formatDate, localizationProperties.getDateFormat(), localizationProperties.getNumericalSeparator());
+        	
         	return result;
         
         } else if (value.getClass().isArray() &&  value.getClass().getComponentType().isPrimitive() &&

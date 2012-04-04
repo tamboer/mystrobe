@@ -18,7 +18,9 @@
  package net.mystrobe.client.connector.quarixbackend;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerException;
 
+import net.mystrobe.client.WicketDSRuntimeException;
 import net.mystrobe.client.connector.LocalizationProperties;
 import net.mystrobe.client.connector.quarixbackend.api.IAppServer;
 import net.mystrobe.client.connector.quarixbackend.api.IDispatcherRequestParameters;
@@ -37,6 +40,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -111,14 +115,21 @@ public class AppServerAction {
 
     public Document getResponseXML() {
         Document ret = null;
-
-        InputStream is = new ByteArrayInputStream(dispatcherResponse.getMemptrValue());
+        InputStream inputStream = new ByteArrayInputStream(dispatcherResponse.getMemptrValue());
+        InputSource is = new InputSource(inputStream);
+        is.setEncoding("UTF-8");
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             ret = docFactory.newDocumentBuilder().parse(is);
-            is.close();
         } catch (Exception e) {
             getLog().error(e.getMessage());
+            throw new WicketDSRuntimeException("Can not parse response xml." ,e);
+        } finally {
+        	try {
+				inputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
         }
 
         return ret;
@@ -132,7 +143,12 @@ public class AppServerAction {
         	validateHTTPResponse(); 
         }
          
-        String json = new String(dispatcherResponse.getMemptrValue());
+        String json;
+		try {
+			json = new String(dispatcherResponse.getMemptrValue(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new WicketDSRuntimeException("Can not read response", e);
+		}
         if (json != null && json.length() > 0) {
 
             /*
@@ -164,7 +180,12 @@ public class AppServerAction {
         	validateHTTPResponse(); 
         }
          
-        String json = new String(dispatcherResponse.getMemptrValue());
+        String json = null;
+		try {
+			json = new String(dispatcherResponse.getMemptrValue(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new WicketDSRuntimeException("Can not read response memptr value");
+		}
         if (json != null && json.length() > 0) {
 
             /*

@@ -18,7 +18,6 @@
  package net.mystrobe.client.dynamic.table.view;
 
 import java.io.Serializable;
-import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 
 /**
  * Data table column info class. 
@@ -43,10 +42,10 @@ public class DataTableColumn <T> implements Serializable {
 	/**
 	 * Column render info.
 	 */
-	private ICellPopulator<T> columnInfo;
+	private IMyStrobeColumn<T> columnInfo;
 
 	public DataTableColumn(int columnPosition,
-			ICellPopulator<T> columnInfo) {
+			IMyStrobeColumn<T> columnInfo) {
 		this.columnPosition = columnPosition;
 		this.columnInfo = columnInfo;
 	}
@@ -61,7 +60,7 @@ public class DataTableColumn <T> implements Serializable {
 	/**
 	 * @return the columnInfo
 	 */
-	public ICellPopulator<T> getColumnInfo() {
+	public IMyStrobeColumn<T> getColumnInfo() {
 		return columnInfo;
 	}
 }

@@ -210,6 +210,9 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 	public void addDataTableNavigationSource(IDataTableNavigatorSource<T> source) {
 		this.tableNavigationSources.add(source);
 		
+		if (this.lastDAOResponse != null || (offlineMode && this.dataBuffer.size() > 0  )  ){
+			source.onDataBufferReplaced(this.dataBuffer.getDataList(), null, hasFirstRow, hasLastRow);
+		}
 	}
 	
 	public void removeDataTableNavigationSource(IDataTableNavigatorSource<T> source) {

@@ -65,5 +65,18 @@ public interface IFilterParameter {
 	 * @param filterValue
 	 */
 	public void setValue(Serializable filterValue);
+	
+	/**
+	 * Filter value format.
+	 * 
+	 * Can be used to specify formatting options. 
+	 */
+	public void setFormat(String format);
+
+	/**
+	 * Retrieve filter format value.
+	 * 
+	 */
+	public String getFormat();
 
 }

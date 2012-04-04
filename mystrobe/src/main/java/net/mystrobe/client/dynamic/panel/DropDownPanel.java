@@ -34,6 +34,7 @@ import net.mystrobe.client.util.DataBeanUtil;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.slf4j.Logger;
@@ -59,18 +60,15 @@ public class DropDownPanel<T> extends DynamicFormComponentPanel {
 	 * Radio panel html markup constants
 	 */
 	private static final String DROP_DOWN_ID = "dropDown_id"; 
+	
 	private static final String DROP_DOWN_LABEL_ID = "dropDown_label";
 	
 	private DropDownChoice<T> dropDown;
 	
-	private String propertyName;
+	public DropDownPanel(String id, IModel<T> model, final String propertyName, IModel<String> labelModel, List<IFieldValue<T>> options,
+			boolean required, boolean readOnly) {
 	
-	public DropDownPanel(String id, IModel<T> model, final String propertyName, IModel<String> label, List<IFieldValue<T>> options) {
-		super(id, model);
-		
-		this.propertyName = propertyName;
-		
-		add(new Label(DROP_DOWN_LABEL_ID, label));
+		super(id, model, propertyName, required, readOnly);
 		
 		Map<T, IFieldValue<T>> optionsMap = new HashMap<T, IFieldValue<T>>(options.size());
 		for (IFieldValue<T> fieldValue : options) {
@@ -79,19 +77,20 @@ public class DropDownPanel<T> extends DynamicFormComponentPanel {
 		
 		dropDown = new DropDownChoice<T>(DROP_DOWN_ID, model, new ArrayList<T>(optionsMap.keySet()), new FieldValueOptionsRenderer<T>(optionsMap));
 		dropDown.setOutputMarkupId(true);
-		dropDown.setLabel(label);
+		dropDown.setLabel(labelModel);
 		dropDown.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		add(dropDown);
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(DROP_DOWN_LABEL_ID, dropDown, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 	}
 	
-	public <S extends IDataBean> DropDownPanel(String id, IModel<T> model, final String propertyName, IModel<String> label, 
+	public <S extends IDataBean> DropDownPanel(String id, IModel<T> model, final String propertyName, IModel<String> labelModel, boolean required, boolean readOnly,
 			IDataObject<S> linkedDataObject, String linkedFilterColumnName, String linkedDisplayColumn) {
-		super(id, model);
 		
-		this.propertyName = propertyName;
-		
-		add(new Label(DROP_DOWN_LABEL_ID, label));
+		super(id, model, propertyName, required, readOnly);
 		
 		Map<T, IFieldValue<T>> optionsMap = new HashMap<T, IFieldValue<T>>();
 		
@@ -108,10 +107,14 @@ public class DropDownPanel<T> extends DynamicFormComponentPanel {
 		
 		dropDown = new DropDownChoice<T>(DROP_DOWN_ID, model, new ArrayList<T>(optionsMap.keySet()), new FieldValueOptionsRenderer<T>(optionsMap));
 		dropDown.setOutputMarkupId(true);
-		dropDown.setLabel(label);
+		dropDown.setLabel(labelModel);
 		dropDown.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		add(dropDown);
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(DROP_DOWN_LABEL_ID, dropDown, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 	}
 	
 	

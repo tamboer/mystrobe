@@ -17,6 +17,8 @@
  */
  package net.mystrobe.client;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -64,93 +66,6 @@ public class TestStringToJavaNativeUtil {
         Assert.assertEquals( 12, StringToJavaNativeUtil.parseInt("USD 12 $"));
     }
 
-
-
-    @Test
-    public void testParseFloat1() {
-        Assert.assertEquals( 12f, StringToJavaNativeUtil.parseFloat(" 12", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat2() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat("-12", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat3() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat(" -12", '.').floatValue());
-    }
-
-
-    @Test
-    public void testParseFloat4() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat(" -12 $", '.').floatValue());
-    }
-
-
-    @Test
-    public void testParseFloat5() {
-        Assert.assertEquals( 12f, StringToJavaNativeUtil.parseFloat("USD 12 $", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat6() {
-    	Assert.assertEquals( 12.0f, StringToJavaNativeUtil.parseFloat(" 12.0", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat7() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat("-12.0", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat8() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat(" -12.0", '.').floatValue());
-    }
-
-
-    @Test
-    public void testParseFloat9() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat(" -12.0 $", '.').floatValue());
-    }
-
-
-    @Test
-    public void testParseFloat10() {
-        Assert.assertEquals( 12f, StringToJavaNativeUtil.parseFloat("USD 12.000 $", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat11() {
-        Assert.assertEquals( -12f, StringToJavaNativeUtil.parseFloat(" -12.", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat12() {
-        Assert.assertEquals( 62.62f, StringToJavaNativeUtil.parseFloat(" 62.62", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat13() {
-        Assert.assertEquals( 0.297000000f, StringToJavaNativeUtil.parseFloat("0.297000000", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat14() {
-        Assert.assertEquals( 3.367003367f, StringToJavaNativeUtil.parseFloat("3.367003367", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat15() {
-        Assert.assertEquals( 1348.1481481481481f, StringToJavaNativeUtil.parseFloat("$ 1,348.1481481481481 %", '.').floatValue());
-    }
-
-    @Test
-    public void testParseFloat16() {
-        Assert.assertEquals( 1797693134862315800.1797693134862315800f, StringToJavaNativeUtil.parseFloat("$ 1797693134862315800.1797693134862315800 %", '.').floatValue());
-    }
-
-
     @Test
     public void testParseDouble1() {
         Assert.assertEquals( 12d, StringToJavaNativeUtil.parseDouble(" 12", '.' , ',').doubleValue());
@@ -168,17 +83,6 @@ public class TestStringToJavaNativeUtil {
 
 
     @Test
-    public void testParseDouble4() {
-        Assert.assertEquals( -12d, StringToJavaNativeUtil.parseDouble(" -12 $", '.' , ',') .doubleValue());
-    }
-
-
-    @Test
-    public void testParseDouble5() {
-        Assert.assertEquals( 12d, StringToJavaNativeUtil.parseDouble("USD 12 $", '.' , ',').doubleValue());
-    }
-
-    @Test
     public void testParseDouble6() {
         Assert.assertEquals( 12d, StringToJavaNativeUtil.parseDouble(" 12.0", '.' , ',').doubleValue());
     }
@@ -193,17 +97,6 @@ public class TestStringToJavaNativeUtil {
         Assert.assertEquals( -12d, StringToJavaNativeUtil.parseDouble(" -12.0", '.' , ',').doubleValue());
     }
 
-
-    @Test
-    public void testParseDouble9() {
-        Assert.assertEquals( -12d, StringToJavaNativeUtil.parseDouble(" -12.0 $", '.' , ',').doubleValue());
-    }
-
-
-    @Test
-    public void testParseDouble10() {
-        Assert.assertEquals( 12d, StringToJavaNativeUtil.parseDouble("USD 12.000 $", '.' , ',').doubleValue());
-    }
 
     @Test
     public void testParseDouble11() {
@@ -226,19 +119,13 @@ public class TestStringToJavaNativeUtil {
     }
 
     @Test
-    public void testParseDouble15() {
-        Assert.assertEquals( 1348.1481481481481d, StringToJavaNativeUtil.parseDouble("$ 1,348.1481481481481 %", '.' , ',').doubleValue());
-    }																					 
-
-    @Test
-    public void testParseDouble16() {
-        Assert.assertEquals( 1797693134862315800.1797693134862315800d, StringToJavaNativeUtil.parseDouble("$ 1797693134862315800.1797693134862315800 %", '.' , ',').doubleValue());
-    }
-
-
-    @Test
     public void testParseDouble17() {
         Assert.assertEquals( 12000.13d, StringToJavaNativeUtil.parseDouble("12.000,13", ',' , '.').doubleValue());
+    }
+    
+    @Test
+    public void testParseDouble18() {
+        Assert.assertEquals( 0.02d, StringToJavaNativeUtil.parseDouble("0.02", '.' , ',').doubleValue());
     }
     
     @Test
@@ -333,11 +220,47 @@ public class TestStringToJavaNativeUtil {
     
     @Test
     public void testDate14() {
-        GregorianCalendar calendar = new GregorianCalendar(2002, 4, 5, 7, 15, 3);
     	
-        String formattedDate = StringToJavaNativeUtil.formatDate(calendar.getTime(),  "99/99/9999 hh:mm:ss", "mdy", ',');
+    	String date = "2012-03-27T10:16:30.674";
+    	String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
     	
-    	Assert.assertEquals( "Formatted date" , "05/05/2002 07:15:03", formattedDate);
+    	SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+    	Date parsedDate = null;
+		try {
+			parsedDate = dateFormatter.parse(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	GregorianCalendar calendar = new GregorianCalendar(2012, 2, 27, 10, 16, 30);
+    	calendar.set(GregorianCalendar.MILLISECOND, 674);
+    	
+    	Assert.assertEquals( calendar.getTime(), parsedDate);
+    	
+    	
+    	date = "2012-03-27T10:16:30.674+03:00";
+    	dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    	
+    	SimpleDateFormat dateFormatterTimeZone = new SimpleDateFormat(dateFormat);
+    	parsedDate = null;
+		try {
+			parsedDate = dateFormatterTimeZone.parse(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	calendar.setTimeZone(TimeZone.getTimeZone("GMT+03:00"));
+    	
+    	Assert.assertEquals( calendar.getTime(), parsedDate);
+    	
+    	
+//        GregorianCalendar calendar = new GregorianCalendar(2002, 4, 5, 7, 15, 3);
+//    	
+//        String formattedDate = StringToJavaNativeUtil.formatDate(calendar.getTime(),  "99/99/9999 hh:mm:ss", "mdy", ',');
+//    	
+//    	Assert.assertEquals( "Formatted date" , "05/05/2002 07:15:03", formattedDate);
     }
     
     @Test
@@ -351,6 +274,26 @@ public class TestStringToJavaNativeUtil {
     	Assert.assertEquals("Formatted date milliseconds ", "05/05/2002 07:15:03,123", formattedDate);
     }
     
+    @Test
+    public void testDate16() {
+       
+    	String date = "2012-03-27T10:16:30.674";
+    	String dateFormat = "yyyy-MM-ddTHH:mm:ss.SSS";
+    	
+    	SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+    	Date parsedDate = null;
+		try {
+			parsedDate = dateFormatter.parse(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	GregorianCalendar calendar = new GregorianCalendar(2012, 2, 27, 10, 16, 30);
+    	calendar.set(GregorianCalendar.MILLISECOND, 674);
+    	
+    	Assert.assertEquals( calendar.getTime(), parsedDate);
+    }
     
 //    @Test
 //    public void testDate16() {
