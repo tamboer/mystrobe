@@ -26,11 +26,10 @@ import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.dynamic.config.FieldValueOptionsRenderer;
 import net.mystrobe.client.dynamic.config.IFieldValue;
 
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.markup.html.form.RadioChoice;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 
 
@@ -53,14 +52,8 @@ public class RadioPanel<T> extends DynamicFormComponentPanel {
 	
 	private RadioChoice<T> radioChoice;
 	
-	private String propertyName;
-	
-	public RadioPanel(String id, IModel<T> model, String propertyName, IModel<String> label, List<IFieldValue<T>> options, boolean displayInLine) {
-		super(id, model);
-		
-		this.propertyName = propertyName;
-		
-		add(new Label(RADIO_CHOICE_LABEL_ID, label));
+	public RadioPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, List<IFieldValue<T>> options, boolean displayInLine, boolean required, boolean readOnly) {
+		super(id, model, propertyName, required, readOnly);
 		
 		Map<T, IFieldValue<T>> optionsMap = new HashMap<T, IFieldValue<T>>(options.size());
 		for (IFieldValue<T> fieldValue : options) {
@@ -68,11 +61,15 @@ public class RadioPanel<T> extends DynamicFormComponentPanel {
 		}
 		
 		radioChoice = new RadioChoice<T>(RADIO_CHOICE_ID, model,  new ArrayList<T>(optionsMap.keySet()) , new FieldValueOptionsRenderer<T>(optionsMap));
-		radioChoice.setLabel(label);
+		radioChoice.setLabel(labelModel);
 		radioChoice.setOutputMarkupId(true);
 		radioChoice.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		add(radioChoice);
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(RADIO_CHOICE_LABEL_ID, radioChoice, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 	}
 	
 	public FormComponent<?> getFormComponent() {

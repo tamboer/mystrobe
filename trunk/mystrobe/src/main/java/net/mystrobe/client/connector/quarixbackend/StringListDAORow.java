@@ -40,12 +40,12 @@ public class StringListDAORow<T extends IDataBean> extends DAORow<T> implements 
 
    	private static final long serialVersionUID = 5331777403082303368L;
 	
-	protected List<String> row;
+	protected List<Object> row;
     protected IDAOSchema<T> schema;
     protected Class<T> dataTypeClass;
     protected LocalizationProperties localizationProperties;
 
-    public StringListDAORow(IDAOSchema<T> schema, Class<T> dataTypeClass, List<String> row, LocalizationProperties localizationProperties) {
+    public StringListDAORow(IDAOSchema<T> schema, Class<T> dataTypeClass, List<Object> row, LocalizationProperties localizationProperties) {
 
         if( schema == null ||  dataTypeClass == null || row == null ) throw new IllegalArgumentException("<schema>, <dataTypeClass> or <row> is null");
 
@@ -63,22 +63,25 @@ public class StringListDAORow<T extends IDataBean> extends DAORow<T> implements 
         try {
             this.rowData =  dataTypeClass.newInstance();
 
-            Iterator<String> rowIterator = row.iterator();
+            Iterator<Object> rowIterator = row.iterator();
             Collection<String> columns = schema.getColumnNames();
             String format = null;
-            String value = null;
+            String type = null;
+            Object value = null;
             for (String column : columns) {
                 if(rowIterator.hasNext()) {
                     value =  rowIterator.next();
                     if( schema.getColumnProperties(column).containsKey(SchemaColumnProperties.Format) ) {
                         format = schema.getColumnProperties(column).get(SchemaColumnProperties.Format);
+                        type = schema.getColumnProperties(column).get(SchemaColumnProperties.Type);
                     } else {
                         format = null;
+                        type = null;
                     }
 
                     try {
                         Field field = this.rowData.getClass().getDeclaredField( NamingHelper.getFieldName(column));
-                        DataBeanUtil.setFieldValue(field, this.rowData, value, format, localizationProperties);
+                        DataBeanUtil.setFieldValue(field, this.rowData, value, format, type, localizationProperties);
                     } catch (SecurityException e) { throw new RuntimeException(e);
                     } catch (NoSuchFieldException e) { throw new RuntimeException(e);
                     }
@@ -99,22 +102,25 @@ public class StringListDAORow<T extends IDataBean> extends DAORow<T> implements 
             try {
                 this.beforeImage = dataTypeClass.newInstance();
 
-                Iterator<String> rowIterator = row.iterator();
+                Iterator<Object> rowIterator = row.iterator();
                 Collection<String> columns = schema.getColumnNames();
                 String format = null;
-                String value = null;
+                Object value = null;
+                String type = null;
                 for (String column : columns) {
                     if(rowIterator.hasNext()) {
                         value = rowIterator.next();
                         if( schema.getColumnProperties(column).containsKey(SchemaColumnProperties.Format) ) {
                             format = schema.getColumnProperties(column).get(SchemaColumnProperties.Format);
+                            type = schema.getColumnProperties(column).get(SchemaColumnProperties.Type);
                         } else {
                             format = null;
+                            type = null;
                         }
                         
                         try {
                             Field field = this.beforeImage.getClass().getDeclaredField( NamingHelper.getFieldName(column));
-                            DataBeanUtil.setFieldValue(field, this.beforeImage, value, format, localizationProperties);
+                            DataBeanUtil.setFieldValue(field, this.beforeImage, value, format, type, localizationProperties);
                         } catch (SecurityException e) { throw new RuntimeException(e);
                         } catch (NoSuchFieldException e) { throw new RuntimeException(e);
                         }

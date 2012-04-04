@@ -33,8 +33,12 @@ public class FilterParameter implements IFilterParameter, Serializable {
 	private static final long serialVersionUID = -5563911514444078779L;
 	
 	private String column;
+	
 	private FilterOperator operator;
+	
 	private Serializable value;
+	
+	private String format;
 
 	public FilterParameter(String column, FilterOperator operator, Serializable value) {
 		this.column = column;
@@ -46,7 +50,14 @@ public class FilterParameter implements IFilterParameter, Serializable {
 		this( column.toString(), operator,  value);
 	}
 	
-	
+	public FilterParameter(String column, FilterOperator operator, Serializable value, String format) {
+		super();
+		this.column = column;
+		this.operator = operator;
+		this.value = value;
+		this.format = format;
+	}
+
 	public String getColumn() {
 		return column;
 	}
@@ -69,6 +80,14 @@ public class FilterParameter implements IFilterParameter, Serializable {
 
 	public void setValue(Serializable filterValue) {
 		this.value = filterValue;
+	}
+	
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
 	}
 
 	@Override
@@ -114,8 +133,6 @@ public class FilterParameter implements IFilterParameter, Serializable {
 		return "FilterParameter [column=" + column + ", operator=" + operator
 				+ ", value=" + value + "]";
 	}
-	
-	
 	
 	public static Set<IFilterParameter> createFilterSet(String column, FilterOperator operator, String value) {
 		if( column == null ) throw new IllegalArgumentException("Filter column can not be null");

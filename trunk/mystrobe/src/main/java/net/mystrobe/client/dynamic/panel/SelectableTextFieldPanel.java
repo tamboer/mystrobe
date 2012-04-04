@@ -28,6 +28,7 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
@@ -63,8 +64,6 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 
 	private static final String TEXT_FIELD_SELECT_RECORD_MODAL_WINDOW_ID = "selectRecordModalWindowId";
 	
-	private String propertyName;
-	
 	private TextField<T> textField;
 	
 	private AjaxLink<T> lookupLink;
@@ -82,42 +81,41 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 	private IDataBean lastDataBean;
 	
 	
-	public String getInputPropertyName() {
-		return propertyName;
-	}
-
 	/**
 	 * Constructor
 	 * 
 	 * @param id Selectable text field form input panel id.
 	 * @param model Text field data type model.
 	 * @param propertyName Data object property/field/column name.
-	 * @param label Text field label.
+	 * @param labelModel Text field label.
 	 * @param required Required flag.
 	 * @param linkedDataObject Linked data object which will be used as data source in the popup window.  
 	 * @param linkedDataObjectColumn Linked data object column. used to fetch value for form text field.
 	 * @param selectRecordModalWindowPanelClass Modal window selectable panel type. Used to set the modal window contents.
 	 */
 	@SuppressWarnings("rawtypes")
-	public SelectableTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> label, boolean required, 
+	public SelectableTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly,
 			IDataObject<S> linkedDataObject, String linkedDataObjectColumn, Class<M> selectRecordModalWindowPanelClass) {
-		super(id, model);
+		
+		super(id, model, propertyName, required, readOnly);
+		
 		if( selectRecordModalWindowPanelClass == null ) (new IllegalStateException("null panel class")).printStackTrace();
 		
 		this.selectRecordModalPanelClass = selectRecordModalWindowPanelClass;
 		this.linkedColumnName = linkedDataObjectColumn;
 		this.linkedDataObject = linkedDataObject;
-		this.propertyName = propertyName;
-		
-		add(new Label(TEXT_FIELD_LABEL_ID, label));
 		
 		textField = new TextField<T>(TEXT_FIELD_ID, model);
 		textField.setRequired(required);
 		textField.setOutputMarkupId(true);
-		textField.setLabel(label);
+		textField.setLabel(labelModel);
 		textField.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		add(textField);
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(TEXT_FIELD_LABEL_ID, textField, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 		
 		selectTextFieldValueWindow = new ModalWindow(TEXT_FIELD_SELECT_RECORD_MODAL_WINDOW_ID, model);
 		selectTextFieldValueWindow.setCssClassName("tvh-modal-window");
@@ -202,16 +200,22 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 		add(lookupLink);
 	}
 	
+	public String getInputPropertyName() {
+		return propertyName;
+	}
+	
 	@Override
 	public void disableFormFieldPanel() {
-		super.disableFormFieldPanel();
+		textField.setEnabled(false);
 		lookupLink.setEnabled(false);
 	}
 
 	
 	public void enableFormFieldPanel() {
-		super.enableFormFieldPanel();
-		lookupLink.setEnabled(true);
+		if (!readOnly) {
+			textField.setEnabled(true);
+			lookupLink.setEnabled(true);
+		}
 	}
 
 	public FormComponent<T> getFormComponent() {

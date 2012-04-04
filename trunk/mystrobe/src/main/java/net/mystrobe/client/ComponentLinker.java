@@ -37,7 +37,6 @@ public class ComponentLinker {
         linkSource.removeStateListener(linkListener);
     }
 
-
     public static  void bindNavigation( INavigationSource linkSource, INavigationListener linkListener) {
         linkSource.setNavigationListener(linkListener);
         linkListener.addNavigationSource(linkSource);
@@ -92,9 +91,9 @@ public class ComponentLinker {
         unbindState(linkListener, linkSource);
     }
 
-
     public static <T extends IDataBean> void bindUpdate( IUpdateSource<T> linkSource, IUpdateListener<T> linkListener) {
         linkSource.setUpdateListener(linkListener);
+        linkListener.setUpdateSource(linkSource);
         bindState(linkListener, linkSource);
     }
 

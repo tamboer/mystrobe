@@ -108,6 +108,16 @@ public class FilterDataTest {
 			public String getColumn() {
 				return "state";
 			}
+
+			@Override
+			public String getFormat() {
+				return null;
+			}
+
+			@Override
+			public void setFormat(String format) {
+				
+			}
 		});
 		return filters;
 	}

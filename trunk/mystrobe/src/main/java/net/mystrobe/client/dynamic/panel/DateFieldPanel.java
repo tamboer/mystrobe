@@ -23,10 +23,9 @@ import net.mystrobe.client.IDataBean;
 
 import org.apache.wicket.extensions.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 
 /**
@@ -40,34 +39,31 @@ public class DateFieldPanel extends DynamicFormComponentPanel{
 	
 	private static final String DATE_FIELD_LABEL_ID = "dateField_label";
 	
-	private String propertyName;
-	
 	private DateTextField dateTextField;
 	
 	private DatePickerVisibilityAware datePicker;
 	
-	public DateFieldPanel(String id, IModel<Date> model, String propertyName, IModel<String> label, boolean required, String dateFormat) {
-		super(id, model);
+	public DateFieldPanel(String id, IModel<Date> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly, String dateFormat) {
+		super(id, model, propertyName, required, readOnly);
 		
-		this.propertyName = propertyName;
-		
-		add(new Label(DATE_FIELD_LABEL_ID, label));
-		 
 		if (dateFormat == null) {
 			dateTextField = new DateTextField(DATE_FIELD_ID, model);
 		} else {
 			dateTextField = new DateTextField(DATE_FIELD_ID, model, dateFormat);
 		}
-		
 		dateTextField.setRequired(required);
 		dateTextField.setOutputMarkupId(true);
-		dateTextField.setLabel(label);
+		dateTextField.setLabel(labelModel);
 		dateTextField.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		datePicker = new DatePickerVisibilityAware();
 		dateTextField.add(datePicker);
 		
 		add(dateTextField);
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(DATE_FIELD_LABEL_ID, dateTextField, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 	}
 	
 	public FormComponent<?> getFormComponent() {

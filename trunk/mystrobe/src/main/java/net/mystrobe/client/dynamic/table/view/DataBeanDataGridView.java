@@ -101,7 +101,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	
 	protected DataGridView<T> dataTableView;
 	
-	protected List<ICellPopulator<T>> dataTableColumns;
+	protected List<IMyStrobeColumn<T>> dataTableColumns;
 	
 	protected boolean sortableColumns = true;
 	
@@ -112,6 +112,8 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	protected String selectedRowCSSClassName = null;
 	
 	protected String selectedRowId = null;
+	
+	protected PropertiesSort propertiesSort = null;
 	
 	public DataBeanDataGridView(String id, List<T> dataList, final IDynamicFormConfig<T> columnsConfig, int tableSize) {
 		super(id);
@@ -203,7 +205,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 		//build data record column headers  
 		RepeatingView tableHeaders = new RepeatingView(DATA_TABLE_HEADERS_MARKUP_ID);
 		
-		final PropertiesSort propertiesSort = new PropertiesSort() {
+		propertiesSort = new PropertiesSort() {
 
 			private static final long serialVersionUID = 1L;
 
@@ -213,8 +215,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 			}
 		};
 		
-		for (ICellPopulator<T> cellPopulator : dataTableColumns) {
-			final IColumn<T> column = (IColumn<T>) cellPopulator;
+		for (final IMyStrobeColumn<T> column : dataTableColumns) {
 				
 			WebMarkupContainer item = new WebMarkupContainer(tableHeaders.newChildId());
 			WebMarkupContainer headerSort = null;
@@ -284,6 +285,12 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 			item.add(label);
 			item.add(headerSort);
 			
+			//additional properties 	
+			if (column.getHeaderBehaviors() != null) {
+				item.add(column.getHeaderBehaviors());
+			}
+			
+			
 			tableHeaders.add(item);
 		}
 		
@@ -297,19 +304,22 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	 * 
 	 * @return List of data beans properties columns.
 	 */
-	protected List<ICellPopulator<T>> buildTableColumns() {
+	protected List<IMyStrobeColumn<T>> buildTableColumns() {
 		
 		List<String> visibleColumns = this.columnsConfig.getVisibleColumnNames();
-		List<ICellPopulator<T>> tableColumns = new ArrayList<ICellPopulator<T>>(visibleColumns.size() + 1);
+		List<IMyStrobeColumn<T>> tableColumns = new ArrayList<IMyStrobeColumn<T>>(visibleColumns.size() + 1);
 		
+		//TODO we need another way to find type info - using generic superclass will only work for extending classes
 		Class<?> tClass = null;
-		ParameterizedType superclass = (ParameterizedType) getClass().getGenericSuperclass();
-		if (superclass != null && superclass.getActualTypeArguments() != null && 
-				superclass.getActualTypeArguments().length >= 1) {
-			
-			Type aType =  ((ParameterizedType) superclass).getActualTypeArguments()[0]; 
-			if ( aType instanceof Class<?> ) {
-				tClass = (Class<?>) ((ParameterizedType) superclass).getActualTypeArguments()[0];
+		if (getClass().getGenericSuperclass() instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
+			if (parameterizedType != null && parameterizedType.getActualTypeArguments() != null && 
+					parameterizedType.getActualTypeArguments().length >= 1) {
+				
+				Type aType =  ((ParameterizedType) parameterizedType).getActualTypeArguments()[0]; 
+				if ( aType instanceof Class<?> ) {
+					tClass = (Class<?>) ((ParameterizedType) parameterizedType).getActualTypeArguments()[0];
+				}
 			}
 		}
 		
@@ -357,7 +367,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 				width = columnProperties.get(IDynamicFormFieldConfig.Property.Width).toString();
 			}
 			
-			IColumn<T> column = new DataBeanPropertyColumn<T>(headerLabelModel, sortProperty, NamingHelper.getFieldName(columnName), alignRight, width);			
+			IMyStrobeColumn<T> column = new DataBeanPropertyColumn<T>(headerLabelModel, sortProperty, NamingHelper.getFieldName(columnName), alignRight, width);			
 			tableColumns.add(column); 
 		}
 		
@@ -502,6 +512,11 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 		return this.dataTableView != null ? this.dataTableView.getItemCount() : 0;
 	}
 	
+	
+	public void setDefaultSorting(String column, SortOrder sortOrder) {
+		propertiesSort.addSortableProperty(column, sortOrder);
+	}
+	
 	/**
 	 * Data bean property column
 	 * 
@@ -509,7 +524,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	 *
 	 * @param <T> 
 	 */
-	private class DataBeanPropertyColumn<T extends IDataBean> extends PropertyColumn<T> {
+	private class DataBeanPropertyColumn<T extends IDataBean> extends PropertyColumn<T> implements IMyStrobeColumn<T> {
 
 		private static final long serialVersionUID = -8120184633999316727L;
 		
@@ -537,6 +552,11 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 			if (width != null) {
 				item.add(new AttributeAppender("width", Model.of(width), " "));
 			}
+		}
+
+		@Override
+		public Behavior[] getHeaderBehaviors() {
+			return null;
 		}
 	}
 }

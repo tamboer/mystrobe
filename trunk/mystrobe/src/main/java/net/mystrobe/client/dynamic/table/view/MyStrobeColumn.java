@@ -15,27 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.mystrobe.client.connector.quarixbackend.api;
+package net.mystrobe.client.dynamic.table.view;
 
+import org.apache.wicket.behavior.Behavior;
 
-/**
- * @author TVH Group NV
- */
-public class DispatcherParameter {
-	
-	public int ParameterType = -1;
-	
-	public String ParameterName = null;
-	
-	public String ParameterValue = null;
-	
-	public DispatcherParameter() {}
-	
-	public DispatcherParameter(int paramType, String paramName, String paramValue) {	
-		this.ParameterType = paramType;
-		this.ParameterName = paramName;
-		if( paramValue != null ) {
-			this.ParameterValue =  paramValue; 
-		}
-	}	
+public abstract class MyStrobeColumn<T> implements IMyStrobeColumn<T>{
+
+	@Override
+	public Behavior[] getHeaderBehaviors() {
+		return null;
+	}
 }

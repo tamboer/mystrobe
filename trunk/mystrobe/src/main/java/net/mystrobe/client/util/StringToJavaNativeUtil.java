@@ -18,11 +18,16 @@
  package net.mystrobe.client.util;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.mystrobe.client.WicketDSRuntimeException;
+import net.mystrobe.client.connector.quarixbackend.NamingHelper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +39,36 @@ public class StringToJavaNativeUtil {
 	
 	private static final Logger logger = LoggerFactory.getLogger(StringToJavaNativeUtil.class);
 
-	//TODO: this has to change and use formats sent in the paint requests
-	private static int SCALE = 2;
+	public static int SCALE = 2;
 	
-    private static ThreadLocal<Map<String, TimeZoneAwareDateFormatter>> dateFormatCacheMap = new ThreadLocal<Map<String, TimeZoneAwareDateFormatter>>();
+	private static ThreadLocal<Map<String, TimeZoneAwareDateFormatter>> dateFormatCacheMap = new ThreadLocal<Map<String, TimeZoneAwareDateFormatter>>();
     
-    public static int parseInt(String s) {
+	/**
+	 * We need the formats to be able to send time formatted 
+	 * 	values as filters where no schema is available.<br/>
+	 * 
+	 * Map holds all server time zone date formats. 
+	 */
+	public static Map<String,String> timeZoneFormatsMap = new HashMap<String, String>(4); 
+	
+	static {
+		String dateTimeTzFormatDotNumericalSeparator = "99/99/9999 hh:mm:ss.sss+hh:mm";
+		String dateTimeTzFormatCommaNumericalSeparator = "99/99/9999 hh:mm:ss,sss+hh:mm";
+		
+		StringBuilder keyBuilderDotSeparator = new StringBuilder("dmy").append("."); 
+		StringBuilder keyBuilderDotSeparator2 = new StringBuilder("mdy").append("."); 
+		
+		timeZoneFormatsMap.put(keyBuilderDotSeparator.toString(), dateTimeTzFormatDotNumericalSeparator); 
+		timeZoneFormatsMap.put(keyBuilderDotSeparator2.toString(), dateTimeTzFormatDotNumericalSeparator); 
+		
+		StringBuilder keyBuilderCommaSeparator = new StringBuilder("dmy").append(","); 
+		StringBuilder keyBuilderCommaSeparator2 = new StringBuilder("mdy").append(","); 
+		
+		timeZoneFormatsMap.put(keyBuilderCommaSeparator.toString(), dateTimeTzFormatCommaNumericalSeparator); 
+		timeZoneFormatsMap.put(keyBuilderCommaSeparator2.toString(), dateTimeTzFormatCommaNumericalSeparator);
+	}
+    
+	public static int parseInt(String s) {
         if (s == null) {
             throw new NumberFormatException("Null string");
         }
@@ -127,60 +156,46 @@ public class StringToJavaNativeUtil {
         return  (sign * num);
     }
 
-
-
-    public static BigDecimal parseFloat(String s, char decimalPoint) {
-        if (s == null) {
-            throw new NumberFormatException("Null string");
-        }
-        s = s.trim();
-
-        BigDecimal result;
-        
-        int pos = s.indexOf(decimalPoint);
-        if( pos == - 1 || pos == s.length()-1) {
-            result =  new BigDecimal(parseLong(s)).setScale(SCALE, BigDecimal.ROUND_HALF_UP);
-        } else {
-            long intValue = parseLong(s.substring(0, pos)); 
-            long decimalValue = parseLong(s.substring(pos+1)); 
-            int scale = s.substring(pos+1).length();
-        	float floatValue = Float.parseFloat("" + intValue + "." + decimalValue) ;
-        	result = new BigDecimal(floatValue).setScale(scale > SCALE ? scale :SCALE, BigDecimal.ROUND_HALF_UP); 
-        }
-        return result;
-    }
-
-
     public static BigDecimal parseDouble(String s, char decimalPoint, char thousandsSeparator) {
         if (s == null) {
             throw new NumberFormatException("Null string");
         }
         s = s.trim();
 
-        BigDecimal num = null;
         int pos = s.indexOf(decimalPoint);
+        int scale = s.substring(pos+1).length();
         
-        String thousandsSeparatorString = (new StringBuilder()).append("\\").append(thousandsSeparator).toString();
-        String decimalsSeparatorString = (new StringBuilder()).append("\\").append(decimalPoint).toString();
-        
-        if( pos == - 1 || pos == s.length()-1) {
-        	String intValueString =  s.replaceAll(decimalsSeparatorString,StringUtil.EMPTY_STRING);
-        	long intValue = parseLong(intValueString.replaceAll(thousandsSeparatorString, StringUtil.EMPTY_STRING));
-        	num = new BigDecimal(intValue).setScale(SCALE, BigDecimal.ROUND_HALF_UP);
-        } else {
-        	String intValueString =  s.substring(0, pos).replaceAll(thousandsSeparatorString, StringUtil.EMPTY_STRING);
-        	long intValue = parseLong(intValueString);
-        	long decimalValue = parseLong(s.substring(pos+1).replaceAll(decimalsSeparatorString, StringUtil.EMPTY_STRING));
-            int scale = s.substring(pos+1).length();
-            
-            double doubleValue = Double.parseDouble("" + intValue + "." + decimalValue);
-        	num = new BigDecimal(doubleValue).setScale(scale < SCALE ? SCALE : scale, BigDecimal.ROUND_HALF_UP); ; 
+        String decimalFormatSymbolsKey = (new StringBuilder(thousandsSeparator).append(decimalPoint).toString());
+    	Map<String, DecimalFormat> decimalFormatsMap = NamingHelper.getDecimalFormatsMap();
+    	
+    	DecimalFormat decimalFormat; 
+    	
+    	if (decimalFormatsMap.containsKey(decimalFormatSymbolsKey)) {
+    		decimalFormat = decimalFormatsMap.get(decimalFormatSymbolsKey);
+    	} else {
+    		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
+        	symbols.setGroupingSeparator(thousandsSeparator);
+        	symbols.setDecimalSeparator(decimalPoint);
+        	
+        	decimalFormat = new DecimalFormat();
+        	decimalFormat.setDecimalFormatSymbols(symbols);
+        	decimalFormatsMap.put(decimalFormatSymbolsKey, decimalFormat);
         }
-        return num;
+    	
+    	try {
+			Number number =  decimalFormat.parse(s);
+			BigDecimal result = new BigDecimal(number.doubleValue()).setScale(scale > SCALE ? scale : SCALE, BigDecimal.ROUND_HALF_UP);
+			
+			return result;
+		
+    	} catch (ParseException e) {
+			logger.error("Uanble to parse number value:" + s, e);
+			throw new WicketDSRuntimeException(e);
+		}
     }
 
 
-    public static TimeZoneAwareDateFormatter getDateFormatter(String format, String dateFormat, char decimalSeparator) {
+   public static TimeZoneAwareDateFormatter getDateFormatter(String format, String dateFormat, char decimalSeparator) {
     	
     	if ( format == null || dateFormat == null ) {
             throw new IllegalArgumentException("Null argument");
@@ -262,7 +277,58 @@ public class StringToJavaNativeUtil {
         return sDateFormat;
     }
     
-    public static Date parseDate(String s, String format, String dateFormat, char decimalSeparator) {
+    public static Date parseDateFromType(String stringDate, String type) {
+    	Date res = null;
+    	try {
+    		if (stringDate == null || type == null) {
+                throw new IllegalArgumentException("Null argument");
+            }
+            
+            boolean isTimeZoneAware = false; 
+            String dateFormatPattern = "yyyy-MM-dd";
+            if ("datetime".equals(type)) {
+            	dateFormatPattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+            } else if ("datetime-tz".equals(type)) {
+            	isTimeZoneAware = true;
+            	dateFormatPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+            } 
+            
+            TimeZoneAwareDateFormatter dateFormat = null;
+            
+            if (dateFormatCacheMap.get() == null) {
+            	dateFormatCacheMap.set(new HashMap<String, TimeZoneAwareDateFormatter>());
+            }
+            
+            if (dateFormatCacheMap.get().containsKey(dateFormatPattern)) {
+        		dateFormat =  dateFormatCacheMap.get().get(dateFormatPattern);
+            }
+            
+            if (dateFormat == null) {
+            	dateFormat = new TimeZoneAwareDateFormatter(dateFormatPattern, isTimeZoneAware);
+            	dateFormatCacheMap.get().put(dateFormatPattern, dateFormat);
+            }
+            
+            //This is a hack so that we can use standard date formatter to parse the input time zone strings
+            if (isTimeZoneAware) {
+            	int index = stringDate.lastIndexOf(":");
+            	if ((stringDate.length() - index) < 5) {
+            		StringBuilder sb = new StringBuilder(stringDate);
+            		sb.replace(index, index + 1, "");
+            		res = dateFormat.parse(sb.toString());
+            	} else {
+            		res = dateFormat.parse(stringDate);
+            	}
+            } else {
+            	res = dateFormat.parse(stringDate);
+            }
+        } catch (ParseException ex) {
+            LoggerFactory.getLogger(StringToJavaNativeUtil.class.getName()).error( null, ex);
+        }
+        return res;
+    }
+    
+    
+    public static Date parseDate(String s, String format, String dateFormat, char numericalSeparator) {
         try {
             if (s == null || format == null || dateFormat == null) {
                 throw new IllegalArgumentException("Null argument");
@@ -271,7 +337,7 @@ public class StringToJavaNativeUtil {
                 throw new IllegalArgumentException("Incorect date format " + dateFormat);
             }
             Date res = null;
-            TimeZoneAwareDateFormatter sDateFormat = getDateFormatter(format, dateFormat, decimalSeparator);
+            TimeZoneAwareDateFormatter sDateFormat = getDateFormatter(format, dateFormat, numericalSeparator);
             
             //This is a hack so that we can use standard date formatter to parse the input time zone strings
             if (sDateFormat.isTimeZoneAware()) {
@@ -295,7 +361,17 @@ public class StringToJavaNativeUtil {
         return null;
     }
     
-    public static String formatDate(Date date, String format, String dateFormat, char decimalSeparator) {
+    /**
+     * Format date.
+     * 
+     * @param date Date to format.
+     * @param format Date format.
+     * @param dateFormat 'dmy' or 'mdy' month and day order server format.  
+     * @param numericalSeparator Decimal separator.
+     * 
+     * @return Formatted date.
+     */
+    public static String formatDate(Date date, String format, String dateFormat, char numericalSeparator) {
     	 try {
              if (date == null || format == null || dateFormat == null) {
                  throw new IllegalArgumentException("Null argument");
@@ -304,8 +380,7 @@ public class StringToJavaNativeUtil {
                  throw new IllegalArgumentException("Incorect date format " + dateFormat);
              }
              
-             
-             TimeZoneAwareDateFormatter sDateFormat = getDateFormatter(format, dateFormat, decimalSeparator);
+             TimeZoneAwareDateFormatter sDateFormat = getDateFormatter(format, dateFormat, numericalSeparator);
              String res = sDateFormat.format(date);
              
              //This is a hack so that we can use standard date formatter to parse the input time zone strings
@@ -322,8 +397,6 @@ public class StringToJavaNativeUtil {
          return null;
     }
     
-    
-
     private static class TimeZoneAwareDateFormatter extends SimpleDateFormat {
     	
     	private static final long serialVersionUID = 1L;

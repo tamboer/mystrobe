@@ -19,7 +19,10 @@
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import net.mystrobe.client.connector.IDAORow;
 import net.mystrobe.client.connector.IDaoRowList;
@@ -37,11 +40,17 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 	private int rowId = 0;
 	
 	private Collection<T> originalValuesList = null;
+	
+	private Comparator<T> itemsComparator = null;
 
 	public OfflineDataObject(final Collection<T> values, final IDAOSchema<T> schema) {
 		this.offlineMode = true;
 		this.schema = schema;
 		this.originalValuesList = values;
+	}
+	
+	public void setItemsComparator(Comparator<T> itemsComparator) {
+		this.itemsComparator = itemsComparator;
 	}
 
 	protected void initializeBufferData(final Collection<T> values) {
@@ -89,7 +98,12 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 	@Override
 	public void resetDataBuffer() {
 		
-		initializeBufferData(originalValuesList);
+		//Collections.sort
+		if (itemsComparator != null ) {
+			initializeBufferData(applySort(originalValuesList));
+		} else {
+			initializeBufferData(originalValuesList);
+		}
 		
 		publishOnDataBufferReplaced();
 		
@@ -169,47 +183,59 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 			
 			Object rowColumnValue = DataBeanUtil.getFieldValue(row, filterColumnName, null);
 			
-			switch (filter.getOperator()) {
-				case EQ:
-					validColumnValue = filterValue.equals(rowColumnValue);
-					break;
-					
-				case BEGINS:	
-					validColumnValue = rowColumnValue.toString().toLowerCase().startsWith(filterValue.toString().toLowerCase());
-					break;
-					
-				case GT:
-				case LT:	
-				case GE:
-				case LE:
-					long filterLongValue = 0l;
-					long columnLongValue = 0l;
-					if (rowColumnValue instanceof Number) {
-						Number filterNumberValue = (Number) filterValue; 
-						Number columnNumberValue = (Number) rowColumnValue; 
+			if (rowColumnValue == null) {
+				//filter column not in data object - ignore
+				getLog().warn("No field found for column filter name:" + filterColumnName);
+				continue;
+			}
+			
+			if (filterValue == null && rowColumnValue != null) {
+				return false;
+			}
+			
+			if(rowColumnValue != null && filterValue != null) { 
+				switch (filter.getOperator()) {
+					case EQ:
+						validColumnValue = filterValue.equals(rowColumnValue);
+						break;
 						
-						filterLongValue = filterNumberValue.longValue();
-						columnLongValue = columnNumberValue.longValue();
-					} else if (rowColumnValue instanceof Date) {
-						Date filterDate = (Date) filterValue; 
-						Date columnDate = (Date) rowColumnValue;
+					case BEGINS:	
+						validColumnValue = rowColumnValue.toString().toLowerCase().startsWith(filterValue.toString().toLowerCase());
+						break;
 						
-						filterLongValue = filterDate.getTime();
-						columnLongValue = columnDate.getTime();
-					}
-					
-					if (filter.getOperator().equals(FilterOperator.GT)) {
-						validColumnValue =  columnLongValue > filterLongValue;
-					} else if (filter.getOperator().equals(FilterOperator.GE)) {
-						validColumnValue = columnLongValue >= filterLongValue;
-					} else if (filter.getOperator().equals(FilterOperator.LT)) {
-						validColumnValue = columnLongValue < filterLongValue;
-					} else {
-						validColumnValue = columnLongValue <= filterLongValue;
-					}
-					
-				case MATCHES:	
-					break;
+					case GT:
+					case LT:	
+					case GE:
+					case LE:
+						long filterLongValue = 0l;
+						long columnLongValue = 0l;
+						if (rowColumnValue instanceof Number) {
+							Number filterNumberValue = (Number) filterValue; 
+							Number columnNumberValue = (Number) rowColumnValue; 
+							
+							filterLongValue = filterNumberValue.longValue();
+							columnLongValue = columnNumberValue.longValue();
+						} else if (rowColumnValue instanceof Date) {
+							Date filterDate = (Date) filterValue; 
+							Date columnDate = (Date) rowColumnValue;
+							
+							filterLongValue = filterDate.getTime();
+							columnLongValue = columnDate.getTime();
+						}
+						
+						if (filter.getOperator().equals(FilterOperator.GT)) {
+							validColumnValue =  columnLongValue > filterLongValue;
+						} else if (filter.getOperator().equals(FilterOperator.GE)) {
+							validColumnValue = columnLongValue >= filterLongValue;
+						} else if (filter.getOperator().equals(FilterOperator.LT)) {
+							validColumnValue = columnLongValue < filterLongValue;
+						} else {
+							validColumnValue = columnLongValue <= filterLongValue;
+						}
+						
+					case MATCHES:	
+						break;
+				}
 			}
 			
 			if (!validColumnValue) {
@@ -219,17 +245,19 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 		return true;
 	}
 	
-	protected void applySort() {
+	protected List<T> applySort(Collection<T> items) {
 		
-		SortState sortState = this.lastDAORequest.getSortState(); 
+		List<T> itemsList = new ArrayList<T>(items.size());
+		itemsList.addAll(items);
 		
-		//TODO: apply sort
+		Collections.sort(itemsList, itemsComparator);
+		
+		return itemsList;
 	}
 
 	@Override
 	protected void assignValues() {
 		// TODO Auto-generated method stub
-		
 	}
 }
 

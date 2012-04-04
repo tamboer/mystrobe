@@ -41,6 +41,7 @@ public class IDynamicFormFieldConfig {
 		Width("width"),
 		Format("format"),
 		Sortable("sortable"),
+		ReadOnly("readOnly"),
 		
 		//Page display sort order value of input field		
 		SortValue("sortValue"),

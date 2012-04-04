@@ -96,6 +96,18 @@ public class DynamicFormConfig<T extends IDataBean> implements IDynamicFormConfi
 	 * 
 	 * @param daoSchema Db column schema.
 	 */
+	public DynamicFormConfig(IDAOSchema<T> daoSchema, String [] visibleColumns, boolean sortable, boolean localizableLabels) {
+		this.sortable = sortable;
+		this.localizeFormLabels = localizableLabels;
+		buildVisibleColumnMap(visibleColumns);
+		buildConfigurationFromDAOSchema(daoSchema);
+	}
+	
+	/**
+	 * Creates form config using db table metadata.
+	 * 
+	 * @param daoSchema Db column schema.
+	 */
 	public DynamicFormConfig(IDAOSchema<T> daoSchema, boolean localizeFormLabels) {
 		this.localizeFormLabels = localizeFormLabels;
 		buildConfigurationFromDAOSchema(daoSchema);

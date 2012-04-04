@@ -45,7 +45,7 @@ public class DAOResponse<T extends IDataBean> implements IDAOResponse<T>, Serial
 
 	private List<Message> messages;
 	
-	private List<List<String>> rows;
+	private List<List<Object>> rows;
 
 	private Collection<IDAORow<T>> daoRows;
 	
@@ -66,7 +66,7 @@ public class DAOResponse<T extends IDataBean> implements IDAOResponse<T>, Serial
 		return name;
 	}
 	
-	public List<List<String>> getRows() {
+	public List<List<Object>> getRows() {
 		return rows;
 	}
 
@@ -160,7 +160,7 @@ public class DAOResponse<T extends IDataBean> implements IDAOResponse<T>, Serial
         this.name = name;
     }
 
-    public void setRows(List<List<String>> rows) {
+    public void setRows(List<List<Object>> rows) {
         this.rows = rows;
     }
     

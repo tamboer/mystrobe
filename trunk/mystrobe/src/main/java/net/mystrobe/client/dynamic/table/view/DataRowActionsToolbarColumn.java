@@ -23,7 +23,6 @@ import net.mystrobe.client.IDataObject;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
@@ -44,7 +43,7 @@ import org.apache.wicket.model.IModel;
  *
  * @param <T> Data bean type.
  */
-public class DataRowActionsToolbarColumn<T extends IDataBean> implements IColumn<T>{
+public class DataRowActionsToolbarColumn<T extends IDataBean> extends MyStrobeColumn<T>{
 
 	private static final long serialVersionUID = -4803598130593808441L;
 

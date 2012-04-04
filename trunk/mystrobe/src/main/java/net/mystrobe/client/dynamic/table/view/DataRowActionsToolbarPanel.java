@@ -24,10 +24,14 @@ import java.util.Set;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.dynamic.table.view.DataRowActionsToolbarColumn.DataRecordAction;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
+import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+
 
 
 /**
@@ -51,6 +55,8 @@ public abstract class DataRowActionsToolbarPanel<T extends IDataBean> extends Pa
 	
 	private static final String EDIT_LINK_MARKUP_ID = "editRecordLinkId";
 	
+	protected AjaxCancelEventBubbleCallDecorator cancelEventBubbleDecorator = new AjaxCancelEventBubbleCallDecorator();
+	
 	/**
 	 * Constructor
 	 * 
@@ -64,30 +70,30 @@ public abstract class DataRowActionsToolbarPanel<T extends IDataBean> extends Pa
 		
 		Set<DataRecordAction> dataRecordActionsSet = new HashSet<DataRecordAction>(Arrays.asList(dataRecordActions));
 		
-		AjaxLink<T> addRecordLink = createActionAjaxLink(ADD_LINK_MARKUP_ID, DataRecordAction.Add, model);
+		StopEventPropagationAjaxLink<T> addRecordLink = createActionAjaxLink(ADD_LINK_MARKUP_ID, DataRecordAction.Add, model);
 		addRecordLink.setVisible(dataRecordActionsSet.contains(DataRecordAction.Add));
 		add(addRecordLink);
 		
-		AjaxLink<T> editRecordLink = createActionAjaxLink(EDIT_LINK_MARKUP_ID, DataRecordAction.Edit, model);
+		StopEventPropagationAjaxLink<T> editRecordLink = createActionAjaxLink(EDIT_LINK_MARKUP_ID, DataRecordAction.Edit, model);
 		editRecordLink.setVisible(dataRecordActionsSet.contains(DataRecordAction.Edit));
 		add(editRecordLink);
 
-		AjaxLink<T> goRecordLink = createActionAjaxLink(GO_LINK_MARKUP_ID, DataRecordAction.Go, model);
+		StopEventPropagationAjaxLink<T> goRecordLink = createActionAjaxLink(GO_LINK_MARKUP_ID, DataRecordAction.Go, model);
 		goRecordLink.setVisible(dataRecordActionsSet.contains(DataRecordAction.Go));
 		add(goRecordLink);
 		
-		AjaxLink<T> deleteRecordLink = createActionAjaxLink(DELETE_LINK_MARKUP_ID, DataRecordAction.Delete, model);
+		StopEventPropagationAjaxLink<T> deleteRecordLink = createActionAjaxLink(DELETE_LINK_MARKUP_ID, DataRecordAction.Delete, model);
 		deleteRecordLink.setVisible(dataRecordActionsSet.contains(DataRecordAction.Delete));
 		add(deleteRecordLink);
 		
-		AjaxLink<T> viewRecordLink = createActionAjaxLink(VIEW_LINK_MARKUP_ID, DataRecordAction.View, model);
+		StopEventPropagationAjaxLink<T> viewRecordLink = createActionAjaxLink(VIEW_LINK_MARKUP_ID, DataRecordAction.View, model);
 		viewRecordLink.setVisible(dataRecordActionsSet.contains(DataRecordAction.View));
 		add(viewRecordLink);
 	}
 	
-	protected AjaxLink<T> createActionAjaxLink(String linkMarkupId, final DataRecordAction dataRecordAction, IModel<T> model) {
+	protected StopEventPropagationAjaxLink<T> createActionAjaxLink(String linkMarkupId, final DataRecordAction dataRecordAction, IModel<T> model) {
 		
-		return new AjaxLink<T>(linkMarkupId, model) {
+		return new StopEventPropagationAjaxLink<T>(linkMarkupId, model) {
 			
 			private static final long serialVersionUID = -1191898864712404159L;
 
@@ -96,6 +102,33 @@ public abstract class DataRowActionsToolbarPanel<T extends IDataBean> extends Pa
 				onActionClick(dataRecordAction, target, getModel());
 			}
 		};
+	}
+	
+	public abstract class StopEventPropagationAjaxLink<M extends IDataBean> extends AjaxFallbackLink<M> {
+
+		private static final long serialVersionUID = 8852735326063398683L;
+
+		public StopEventPropagationAjaxLink(String id) {
+			super(id);
+		}
+
+		public StopEventPropagationAjaxLink(String id, IModel<M> model) {
+			super(id, model);
+		}
+
+		@Override
+		protected IAjaxCallDecorator getAjaxCallDecorator() {
+			return cancelEventBubbleDecorator;
+		}
+	}
+	
+	public class AjaxCancelEventBubbleCallDecorator extends AjaxCallDecorator {
+		
+		private static final long serialVersionUID = -7256200628313699983L;
+
+		public CharSequence decorateScript(Component c, CharSequence script) {
+		    return (new StringBuilder()).append("var e = arguments[0] || window.event; if(e.stopPropagation) {e.stopPropagation();}else{e.cancelBubble = true;}").append(script).toString();
+		}
 	}
 	
 	/**

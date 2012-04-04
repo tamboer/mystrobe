@@ -42,7 +42,13 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 	
 	protected static final String INVALID_STYLE_CLASS = "invalid";
 
+	protected static final String REQUIRED_STYLE_CLASS = "required";
+
 	protected static final String STYLE_CLASS_ATTRIBUTE_NAME = "class";
+	
+	protected String propertyName;
+	
+	protected boolean required, readOnly; 
 	
 	/**
 	 * Meta data used to signal component that back end validation failed.
@@ -79,12 +85,15 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 				}
 			}
 		}
-	}; 
+	};
 	
-	public DynamicFormComponentPanel(String id) {
-		super(id);
+	public DynamicFormComponentPanel(String id, IModel<?> model, String propertyName, boolean required, boolean readOnly) {
+		super(id, model);
+		this.propertyName = propertyName;
+		this.readOnly = readOnly;
+		this.required = required;
 	}
-
+	
 	public DynamicFormComponentPanel(String id, IModel<?> model) {
 		super(id, model);
 	}
@@ -95,7 +104,9 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 
 	
 	public void enableFormFieldPanel() {
-		getFormComponent().setEnabled(true);
+		if (!readOnly) {
+			getFormComponent().setEnabled(true);
+		} 
 	}
 
 	public String getDisableFormFieldJavaScript() {
@@ -109,6 +120,5 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 	public void markAsNotValid() {
 		getFormComponent().setMetaData(ErrorKey.ERROR_KEY, getInputPropertyName());
 	}
-	
 }
 

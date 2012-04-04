@@ -340,7 +340,7 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 					if (localizationProperties == null || localizationProperties.getFormatDate() == null) {
 						localizationProperties = localizationRequest();
 					}
-					String parameterStringValue =  NamingHelper.getFormattedOutputValue(filterParameter.getValue(), null, localizationProperties);
+					String parameterStringValue =  NamingHelper.getFormattedOutputValue(filterParameter.getValue(), filterParameter.getFormat(), localizationProperties);
 					filterEl.setAttribute(Globals.ATTRIBUTE_VAL, parameterStringValue);
 					
 					daoMsgEl.appendChild(filterEl);

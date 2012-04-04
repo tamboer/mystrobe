@@ -85,5 +85,11 @@ public interface IUpdateListener<T extends IDataBean> extends IStateSource, ICon
 	 * True if last commit operation successful
 	 */
 	public void accept(IDSTransactionManager transactionManager); 
+	
+	/**
+	 * Update source link.
+	 * @param updateSource
+	 */
+	public void setUpdateSource(IUpdateSource<T> updateSource);
 }
 

@@ -17,12 +17,13 @@
 
 WorkIndicator = {
 		  		
-		
+	BlockUI : true 
+	
 	/**
 	 * The time out in milliseconds after wich the working sign
 	 * is presented to the user
 	 */	
-	WorkingSignDisplayTimeout : 400	
+	, WorkingSignDisplayTimeout : 400	
 		
 	
 	/**
@@ -112,20 +113,22 @@ WorkIndicator = {
 	 */
 	, ActivateWorkingSign : function() {
 		
-		if(WorkIndicator.overlayTimeoutPid != null) {
-			//allow duplicate calls but make sure old time outs are cleared so we do not block page
-			clearTimeout(WorkIndicator.overlayTimeoutPid);
-			clearTimeout(WorkIndicator.hideTimeoutPid);
+		if (WorkIndicator.BlockUI) {
+			if(WorkIndicator.overlayTimeoutPid != null) {
+				//allow duplicate calls but make sure old time outs are cleared so we do not block page
+				clearTimeout(WorkIndicator.overlayTimeoutPid);
+				clearTimeout(WorkIndicator.hideTimeoutPid);
+				
+				WorkIndicator.hideTimeoutPid = null;
+				WorkIndicator.overlayTimeoutPid = null;
+			}
 			
-			WorkIndicator.hideTimeoutPid = null;
-			WorkIndicator.overlayTimeoutPid = null;
+			WorkIndicator.overlayTimeoutPid = setTimeout( WorkIndicator.ActivateOverlay
+														, WorkIndicator.OverlayDisplayTimeout );
+			
+			WorkIndicator.hideTimeoutPid = setTimeout( WorkIndicator.ShowWorkingSign
+													 , WorkIndicator.WorkingSignDisplayTimeout);
 		}
-		
-		WorkIndicator.overlayTimeoutPid = setTimeout( WorkIndicator.ActivateOverlay
-													, WorkIndicator.OverlayDisplayTimeout );
-		
-		WorkIndicator.hideTimeoutPid = setTimeout( WorkIndicator.ShowWorkingSign
-												 , WorkIndicator.WorkingSignDisplayTimeout);
 	}
 
 	

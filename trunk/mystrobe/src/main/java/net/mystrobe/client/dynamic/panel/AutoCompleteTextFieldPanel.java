@@ -20,8 +20,8 @@
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
 
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 
@@ -36,27 +36,26 @@ public class AutoCompleteTextFieldPanel<T, S extends IDataBean> extends DynamicF
 	
 	private static final String TEXT_FIELD_LABEL_ID = "textField_label";
 	
-	private String propertyName;
-	
 	public DataObjectAutoCompleteTextField<S,T> autoCompleteTextField;
 	
-	public AutoCompleteTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> label, boolean required,
+	public AutoCompleteTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly,
 			IDataObject<S> autoCompleteDataSource, String autoCompleteFilterColumnName) {
-		super(id, model);
 	
-		this.propertyName = propertyName;
-		
-		add(new Label(TEXT_FIELD_LABEL_ID, label));
-		
+		super(id, model, propertyName, required, readOnly);
+	
 		autoCompleteTextField = new DataObjectAutoCompleteTextField<S,T>(TEXT_FIELD_ID, model, 
 				autoCompleteDataSource, autoCompleteFilterColumnName);
 		autoCompleteTextField.setRequired(required);
 		autoCompleteTextField.setOutputMarkupId(true);
-		autoCompleteTextField.setLabel(label);
+		autoCompleteTextField.setLabel(labelModel);
 		
 		autoCompleteTextField.add(FIELD_NOT_VALID_BEHAVIOR);
 		
-		add(autoCompleteTextField);
+		add(autoCompleteTextField);	
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(TEXT_FIELD_LABEL_ID, autoCompleteTextField, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 	}
 
 	public FormComponent<?> getFormComponent() {

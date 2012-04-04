@@ -109,7 +109,7 @@ public class DSResponse implements IDSResponse, Serializable {
 		this.dsSchema = dsSchema;
 	}
 
-	private <T extends IDataBean> Collection<IDAORow<T>> getDAORows(final String daoId, List<List<String>> rows, Class<T> dataBeanClass) {
+	private <T extends IDataBean> Collection<IDAORow<T>> getDAORows(final String daoId, List<List<Object>> rows, Class<T> dataBeanClass) {
 		List<IDAORow<T>> ret = new ArrayList<IDAORow<T>>();
 
 		if( dsSchema == null ) {
@@ -132,8 +132,10 @@ public class DSResponse implements IDSResponse, Serializable {
 			throw new WicketDSRuntimeException("No IDataType class generated for: " + dsSchema.getId() + ":" + daoId);			
 		}
 		
-		if( rows != null ) for (final List<String> row : rows) {
-			ret.add( new StringListDAORow<T>((IDAOSchema<T>)dsSchema.getDataObjectSchema(daoId), dataBeanClass, row, getLocalizationProperties()));
+		if( rows != null )  {
+			for (final List<Object> row : rows) {
+				ret.add( new StringListDAORow<T>((IDAOSchema<T>)dsSchema.getDataObjectSchema(daoId), dataBeanClass, row, getLocalizationProperties()));
+			}
 		}
 
 		return ret;

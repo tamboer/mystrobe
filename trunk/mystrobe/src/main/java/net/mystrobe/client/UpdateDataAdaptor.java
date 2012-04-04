@@ -242,9 +242,6 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			row.setConsideredForUpdate(true);
 		}
 
-		// call update data
-		updateDataRequest();
-
 		if (!isAutoCommit()) {
 			this.dataBuffer.remove(row);
 
@@ -253,6 +250,17 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 			if (currentRowRemoved) {
 				moveToAvailablePosition();
+			}
+		} else {
+			try {
+				// call update data to remove row
+				updateDataRequest();
+			
+			} catch (WicketDSBLException e) {
+				//clear rows in 'to delete' buffer, to avoid sending record for deletion
+				// on a consequent update data / delete data call 
+				bufferDeletedRows.clear();
+				throw e;
 			}
 		}
 	}
@@ -621,6 +629,10 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 				logger.trace("Internal transaction manager");
 			}
 		}
+	}
+	
+	public void setUpdateSource(IUpdateSource<T> updateSource) {
+		this.updateSource = updateSource;
 	}
 
 }

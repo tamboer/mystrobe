@@ -17,6 +17,7 @@
  */
  package net.mystrobe.client.connector.quarixbackend.dispatcher;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -43,15 +44,20 @@ public class QuarixOOInputParameter extends AbstractInputParameters {
 	 */
 	@Override
 	public Object getObject(int position) throws SQLException {
-		DispatcherParameter paramLine = params.get(this.currentRow);
-	     switch (position) {
-	     	case QuarixOODispatcher.REQ_TYPE_POS: return Integer.valueOf(paramLine.ParameterType); 
-        	case QuarixOODispatcher.REQ_NAME_POS: return paramLine.ParameterName;
-        	case QuarixOODispatcher.REQ_VALUE_POS:
-        		if( paramLine.ParameterValue != null ) return new ProBlob(paramLine.ParameterValue.getBytes());
-        		else return null;
-        	default: return  null;            
-        }
+		 DispatcherParameter paramLine = params.get(this.currentRow);
+	     try {
+			switch (position) {
+			 	case QuarixOODispatcher.REQ_TYPE_POS: return Integer.valueOf(paramLine.ParameterType); 
+				case QuarixOODispatcher.REQ_NAME_POS: return paramLine.ParameterName;
+				case QuarixOODispatcher.REQ_VALUE_POS:
+					if( paramLine.ParameterValue != null ) 
+						return new ProBlob(paramLine.ParameterValue.getBytes("UTF-8"));
+					else return null;
+				default: return  null;            
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new SQLException("Can not convert value, encoding exception.", e);
+		}
 	}
 
 //    @Override

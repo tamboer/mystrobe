@@ -19,11 +19,10 @@
 
 import net.mystrobe.client.IDataBean;
 
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 
 /**
@@ -37,30 +36,24 @@ public class TextAreaPanel<T> extends DynamicFormComponentPanel {
 	
 	private static final String TEXT_AREA_LABEL_ID = "textArea_label";
 	
-	private String propertyName;
-	
 	private TextArea<T> textArea;
 	
-	public String getInputPropertyName() {
-		return propertyName;
-	}
-
-
-	public TextAreaPanel(String id, IModel<T> model, String propertyName, IModel<String> label, boolean required, int maxLength) {
-		super(id, model);
+	public TextAreaPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly, int maxLength) {
 		
-		this.propertyName = propertyName;
+		super(id, model, propertyName, required, readOnly);
 		
-		add(new Label(TEXT_AREA_LABEL_ID, label));
-		 
 		textArea = new TextArea<T>(TEXT_AREA_ID, model);
 		textArea.setRequired(required);
 		textArea.setOutputMarkupId(true);
-		textArea.setLabel(label);
+		textArea.setLabel(labelModel);
 		
 		textArea.add(FIELD_NOT_VALID_BEHAVIOR);
 		
 		add(textArea);
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(TEXT_AREA_LABEL_ID, textArea, required);
+        label.setDefaultModel(labelModel);
+		add(label);
 	}
 
 
@@ -70,6 +63,10 @@ public class TextAreaPanel<T> extends DynamicFormComponentPanel {
 	
 	public void setFormComponentModelObject(IDataBean dataBean) {
 		textArea.setModel(new PropertyModel<T>(dataBean, propertyName));
+	}
+	
+	public String getInputPropertyName() {
+		return propertyName;
 	}
 
 }

@@ -263,6 +263,10 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		
 		boolean required =  configurationMap.containsKey(IDynamicFormFieldConfig.Property.Required) && 
 				(Boolean) configurationMap.get(IDynamicFormFieldConfig.Property.Required);
+		
+		boolean readOnly = configurationMap.containsKey(IDynamicFormFieldConfig.Property.ReadOnly) && 
+			(Boolean) configurationMap.get(IDynamicFormFieldConfig.Property.ReadOnly);
+		
 		String format =  (String) configurationMap.get(IDynamicFormFieldConfig.Property.Format);
 		List<IFieldValue<S>> options = (List<IFieldValue<S>>) configurationMap.get(IDynamicFormFieldConfig.Property.ValuesList);
 		
@@ -272,7 +276,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		
 		IDynamicFormFieldConfig.FieldType fieldType = (IDynamicFormFieldConfig.FieldType) configurationMap.get(IDynamicFormFieldConfig.Property.Type);
 		
-		return buildFormPanelFromConfigType(columnName, fieldType, dataBean, columnLabel, options, required, format, configurationMap);
+		return buildFormPanelFromConfigType(columnName, fieldType, dataBean, columnLabel, options, required, readOnly, format, configurationMap);
 	}
 	
 	/**
@@ -288,7 +292,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * @return Form input field panel.
 	 */
 	private <S, M extends IDataBean> DynamicFormComponentPanel buildFormPanelFromConfigType(String columnName, IDynamicFormFieldConfig.FieldType fieldType, T dataBean,
-					IModel<String> columnLabel, List<IFieldValue<S>> options,  boolean required, String format, Map<IDynamicFormFieldConfig.Property, Object> configurationMap) {
+					IModel<String> columnLabel, List<IFieldValue<S>> options,  boolean required, boolean readOnly, String format, Map<IDynamicFormFieldConfig.Property, Object> configurationMap) {
 		
 		DynamicFormComponentPanel result = null;
 		PropertyModel<S> propertyModel; 
@@ -296,7 +300,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		switch (fieldType) {
 			case CheckBox: 
 				PropertyModel<Boolean> model = new PropertyModel<Boolean>(dataBean, normalizedColumnName);
-				result = new CheckBoxPanel(FORM_INPUT_PANEL_ID, model, normalizedColumnName, columnLabel);
+				result = new CheckBoxPanel(FORM_INPUT_PANEL_ID, model, normalizedColumnName, columnLabel, required, readOnly);
 				break;
 				
 			case TextField :
@@ -307,31 +311,31 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 					String linkedColumnName  = (String) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedColumnName);
 					Class<AbstractSelectRecordModalPanel<M>> selecatbleRecordMpdalPanelClass  = (Class<AbstractSelectRecordModalPanel<M>>) configurationMap.get(IDynamicFormFieldConfig.Property.SelectableModalWindowPanelClass);
 					if( selecatbleRecordMpdalPanelClass == null ) selecatbleRecordMpdalPanelClass = (Class) SelectRecordModalPanel.class; 
-					result = new SelectableTextFieldPanel<S, M, AbstractSelectRecordModalPanel<M>>(FORM_INPUT_PANEL_ID,  propertyModel, normalizedColumnName, columnLabel, required, linkedDataSource, linkedColumnName, selecatbleRecordMpdalPanelClass);
+					result = new SelectableTextFieldPanel<S, M, AbstractSelectRecordModalPanel<M>>(FORM_INPUT_PANEL_ID,  propertyModel, normalizedColumnName, columnLabel, required, readOnly, linkedDataSource, linkedColumnName, selecatbleRecordMpdalPanelClass);
 				} else {
-					result = new TextFieldPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, 0);
+					result = new TextFieldPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, 0);
 				}
 				
 				break;
 				
 			case DateField :
 				PropertyModel<Date> dateModel = new PropertyModel<Date>(dataBean, normalizedColumnName);
-				result = new DateFieldPanel(FORM_INPUT_PANEL_ID, dateModel, normalizedColumnName, columnLabel, required, format);
+				result = new DateFieldPanel(FORM_INPUT_PANEL_ID, dateModel, normalizedColumnName, columnLabel, required, readOnly, format);
 				break;	
 				
 			case TextArea :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				result = new TextAreaPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, 0);
+				result = new TextAreaPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, 0);
 				break;
 				
 			case Radio :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				result = new RadioPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, options, false);
+				result = new RadioPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, options, false, required, readOnly);
 				break;
 				
 			case DropDown :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				result = new DropDownPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, options);
+				result = new DropDownPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, options, required, readOnly);
 				break;
 				
 			case AutoCompleteTextField :
@@ -339,7 +343,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 				IDataObject<M> autoCompleteDataSource = (IDataObject<M>) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedDataObject);
 				String autoCompleteFilterColumnName  = (String) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedColumnName);
 				result = new AutoCompleteTextFieldPanel<S,M>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, 
-						required, autoCompleteDataSource, autoCompleteFilterColumnName);
+						required, readOnly, autoCompleteDataSource, autoCompleteFilterColumnName);
 				break;
 		}
 		
