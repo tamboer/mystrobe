@@ -17,6 +17,8 @@
  */
  package net.mystrobe.client.connector.quarixbackend;
 
+import com.jamonapi.Monitor;
+import com.jamonapi.MonitorFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,6 +84,7 @@ public class AppServerAction {
         }
 
         try {
+            Monitor monitor = MonitorFactory.start("MyStrobe_OpenEdge " + daoClassName);
             progressStart = System.currentTimeMillis();
 
             loadDispatcherRequest(daoClassName, method, xml);
@@ -92,6 +95,7 @@ public class AppServerAction {
             
             dispatcherResponse = appServer.getDispatcher().process(dispatcherRequest);
             progressEnd = System.currentTimeMillis();
+            monitor.stop();
             loadDispatcherResponse(dispatcherResponse);
 
             if( getLog().isTraceEnabled() ) {
