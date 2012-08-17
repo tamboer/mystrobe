@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.mystrobe.client;
 
 import java.util.Arrays;
@@ -11,15 +7,16 @@ import java.util.List;
  *
  * @author annba
  */
-public enum RowAction {
+public class RowAction {
 
-    SELECT, EDIT, DELETE, NEW, PRINT,
-    CHANGE_AFFILIATE_SEARCHBOX,
-    SELECT_COMPANY_DEFAULT_ORDER_CARRIER,
-    SHOW_ORDER_PDF_LINK,
-    OPEN, SWITCH, SET_DEFAULT,
-    CHECK_FREE_TRANSPORT,
-    COMPLAINT, CHECKBOX;
+    public static final RowAction SELECT = new RowAction();
+    public static final RowAction EDIT = new RowAction();
+    public static final RowAction DELETE = new RowAction(); 
+    public static final RowAction NEW = new RowAction();
+    public static final RowAction PRINT = new RowAction();
+    public static final RowAction OPEN = new RowAction();
+    
+    private RowAction(){}
 
     public static List<RowAction> getFullActions() {
         /*
