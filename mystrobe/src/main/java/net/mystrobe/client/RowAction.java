@@ -16,7 +16,7 @@ public class RowAction {
     public static final RowAction PRINT = new RowAction();
     public static final RowAction OPEN = new RowAction();
     
-    private RowAction(){}
+    protected RowAction(){}
 
     public static List<RowAction> getFullActions() {
         /*
