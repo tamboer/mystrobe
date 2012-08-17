@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @author annba
  */
-public class RowAction {
+public class RowAction implements Serializable {
 
     public static final RowAction SELECT = new RowAction();
     public static final RowAction EDIT = new RowAction();
