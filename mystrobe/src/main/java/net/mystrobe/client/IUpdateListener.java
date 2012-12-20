@@ -75,10 +75,18 @@ public interface IUpdateListener<T extends IDataBean> extends IStateSource, ICon
 	/**
 	 * Cancel current new/update operation. 
 	 */
+	@Deprecated
 	public void cancelCRUDOpertaion();
+
+	/**
+	 * Cancel current new/update operation. 
+	 */
+	public void cancelCRUDOperation();
     
 	/**
 	 * Reset data as it was before any changes were done. 
+	 * 
+	 * Use cancelCRUDOperation() instead.
 	 */
 	@Deprecated
 	public void resetData();

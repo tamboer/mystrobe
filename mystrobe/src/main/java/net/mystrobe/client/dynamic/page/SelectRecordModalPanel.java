@@ -102,7 +102,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 			throw new IllegalArgumentException("Data object and tables config can not be null.");
 		}
 		
-		add(getTopPanel());
+		add(getEditPanel());
 		
 		dataTablePanel = new SimpleDataTableViewPanel<T>("dataTableId", this.tableColumnsConfig, tableSize) {
 
@@ -198,7 +198,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.mystrobe.client.dynamic.page.ISelectRecordComponent#setSelectedData(com.tvh.wicketds.IDataBean)
+	 * @see net.mystrobe.client.dynamic.page.ISelectRecordComponent#setSelectedData(net.mystrobe.client.IDataBean)
 	 */
 	public void setSelectedData(IDataBean dataBean) {
 		this.selectedData = dataBean;
@@ -213,10 +213,10 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 		return this.selectedData;
 	}
 	
-	protected Component getTopPanel() {
-		WebMarkupContainer topPanel = new WebMarkupContainer("topPanel");
-		topPanel.setVisible(false);
-		return topPanel;
+	protected Component getEditPanel() {
+		WebMarkupContainer editPanel = new WebMarkupContainer("editPanel");
+		editPanel.setVisible(false);
+		return editPanel;
 	}
 	
 	public void onTableRefresh(AjaxRequestTarget target) {

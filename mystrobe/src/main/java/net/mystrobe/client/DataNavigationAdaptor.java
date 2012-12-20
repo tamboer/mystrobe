@@ -72,7 +72,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         }
         
         //request data and replace current buffer
-        requestData(DAOCommands.sendRows.name(), StartRowMarker.first.name(),  getSchema().getBatchSize() , false, AppendPosition.REPLACE);
+        requestData(DAOCommands.sendRows.name(), StartRowMarker.first.name(),  getSchema().getBatchSize() ,
+        		false, AppendPosition.REPLACE, true);
         
         if( this.hasFirstRow() ) { 
         	return this.moveToRow(0, true);
@@ -91,7 +92,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         }
 
         //request data and replace current buffer
-        requestData(DAOCommands.sendRows.name(), StartRowMarker.last.name(),  getSchema().getBatchSize() * -1, false, AppendPosition.REPLACE);
+        requestData(DAOCommands.sendRows.name(), StartRowMarker.last.name(),  getSchema().getBatchSize() * -1,
+        		false, AppendPosition.REPLACE, true);
         
         if( hasLastRow() ) return moveToRow( this.dataBuffer.size() - 1, true);
         return false;
@@ -108,7 +110,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         		return false;
         }
         //request next data and append it to the end of thge buffer
-        requestData(DAOCommands.sendRows.name(), this.lastNextFetchedRowId, getSchema().getBatchSize(), false, AppendPosition.END);
+        requestData(DAOCommands.sendRows.name(), this.lastNextFetchedRowId, getSchema().getBatchSize(),
+        		false, AppendPosition.END, true);
 
         if( this.canMove( this.cursorPosition + 1) ) {
         	return moveToRow(this.cursorPosition + 1, true);
@@ -127,7 +130,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         int oldSize = this.dataBuffer.size();
         
         //request data and append it at the beginning of the data buffer
-        requestData(DAOCommands.sendRows.name(), this.lastPreviousFetchedRowId, getSchema().getBatchSize() * -1, false, AppendPosition.BEGINING);
+        requestData(DAOCommands.sendRows.name(), this.lastPreviousFetchedRowId, getSchema().getBatchSize() * -1,
+        		false, AppendPosition.BEGINING, true);
         
         int newSize = this.dataBuffer.size();
 

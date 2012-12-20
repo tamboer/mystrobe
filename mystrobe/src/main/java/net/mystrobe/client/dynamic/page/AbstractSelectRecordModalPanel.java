@@ -20,8 +20,11 @@
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
 import net.mystrobe.client.connector.transaction.WicketDSBLException;
+import net.mystrobe.client.ui.UICssResourceReference;
 
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.panel.Panel;
 
 /**
@@ -59,5 +62,10 @@ public abstract class AbstractSelectRecordModalPanel<T extends IDataBean> extend
 	 * @see net.mystrobe.client.dynamic.page.ISelectRecordComponent#initializePageComponents()
 	 */
 	public abstract void initializePageComponents() throws WicketDSBLException; 
+	
+	public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	}
 }
 

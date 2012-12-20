@@ -79,6 +79,27 @@ public interface IDataSource<T extends IDataBean> extends LinkSource {
 	 * @return True if object contains all data.
 	 */
 	public boolean hasAllData();
+	
+	/**
+	 * Reposition data buffer to new added record.
+	 * 
+	 * @param repositionOnNewAddedRecord
+	 */
+	public void setRepositionOnNewAddedRecord(boolean repositionOnNewAddedRecord);
+	
+	/**
+	 * Data source uses a data buffer to cache data
+	 * 
+	 * @return true/false
+	 */
+	public boolean isDataBufferEnabled();
+
+	/**
+	 * Change data caching startegy
+	 * 
+	 * @param cacheData
+	 */
+	public void setCacheData(boolean cacheData);
 
 
 }

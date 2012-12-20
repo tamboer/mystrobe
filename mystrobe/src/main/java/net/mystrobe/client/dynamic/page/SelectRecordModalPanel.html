@@ -3,25 +3,35 @@
 <html xmlns:wicket="http://wicket.apache.org">
 
  <head>
-    <style>
-    	@CHARSET "ISO-8859-1";
+   
+</head>    
+
+<body>
+
+ <wicket:head>
+    <style type="text/css">
+    	
 		table.striped tr.selected{
 			border-top: 2px solid #eab808;
 			border-bottom: 2px solid #eab808;
 			background-color: #FF9;
 		}
-    </style>
-</head>    
-
-<body>
+    
+		.invalid {
+			border: 1px solid red;
+		} 
+	</style>
+</wicket:head>
 
 <wicket:panel>
 
-	<div wicket:id="topPanel"/>
+	<wicket:child/>
 
 	<div wicket:id="dataTableId"/>
 
 	<div wicket:id="dataTableNavigatorId"/>
+	
+	<div wicket:id="editPanel"/>
 
 	<div class="box-buttons-right">	
 		<input type="button" class="button ok-btn" wicket:id="selectLinkId" value="Select"/>

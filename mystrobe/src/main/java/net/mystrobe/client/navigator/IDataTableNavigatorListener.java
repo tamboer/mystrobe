@@ -49,7 +49,7 @@ public interface IDataTableNavigatorListener<T extends IDataBean> extends IConne
 	 * Method retrieves next <tt>pageSize</tt> rows after of <tt>previousRowId</tt>. 
 	 * 
 	 * @param source Navigation source making data request.
-	 * @param rowId Row from which to fetch data. 
+	 * @param previousRowId Row from which to look for data. 
 	 * @param size Data chunk size.
 	 * @param repositionRequest True when the method is called for navigator repositioning,
 	 * 				and not a user next/previous request. When false other navigators are not informed on
@@ -58,6 +58,9 @@ public interface IDataTableNavigatorListener<T extends IDataBean> extends IConne
 	 * @throws IllegalArgumentException if <tt>previousRowId</tt> can not be found.
 	 */
 	public boolean nextPageData(IDataTableNavigatorSource<T> navigationSource, String previousRowId, int pageSize, int pageNumber, boolean repositionRequest) throws IllegalArgumentException;
+
+	
+	public boolean nextPageDataForRecord(IDataTableNavigatorSource<T> navigationSource, String previousRowId, int pageSize, int pageNumber, boolean repositionRequest, String recordRowId) throws IllegalArgumentException;
 
 	/**
 	 * Get previous page data beans.<br/>
@@ -74,6 +77,7 @@ public interface IDataTableNavigatorListener<T extends IDataBean> extends IConne
 	 * @throws IllegalArgumentException if <tt>nextRowId</tt> can not be found. 
 	 */
 	public boolean previousPageData(IDataTableNavigatorSource<T> navigationSource, String nextRowId, int pageSize, int pageNumber, boolean repositionRequest) throws IllegalArgumentException;
+	
 	
 	/**
 	 * Resets navigator to first position on first page.

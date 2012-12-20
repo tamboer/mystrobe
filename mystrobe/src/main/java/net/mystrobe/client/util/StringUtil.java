@@ -20,8 +20,6 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
-
 
 /**
  * String utility class.
@@ -30,6 +28,9 @@ import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
  */
 public class StringUtil {
 	
+	public static final String RESOURCE_KEY_DEFAULT_PREFIX = "??";
+
+	public static final String RESOURCE_KEY_DEFAULT_SUFFIX = "??";
 	
 	/**
 	 * Strings to remove
@@ -75,8 +76,8 @@ public class StringUtil {
 	}
 	
 	public static final String buildDefaultResourceValue(String key) {
-		StringBuilder stringBuilder = new StringBuilder(IDynamicFormConfig.RESOURCE_KEY_DEFAULT_PREFIX);
-		stringBuilder.append(key).append(IDynamicFormConfig.RESOURCE_KEY_DEFAULT_SUFFIX);
+		StringBuilder stringBuilder = new StringBuilder(RESOURCE_KEY_DEFAULT_PREFIX);
+		stringBuilder.append(key).append(RESOURCE_KEY_DEFAULT_SUFFIX);
 		
 		return stringBuilder.toString();
 	}

@@ -27,8 +27,11 @@ import net.mystrobe.client.IStateSource;
 import net.mystrobe.client.IUpdateUIActionListener;
 import net.mystrobe.client.IUpdateUIActionSource;
 import net.mystrobe.client.UpdateStates;
+import net.mystrobe.client.ui.UICssResourceReference;
 
 import org.apache.wicket.behavior.Behavior;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -473,6 +476,11 @@ public class CRUDOperationsPanel extends Panel implements IUpdateUIActionSource 
                     break;
             }
         }
+    
+    public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	 }
 }
 
 

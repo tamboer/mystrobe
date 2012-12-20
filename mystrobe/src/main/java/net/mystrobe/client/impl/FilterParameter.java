@@ -39,6 +39,11 @@ public class FilterParameter implements IFilterParameter, Serializable {
 	private Serializable value;
 	
 	private String format;
+	
+	/**
+	 * Filter to be removed from request when buffer is reposition to a record
+	 */
+	private boolean removeOnBufferRecordReposition = false;
 
 	public FilterParameter(String column, FilterOperator operator, Serializable value) {
 		this.column = column;
@@ -50,12 +55,19 @@ public class FilterParameter implements IFilterParameter, Serializable {
 		this( column.toString(), operator,  value);
 	}
 	
+	public FilterParameter(Object column, FilterOperator operator, Serializable value, boolean removeOnBufferRecordReposition) {
+		this( column.toString(), operator,  value);
+		this.removeOnBufferRecordReposition = removeOnBufferRecordReposition;
+	}
+	
 	public FilterParameter(String column, FilterOperator operator, Serializable value, String format) {
-		super();
-		this.column = column;
-		this.operator = operator;
-		this.value = value;
+		this( column, operator,  value);
 		this.format = format;
+	}
+	
+	public FilterParameter(String column, FilterOperator operator, Serializable value, String format, boolean removeOnBufferRecordReposition) {
+		this( column, operator,  value, format);
+		this.removeOnBufferRecordReposition = removeOnBufferRecordReposition;
 	}
 
 	public String getColumn() {
@@ -88,6 +100,15 @@ public class FilterParameter implements IFilterParameter, Serializable {
 
 	public void setFormat(String format) {
 		this.format = format;
+	}
+	
+	public boolean isRemoveOnBufferRecordReposition() {
+		return this.removeOnBufferRecordReposition;
+	}
+
+	public void setRemoveOnBufferRecordReposition(
+			boolean removeOnBufferRecordReposition) {
+		this.removeOnBufferRecordReposition = removeOnBufferRecordReposition;
 	}
 
 	@Override
@@ -149,6 +170,8 @@ public class FilterParameter implements IFilterParameter, Serializable {
 					, operator
 					, value != null ? value.toString() : ""); 
 	}
+	
+	
 	
 }
 

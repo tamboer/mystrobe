@@ -28,10 +28,13 @@ import net.mystrobe.client.UpdateStates;
 import net.mystrobe.client.dynamic.navigation.CRUDOperationsPanel.ButtonState;
 import net.mystrobe.client.dynamic.navigation.CRUDOperationsPanel.CRUDButton;
 import net.mystrobe.client.dynamic.navigation.CRUDOperationsPanel.Commands;
+import net.mystrobe.client.ui.UICssResourceReference;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.behavior.Behavior;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -526,7 +529,13 @@ public class CRUDAjaxOperationsPanel<T extends IDataBean> extends Panel implemen
                     this.btCancel.setEnabled(false);
                     break;
             }
-        }
+    }
+    
+    
+    public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	 }
 }
 
 

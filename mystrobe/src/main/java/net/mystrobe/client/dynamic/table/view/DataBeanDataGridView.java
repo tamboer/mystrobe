@@ -30,6 +30,7 @@ import net.mystrobe.client.SortState;
 import net.mystrobe.client.connector.quarixbackend.NamingHelper;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.config.IDynamicFormFieldConfig;
+import net.mystrobe.client.dynamic.navigation.DataTablePagesNavigationPanel;
 import net.mystrobe.client.util.StringUtil;
 
 import org.apache.wicket.Component;
@@ -92,7 +93,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	/**
 	 * Additional table columns
 	 */
-	protected List<DataTableColumn<T>> additionalTableColumns = null;
+	protected List<DataTableColumn<T,?>> additionalTableColumns = null;
 	
 	/**
 	 * Selected row css class
@@ -101,7 +102,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	
 	protected DataGridView<T> dataTableView;
 	
-	protected List<IMyStrobeColumn<T>> dataTableColumns;
+	protected List<IMyStrobeColumn<T,?>> dataTableColumns;
 	
 	protected boolean sortableColumns = true;
 	
@@ -133,19 +134,19 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 		initialize(dataList);
 	}
 	
-	public DataBeanDataGridView(String id, List<T> dataList, IDynamicFormConfig<T> tableColumnsConfig, int tableSize, List<DataTableColumn<T>> additionalTableColumns) {
+	public DataBeanDataGridView(String id, List<T> dataList, IDynamicFormConfig<T> tableColumnsConfig, int tableSize, List<DataTableColumn<T,?>> additionalTableColumns) {
 		super(id);
 		setTableConfigurationValues(tableColumnsConfig, tableSize, this.cssSortProvider, additionalTableColumns, this.sortableColumns);
 		initialize(dataList);
 	}
 
-	public DataBeanDataGridView(String id, List<T> dataList, IDynamicFormConfig<T> tableColumnsConfig, int tableSize, List<DataTableColumn<T>> additionalTableColumns, ICssProvider cssSortProvider) {
+	public DataBeanDataGridView(String id, List<T> dataList, IDynamicFormConfig<T> tableColumnsConfig, int tableSize, List<DataTableColumn<T,?>> additionalTableColumns, ICssProvider cssSortProvider) {
 		super(id);
 		setTableConfigurationValues(tableColumnsConfig, tableSize, cssSortProvider, additionalTableColumns, true);
 		initialize(dataList);
 	}
 	
-	private void setTableConfigurationValues(IDynamicFormConfig<T> columnsConfig, int tableSize, ICssProvider cssSortProvider, List<DataTableColumn<T>> additionalTableColumns, boolean sortableColumns) {
+	private void setTableConfigurationValues(IDynamicFormConfig<T> columnsConfig, int tableSize, ICssProvider cssSortProvider, List<DataTableColumn<T,?>> additionalTableColumns, boolean sortableColumns) {
 		setOutputMarkupId(true);
 		this.columnsConfig = columnsConfig;
 		this.tableSize = tableSize;
@@ -215,7 +216,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 			}
 		};
 		
-		for (final IMyStrobeColumn<T> column : dataTableColumns) {
+		for (final IMyStrobeColumn<T,?> column : dataTableColumns) {
 				
 			WebMarkupContainer item = new WebMarkupContainer(tableHeaders.newChildId());
 			WebMarkupContainer headerSort = null;
@@ -224,7 +225,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 				headerSort = new WebMarkupContainer(DATA_TABLE_HEADER_MARKUP_ID);
 				headerSort.setRenderBodyOnly(true);
 			} else {
-				propertiesSort.addSortableProperty(column.getSortProperty(), SortOrder.NONE);
+				propertiesSort.addSortableProperty(column.getSortProperty().toString(), SortOrder.NONE);
 //				headerSort = new AjaxFallbackOrderByLink(DATA_TABLE_HEADER_MARKUP_ID, column.getSortProperty(), propertiesSort, this.cssSortProvider) {
 //					
 //					private static final long serialVersionUID = -9165302627136687555L;
@@ -243,7 +244,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 					public void onComponentTag(Component component, ComponentTag tag)
 			        {
 				            super.onComponentTag(component, tag);
-				            ISortState sortState = propertiesSort.getSortState();
+				            ISortState<String> sortState = propertiesSort.getSortState();
 				            String cssClass = DataBeanDataGridView.this.cssSortProvider.getClassAttributeValue(sortState, column.getSortProperty());
 				            if(!StringUtil.isNullOrEmpty(cssClass))
 				                tag.append("class", cssClass, " ");
@@ -257,9 +258,9 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 
 					@Override
 					protected void onEvent(AjaxRequestTarget target) {
-						 ISortState state = propertiesSort.getSortState();
-					     SortOrder order = state.getPropertySortOrder(column.getSortProperty());
-					     state.setPropertySortOrder(column.getSortProperty(), nextSortOrder(order));
+						 ISortState<String> state = propertiesSort.getSortState();
+					     SortOrder order = state.getPropertySortOrder(column.getSortProperty().toString());
+					     state.setPropertySortOrder(column.getSortProperty().toString(), nextSortOrder(order));
 					     
 					     target.add(DataBeanDataGridView.this);
 						 onSortClick(target);
@@ -304,10 +305,10 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	 * 
 	 * @return List of data beans properties columns.
 	 */
-	protected List<IMyStrobeColumn<T>> buildTableColumns() {
+	protected List<IMyStrobeColumn<T,?>> buildTableColumns() {
 		
 		List<String> visibleColumns = this.columnsConfig.getVisibleColumnNames();
-		List<IMyStrobeColumn<T>> tableColumns = new ArrayList<IMyStrobeColumn<T>>(visibleColumns.size() + 1);
+		List<IMyStrobeColumn<T,?>> tableColumns = new ArrayList<IMyStrobeColumn<T,?>>(visibleColumns.size() + 1);
 		
 		//TODO we need another way to find type info - using generic superclass will only work for extending classes
 		Class<?> tClass = null;
@@ -367,13 +368,13 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 				width = columnProperties.get(IDynamicFormFieldConfig.Property.Width).toString();
 			}
 			
-			IMyStrobeColumn<T> column = new DataBeanPropertyColumn<T>(headerLabelModel, sortProperty, NamingHelper.getFieldName(columnName), alignRight, width);			
+			IMyStrobeColumn<T,?> column = new DataBeanPropertyColumn<T,String>(headerLabelModel, sortProperty, NamingHelper.getFieldName(columnName), alignRight, width);			
 			tableColumns.add(column); 
 		}
 		
 		//check for additional columns to add
 		if (this.additionalTableColumns != null) {
-			for (DataTableColumn<T> columnData : this.additionalTableColumns) {
+			for (DataTableColumn<T,?> columnData : this.additionalTableColumns) {
 				if (columnData.getColumnPosition() >= 0 && columnData.getColumnPosition() <= tableColumns.size()) {
 					tableColumns.add(columnData.getColumnPosition(), columnData.getColumnInfo());
 				} else if (columnData.getColumnPosition() < 0) {
@@ -417,6 +418,13 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 							target.appendJavaScript("selectTableRow('" + result.getMarkupId() + "' , '" + getSelectedRowCSSClassName() + "');");
 							onDataRowClick(target);
 						}
+						
+						@Override
+						protected void updateAjaxAttributes(org.apache.wicket.ajax.attributes.AjaxRequestAttributes attributes) {
+							super.updateAjaxAttributes(attributes);
+							attributes.setAllowDefault(true);
+							
+						};
 					});
 				}
 				
@@ -509,7 +517,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	 * @return Table rows count.
 	 */
 	public int getTableDataSize() {
-		return this.dataTableView != null ? this.dataTableView.getItemCount() : 0;
+		return this.dataTableView != null ? (int)this.dataTableView.getItemCount() : 0;
 	}
 	
 	
@@ -524,7 +532,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	 *
 	 * @param <T> 
 	 */
-	private class DataBeanPropertyColumn<T extends IDataBean> extends PropertyColumn<T> implements IMyStrobeColumn<T> {
+	private class DataBeanPropertyColumn<T extends IDataBean, S> extends PropertyColumn<T,S> implements IMyStrobeColumn<T,S> {
 
 		private static final long serialVersionUID = -8120184633999316727L;
 		
@@ -532,7 +540,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 		
 		private String width = null;
 		
-		public DataBeanPropertyColumn(IModel<String> displayModel, String sortProperty, String propertyExpression,
+		public DataBeanPropertyColumn(IModel<String> displayModel, S sortProperty, String propertyExpression,
 				boolean alignRight, String width) {
 			super(displayModel, sortProperty, propertyExpression);
 			this.alignRight = alignRight;

@@ -29,9 +29,12 @@ import net.mystrobe.client.dynamic.page.EditRecordModalPageCreator;
 import net.mystrobe.client.dynamic.page.ModalWindowUpdateMode;
 import net.mystrobe.client.dynamic.table.view.SimpleDataTableViewPanel;
 import net.mystrobe.client.error.DefaultErrorHandler;
+import net.mystrobe.client.ui.UICssResourceReference;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -201,6 +204,13 @@ public class DataTablePagePanel<T extends IDataBean> extends Panel {
 	protected void initialize() {
 		
 	}
+	
+	public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	}
+	
+	
 
 }
 

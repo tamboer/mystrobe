@@ -17,6 +17,9 @@
  */
  package net.mystrobe.client.dynamic.config;
 
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
+
 import net.mystrobe.client.WicketDSRuntimeException;
 
 /**
@@ -26,7 +29,7 @@ public class FieldValue<T> implements IFieldValue<T> {
 	
 	private static final long serialVersionUID = -7106446124148678014L;
 
-	private String label;
+	private IModel<String> labelModel;
 	
 	private T value;
 	
@@ -37,7 +40,6 @@ public class FieldValue<T> implements IFieldValue<T> {
 	}
 
 	public FieldValue(String label, T value, Comparable sortValue) {
-		super();
 		
 		if (value == null) {
 			throw new WicketDSRuntimeException("Value parameter can not be null");
@@ -47,13 +49,28 @@ public class FieldValue<T> implements IFieldValue<T> {
 			throw new WicketDSRuntimeException("Label parameter can not be null");
 		}
 		
-		this.label = label;
+		this.labelModel = Model.of(label);
+		this.value = value;
+		this.sortValue = sortValue;
+	}
+	
+	public FieldValue(IModel<String> labelModel, T value, Comparable sortValue) {
+		
+		if (value == null) {
+			throw new WicketDSRuntimeException("Value parameter can not be null");
+		}
+		
+		if (labelModel == null) {
+			throw new WicketDSRuntimeException("Label parameter can not be null");
+		}
+		
+		this.labelModel = labelModel;
 		this.value = value;
 		this.sortValue = sortValue;
 	}
 
 	public String getLabel() {
-		return label;
+		return labelModel.getObject();
 	}
 
 	public T getValue() {
@@ -65,7 +82,7 @@ public class FieldValue<T> implements IFieldValue<T> {
 	}
 
 	public void setLabel(String label) {
-		this.label = label;
+		this.labelModel = Model.of(label);
 	}
 	
 	public void setValue(T value) {
@@ -113,7 +130,10 @@ public class FieldValue<T> implements IFieldValue<T> {
 	public int hashCode() {
 		return this.getValue().hashCode();
 	}
-	
-	
+
+	@Override
+	public IModel<String> getLabelModel() {
+		return labelModel;
+	}
 }
 

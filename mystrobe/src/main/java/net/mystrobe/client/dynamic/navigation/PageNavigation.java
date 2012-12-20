@@ -48,6 +48,12 @@ public class PageNavigation implements Comparable<PageNavigation>, Serializable{
 	private String previousPageLastRowId;
 
 	
+	public PageNavigation(int pageNumber) {
+		this.pageNumber = pageNumber;
+		this.nextPageFirstRowId = null;
+		this.previousPageLastRowId = null;
+	}
+	
 	public PageNavigation(int pageNumber, String nextPageFirstRowId, String previousPageLastRowId) {
 		this.pageNumber = pageNumber;
 		this.nextPageFirstRowId = nextPageFirstRowId;

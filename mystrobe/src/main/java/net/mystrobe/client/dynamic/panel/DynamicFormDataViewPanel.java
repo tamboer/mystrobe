@@ -46,8 +46,11 @@ import net.mystrobe.client.dynamic.config.IFieldValue;
 import net.mystrobe.client.dynamic.page.AbstractSelectRecordModalPanel;
 import net.mystrobe.client.dynamic.page.SelectRecordModalPanel;
 import net.mystrobe.client.error.DefaultErrorHandler;
+import net.mystrobe.client.ui.UICssResourceReference;
 import net.mystrobe.client.util.StringUtil;
 
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -112,8 +115,6 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		super(id);
 		
 		setOutputMarkupId(true);
-		//add external css file reference
-		//add(CSSPackageResource.getHeaderContribution(DynamicFormDataViewPanel.class, "dynamicForm.css"));
 		
 		if (formConfig != null) {
 			formFieldsOnRow = formConfig.getNumberOfFieldsOnRow();
@@ -221,7 +222,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 			
 			if (formFieldPanel != null) {
 				formFieldPanel.disableFormFieldPanel();
-				formFieldPanel.setOutputMarkupId(true);
+				//formFieldPanel.setOutputMarkupId(true);
 				formInputFields.add(formFieldPanel);
 			}
 		}
@@ -520,6 +521,10 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		DefaultErrorHandler.handleErrors(this.getUpdateListener(), this, formFields);
 	}
 	
+	public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	}
 	
 }
 

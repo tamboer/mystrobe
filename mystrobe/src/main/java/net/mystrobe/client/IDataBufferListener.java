@@ -48,9 +48,30 @@ public interface IDataBufferListener<T extends IDataBean> {
 	 * @param bufferData all buffer data.
 	 * @param appendPosition Specify whether data was added at beginning, end or 
 	 * 				completely replaced in the. data buffer.
+	 * @param hasFirstRow Buffer contains first row
+	 * @param hasLastRow Buffer contains last row
+	 * @param deletedData Buffer changed as result of delete operation
 	 */
-	public void onDataBufferChanged(List<T> removedData, Map<String, T> removedRowsMap, List<T> newDataBuffer, 
+	public void onNewDataReceived(List<T> removedData, Map<String, T> removedRowsMap, List<T> newDataBuffer, 
 			AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow);
+	
+	
+	
+	/**
+	 * Data deleted call back method.<br/>
+	 * 
+	 * Method is called when ever data is deleted from current buffer.<br/>
+	 * 
+	 * Implementing classes should take appropriate actions.
+	 * 
+	 * @param removedRow removed data. 
+	 * @param dataBuffer all buffer data.
+	 * @param hasFirstRow Buffer contains first row
+	 * @param hasLastRow Buffer contains last row
+	 * @param deletedData Buffer changed as result of delete operation
+	 */
+	public void onDataDeleted(T removedRow, List<T> dataBuffer, 
+			boolean hasFirstRow, boolean hasLastRow, int removedRowBufferPosition);
 	
 	
 	/**
@@ -65,7 +86,7 @@ public interface IDataBufferListener<T extends IDataBean> {
 	 * @param appendPosition Specify whether data was added at beginning, end or 
 	 * 				completely replaced in the. data buffer.
 	 */
-	public void onDataBufferReplaced(List<T> newDataBuffer, Map<String, T> bufferRowIdsMap,
+	public void onDataReset(List<T> newDataBuffer, Map<String, T> bufferRowIdsMap,
 			boolean hasFirstRow, boolean hasLastRow);
 }
 

@@ -17,6 +17,7 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import net.mystrobe.client.ui.UICssResourceReference;
 import net.mystrobe.client.util.StringUtil;
 
 import org.apache.wicket.Component;
@@ -24,6 +25,8 @@ import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
@@ -119,6 +122,11 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 	
 	public void markAsNotValid() {
 		getFormComponent().setMetaData(ErrorKey.ERROR_KEY, getInputPropertyName());
+	}
+	
+	public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
 	}
 }
 

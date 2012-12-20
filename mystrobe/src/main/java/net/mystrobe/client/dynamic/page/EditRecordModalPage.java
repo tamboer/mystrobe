@@ -162,11 +162,5 @@ public class EditRecordModalPage<T extends IDataBean> extends WebPage {
 	    	dataViewPanel.editRecord();
 	    }
 	}
-	
-//	@Override
-//    public void renderHead(IHeaderResponse response) {
-//        response.renderCSSReference("http://sc.tvh.com/css/tvh-webapp.css");
-//    }
-	
 }
 

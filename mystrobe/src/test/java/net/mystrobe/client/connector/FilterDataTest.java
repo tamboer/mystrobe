@@ -118,6 +118,19 @@ public class FilterDataTest {
 			public void setFormat(String format) {
 				
 			}
+
+			@Override
+			public boolean isRemoveOnBufferRecordReposition() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public void setRemoveOnBufferRecordReposition(
+					boolean clearOnBufferRecordReposition) {
+				// TODO Auto-generated method stub
+				
+			}
 		});
 		return filters;
 	}

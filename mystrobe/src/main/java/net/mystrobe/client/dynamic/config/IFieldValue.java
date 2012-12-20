@@ -19,6 +19,8 @@
 
 import java.io.Serializable;
 
+import org.apache.wicket.model.IModel;
+
 /**
  * Interface used for values that will make up a 
  *  drop down list, radio buttons. 
@@ -33,6 +35,8 @@ public interface IFieldValue<T> extends Serializable, Comparable<IFieldValue<T>>
 	public T getValue();
 	
 	public String getLabel();
+	
+	public IModel<String> getLabelModel();
 	
 	public Comparable getSortValue();
 }

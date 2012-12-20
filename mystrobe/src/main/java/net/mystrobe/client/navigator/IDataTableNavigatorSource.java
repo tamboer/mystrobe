@@ -56,6 +56,18 @@ public interface IDataTableNavigatorSource<T extends IDataBean> extends LinkSour
 	
 
 	/**
+	 * Reload current navigator page.
+	 */
+	public void reloadCurrentPage();
+	
+	/**
+	 * Navigate next till last page or page with new record.
+	 * 
+	 * @param newRecordId
+	 */
+	public void goToPageWithRecord(String newRecordId);
+	
+	/**
 	 * Set navigation listener.
 	 * 
 	 * @param navigatorListener Navigation listener instance.

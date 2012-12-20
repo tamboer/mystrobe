@@ -19,7 +19,7 @@ package net.mystrobe.client.dynamic.table.view;
 
 import org.apache.wicket.behavior.Behavior;
 
-public abstract class MyStrobeColumn<T> implements IMyStrobeColumn<T>{
+public abstract class MyStrobeColumn<T,S> implements IMyStrobeColumn<T,S>{
 
 	@Override
 	public Behavior[] getHeaderBehaviors() {

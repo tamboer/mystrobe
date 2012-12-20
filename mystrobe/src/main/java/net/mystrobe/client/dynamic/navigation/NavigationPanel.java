@@ -24,7 +24,10 @@ import net.mystrobe.client.INavigationSource;
 import net.mystrobe.client.IStateCallback;
 import net.mystrobe.client.IStateSource;
 import net.mystrobe.client.UpdateStates;
+import net.mystrobe.client.ui.UICssResourceReference;
 
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -183,4 +186,9 @@ public class NavigationPanel extends Panel implements INavigationSource, IStateC
         }
          
     }
+    
+    public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	 }
 }

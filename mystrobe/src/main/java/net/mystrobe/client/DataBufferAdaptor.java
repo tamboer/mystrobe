@@ -59,10 +59,14 @@ public abstract class DataBufferAdaptor<T extends IDataBean> extends FilteredDat
 	 * @param appendPosition append position.
 	 */
 	@Override
-	protected void publishOnDataBufferChanged(List<T> removedData,  Map<String, T> removedRowsMap, AppendPosition appendPosition) {
+	protected void publishOnDataBufferChanged(List<T> removedData,  Map<String, T> removedRowsMap, 
+			AppendPosition appendPosition) {
+		
 		super.publishOnDataBufferChanged(removedData, removedRowsMap, appendPosition);
+		
 		for (IDataBufferListener<T> dataBufferListener : this.dataBufferListeners) {
-			dataBufferListener.onDataBufferChanged(removedData, removedRowsMap, this.dataBuffer.getDataList(), appendPosition, this.hasFirstRow, this.hasLastRow);
+			dataBufferListener.onNewDataReceived(removedData, removedRowsMap, 
+					this.dataBuffer.getDataList(), appendPosition, this.hasFirstRow, this.hasLastRow);
 		}
 	}
 	
@@ -73,14 +77,25 @@ public abstract class DataBufferAdaptor<T extends IDataBean> extends FilteredDat
 	 */
 	@Override
 	protected void publishOnDataBufferReplaced() {
+		
 		super.publishOnDataBufferReplaced();
+		
 		Map<String, T> dataRowIdsMap = new HashMap<String, T>();
 		for (T dataBean : dataBuffer.getDataList()) {
 			dataRowIdsMap.put(dataBean.getRowId(), dataBean);
 		}
 		
 		for (IDataBufferListener<T> dataBufferListener : this.dataBufferListeners) {
-			dataBufferListener.onDataBufferReplaced(this.dataBuffer.getDataList(), dataRowIdsMap, this.hasFirstRow, this.hasLastRow());
+			dataBufferListener.onDataReset(this.dataBuffer.getDataList(), dataRowIdsMap,
+					this.hasFirstRow, this.hasLastRow());
+		}
+	}
+	
+	protected void publishDataRowRemoved(T removedRow, int removedRowPosition) {
+		
+		for (IDataBufferListener<T> dataBufferListener : this.dataBufferListeners) {
+			dataBufferListener.onDataDeleted(removedRow, this.dataBuffer.getDataList(), 
+					this.hasFirstRow, this.hasLastRow, removedRowPosition);
 		}
 	}
 

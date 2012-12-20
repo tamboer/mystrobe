@@ -41,12 +41,12 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 	/**
 	 * Data table navigation listeners 
 	 */
-	protected List<IDataTableNavigatorSource<T>> tableNavigationSources = new ArrayList<IDataTableNavigatorSource<T>>();
+	protected List<IDataTableNavigatorSource<T>> tableNavigationSources = new ArrayList<IDataTableNavigatorSource<T>>(1);
 	
 	/**
 	 * Data table data listeners
 	 */
-	protected List<IDataTableDataListener<T>>   tableDataListeners = new ArrayList<IDataTableDataListener<T>>();
+	protected List<IDataTableDataListener<T>>   tableDataListeners = new ArrayList<IDataTableDataListener<T>>(1);
 	
 	/**
 	 * Create list of data from data buffer <tt>startPos</tt> to <tt>endPos</tt>
@@ -99,7 +99,14 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 		}
 	}
 	
+	@Override
 	public boolean nextPageData(IDataTableNavigatorSource<T> navigationSource,  String rowId, int pageSize,  int pageNumber, boolean repositionRequest) throws IllegalArgumentException {
+		return nextPageDataForRecord(navigationSource,rowId,pageSize,pageNumber, repositionRequest, null);
+	}
+	
+	@Override
+	public boolean nextPageDataForRecord(IDataTableNavigatorSource<T> navigationSource, String rowId, int pageSize, int pageNumber,
+			boolean repositionRequest, String recordRowId)	throws IllegalArgumentException {
 		
 		getLog().debug("Next page data, rowId: " + rowId + ", pageSize: " + pageSize);
 		
@@ -107,26 +114,28 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 		int currentDataBufferPosition = -1;
 		if (rowId != null) {
 			currentDataBufferPosition = this.dataBuffer.getRowPosition(rowId);
-			if (currentDataBufferPosition < 0) {
+			if (currentDataBufferPosition < 0 && this.isDataBufferEnabled) {
 				throw new IllegalArgumentException("Can not find row id:" + rowId );
 			}
 		}
 		 
-		int startPos = currentDataBufferPosition + 1;
+		int startPos = this.isDataBufferEnabled ? currentDataBufferPosition + 1 : this.dataBuffer.size();
 		int endPos = startPos + pageSize;
 		
-		if (this.canMove(endPos) || this.hasLastRow) {
+		if (this.isDataBufferEnabled && (this.canMove(endPos-1) || this.hasLastRow)) {
 			dataList = buildDataList(startPos, endPos);
 		} else {
 			
-			while (!(this.canMove(endPos) || this.hasLastRow)) {
-				
+			do {
 				//request next data 
-		        requestData(DAOCommands.sendRows.name(), this.lastNextFetchedRowId, this.getSchema().getBatchSize(), false, AppendPosition.END);
+				String startRowId = this.isDataBufferEnabled ? this.lastNextFetchedRowId : rowId;
+				long batchSize = this.isDataBufferEnabled ? this.getSchema().getBatchSize() : pageSize;
+				requestData(DAOCommands.sendRows.name(), startRowId, batchSize, false, AppendPosition.END, true);
 		        
-		        startPos = this.dataBuffer.getRowPosition(rowId) + 1;
+		        startPos = this.isDataBufferEnabled ? this.dataBuffer.getRowPosition(rowId) + 1 : 0;
 		        endPos = startPos + pageSize;
-			}
+		    
+			} while (!(this.canMove(endPos-1) || this.hasLastRow));
 	        
 			dataList = buildDataList(startPos, endPos);
 		}
@@ -144,21 +153,37 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 		}
 		
 		//info all other navigator(s) sources of change
-		if (!repositionRequest) {
+		if (!repositionRequest && this.isDataBufferEnabled) {
 			updateDataNavigationChanged(navigationSource, DataTableNavigationDirection.Next, firstRowId, pageSize, pageNumber);
 		}
 		
-		return true;
+		if (recordRowId != null) {
+			boolean recordFound = false;
+			if (dataList != null && !dataList.isEmpty()) {
+				for (T record : dataList) {
+					if (recordRowId.equals(record.getRowId())) {
+						recordFound = true;
+						break;
+					}
+				}
+			}
+			return recordFound; 
+		} else {
+			return true;
+		}
 	}
 	
 	
-	public boolean previousPageData(IDataTableNavigatorSource<T> navigationSource, String rowId, int pageSize, int pageNumber, boolean repositionRequest) throws IllegalArgumentException {
+	public boolean previousPageData(IDataTableNavigatorSource<T> navigationSource, String rowId,
+			int pageSize, int pageNumber, boolean repositionRequest) throws IllegalArgumentException {
 		
-		getLog().debug("Previous page data, rowId: " + rowId + ", pageSize: " + pageSize);
+		if (getLog().isDebugEnabled()) {
+			getLog().debug("Previous page data, rowId: " + rowId + ", pageSize: " + pageSize);
+		}
 		
 		int currentDataBufferPosition = dataBuffer.getRowPosition(rowId);
 		
-		if (currentDataBufferPosition < 0) {
+		if (currentDataBufferPosition < 0 && this.isDataBufferEnabled) {
 			throw new IllegalArgumentException("Can not find row id:" + rowId );
 		}
 		
@@ -167,20 +192,22 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 		//start buffer position
 		int startPos = currentDataBufferPosition - pageSize;
 		
-		if (canMove(startPos) || hasFirstRow) {
+		if ( this.isDataBufferEnabled && ( canMove(startPos) || hasFirstRow )) {
 			startPos = Math.max(0, startPos);
 			dataList = buildDataList(startPos, startPos + pageSize);
 		} else {
 			
-			while (!canMove(startPos) && !hasFirstRow) {
+			do {
 				
 				//request previous data
-				requestData(DAOCommands.sendRows.name(), this.lastPreviousFetchedRowId, getSchema().getBatchSize() * -1, false, AppendPosition.BEGINING);
+				String startRowId = this.isDataBufferEnabled ? this.lastPreviousFetchedRowId : rowId;
+				long batchSize = this.isDataBufferEnabled ? this.getSchema().getBatchSize() : pageSize;
+				requestData(DAOCommands.sendRows.name(), startRowId, batchSize * -1, false, AppendPosition.BEGINING, true);
 				
 				//find current position in the data buffer as it might have changed
-				currentDataBufferPosition = dataBuffer.getRowPosition(rowId);
+				currentDataBufferPosition = this.isDataBufferEnabled ? dataBuffer.getRowPosition(rowId) : dataBuffer.size();
 				startPos = currentDataBufferPosition - pageSize;
-		    }
+		    } while (!canMove(startPos) && !hasFirstRow);
 			
 			startPos = Math.max(0, startPos);
 			dataList = buildDataList(startPos, startPos + pageSize);
@@ -199,7 +226,7 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 		}
 		
 		//info all other navigator(s) sources of change
-		if (!repositionRequest) {
+		if (!repositionRequest && this.isDataBufferEnabled ) {
 			updateDataNavigationChanged(navigationSource, DataTableNavigationDirection.Previous, firstRowId, pageSize, pageNumber);
 		}
 		
@@ -208,10 +235,21 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 	
 	
 	public void addDataTableNavigationSource(IDataTableNavigatorSource<T> source) {
+		
+		if (!this.tableNavigationSources.isEmpty() && !this.isDataBufferEnabled ){
+			throw new IllegalStateException("Data source can not support multiple navigators.\n" +
+					"Enable data caching before setting navigators !!!");
+		}
+		
 		this.tableNavigationSources.add(source);
 		
+		if (!this.isDataBufferEnabled) {
+			//set batch size as navigator page size when cache is not used
+			this.schema.setBatchSize(source.getPageSize());
+		}
+		
 		if (this.lastDAOResponse != null || (offlineMode && this.dataBuffer.size() > 0  )  ){
-			source.onDataBufferReplaced(this.dataBuffer.getDataList(), null, hasFirstRow, hasLastRow);
+			source.onDataReset(this.dataBuffer.getDataList(), null, hasFirstRow, hasLastRow);
 		}
 	}
 	
@@ -401,5 +439,12 @@ public abstract class DataTableNavigationAdaptor<T extends IDataBean> extends Da
 	public void removeDataTableDataListener(IDataTableDataListener<T> dataListener) {
 		tableDataListeners.remove(dataListener);
 	}
+	
+	 protected void repositionToNewRecord(String newRecordRowId) {
+    	if (this.tableNavigationSources!= null &&
+    			this.tableNavigationSources.size() >=1) {
+    		this.tableNavigationSources.get(0).goToPageWithRecord(newRecordRowId);
+    	}
+    }
 }
 
