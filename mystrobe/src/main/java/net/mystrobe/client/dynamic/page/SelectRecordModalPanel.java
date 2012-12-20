@@ -28,10 +28,12 @@ import net.mystrobe.client.dynamic.navigation.DataTablePagesNavigationPanel;
 import net.mystrobe.client.dynamic.table.view.SimpleDataTableViewPanel;
 import net.mystrobe.client.util.StringUtil;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.model.ResourceModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +61,6 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 	
 	protected DataTablePagesNavigationPanel<T> dataTableNavigator;
 	
-	protected AjaxButton okBtn, cancelBtn; 
 	protected AjaxLink<T> okLink, cancelLink; 
 	
 	protected int tableSize = 10;
@@ -101,6 +102,8 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 			throw new IllegalArgumentException("Data object and tables config can not be null.");
 		}
 		
+		add(getTopPanel());
+		
 		dataTablePanel = new SimpleDataTableViewPanel<T>("dataTableId", this.tableColumnsConfig, tableSize) {
 
 			private static final long serialVersionUID = 3411447515495271953L;
@@ -109,6 +112,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 			protected void onSortClick(AjaxRequestTarget target) {
 				super.onSortClick(target);
 				target.add(dataTableNavigator);
+				onTableRefresh(target);
 			}
 			
 
@@ -118,8 +122,10 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 				target.add(dataTableNavigator);
 				target.add(this);
 				selectedDataChanged(target);
+				onTableRefresh(target);
 			}
 		};
+		dataTablePanel.setOutputMarkupPlaceholderTag(true);
 		ComponentLinker.bindDataTableData((IDataTableDataSource<T>)dataObject, dataTablePanel);
 		ComponentLinker.bindSort(dataTablePanel, dataObject);
 		
@@ -131,6 +137,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 			public void onRefreshContent(AjaxRequestTarget target) {
 				super.onRefreshContent(target);
 				target.add(dataTablePanel);
+				onTableRefresh(target);
 			}
 		};
 		
@@ -150,7 +157,13 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 				SelectRecordModalPanel.this.selectedData = SelectRecordModalPanel.this.dataObject.getData();  
 				SelectRecordModalPanel.this.modalWindow.close(target);	
 			}
+			
+			@Override
+			public boolean isEnabled() {
+				return dataTablePanel.getTableDataSize() > 0;
+			}
 		};
+		okLink.setOutputMarkupId(true);
 		
 		cancelLink = new AjaxLink<T>("cancelLinkId") {
 
@@ -179,7 +192,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 	}
 	
 	protected void selectedDataChanged(AjaxRequestTarget target) {
-		
+		onTableRefresh(target);
 	}
 
 	/*
@@ -199,8 +212,15 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 	public IDataBean getSelectedData() {
 		return this.selectedData;
 	}
-
 	
+	protected Component getTopPanel() {
+		WebMarkupContainer topPanel = new WebMarkupContainer("topPanel");
+		topPanel.setVisible(false);
+		return topPanel;
+	}
 	
+	public void onTableRefresh(AjaxRequestTarget target) {
+	
+	}
 }
 

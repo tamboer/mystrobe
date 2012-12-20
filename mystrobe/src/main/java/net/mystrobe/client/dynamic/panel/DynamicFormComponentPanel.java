@@ -40,11 +40,11 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 
 	private static final long serialVersionUID = 534266307888283782L;
 	
-	protected static final String INVALID_STYLE_CLASS = "invalid";
+	public static final String INVALID_STYLE_CLASS = "invalid";
 
-	protected static final String REQUIRED_STYLE_CLASS = "required";
+	public static final String REQUIRED_STYLE_CLASS = "required";
 
-	protected static final String STYLE_CLASS_ATTRIBUTE_NAME = "class";
+	public static final String STYLE_CLASS_ATTRIBUTE_NAME = "class";
 	
 	protected String propertyName;
 	
@@ -81,7 +81,7 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 				}
 				
 				if (!((FormComponent<?>)component).isValid() || backEndError) {
-					tag.addBehavior(new AttributeAppender(STYLE_CLASS_ATTRIBUTE_NAME, true, Model.of(INVALID_STYLE_CLASS), " "));
+					tag.addBehavior(new AttributeAppender(STYLE_CLASS_ATTRIBUTE_NAME, Model.of(INVALID_STYLE_CLASS), " "));
 				}
 			}
 		}

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.mystrobe.client.connector.DAOCommands;
 import net.mystrobe.client.connector.DAORequest;
@@ -38,7 +39,9 @@ import net.mystrobe.client.connector.IDSRequest;
 import net.mystrobe.client.connector.IDSResponse;
 import net.mystrobe.client.connector.IDaoRowList;
 import net.mystrobe.client.connector.DAORequest.StartRowMarker;
+import net.mystrobe.client.connector.LocalizationProperties;
 import net.mystrobe.client.connector.messages.IConnectorResponseMessages;
+import net.mystrobe.client.connector.quarixbackend.json.DAOResponse;
 import net.mystrobe.client.connector.quarixbackend.json.Message;
 import net.mystrobe.client.connector.quarixbackend.json.ResponseOption;
 import net.mystrobe.client.connector.transaction.IDSRequestTransactionManager;
@@ -375,6 +378,33 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 
 		moveToRow(0, false);
 	}
+	
+	/**
+	 * Method clears data buffer.
+	 */
+	public void clearDataBuffer() {
+		if (isLocked()) {
+			return;
+		}
+		
+		this.dataBuffer = new IDaoRowList<T>(Collections.<IDAORow<T>>emptyList());
+		this.cursorPosition = -1;
+
+		this.hasFirstRow = true;
+		this.hasLastRow = true;
+		
+		this.lastNextFetchedRowId = null;
+		this.lastPreviousFetchedRowId = null;
+		
+		publishOnDataBufferReplaced();
+		
+		cursorPosition = -1;
+		cursorPreviousPosition = -1;
+		
+		this.currentData = null;
+
+		moveToRow(0, false);
+	}
 
 	/**
 	 * Moves to <tt>rowPosition</tt> if possible and updates cursor state.
@@ -414,13 +444,6 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 		publishDataAvailable(this.dataBuffer.get(this.cursorPosition).getRowData());
 
 		return true;
-	}
-
-	/**
-	 * Resize cache so that it does not exceed
-	 */
-	protected void clearBufferCache() {
-
 	}
 
 	/**
@@ -641,7 +664,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 
 		while (dataListenerIterator.hasNext()) {
 			try {
-				dataListenerIterator.next().dataAvailable(data);
+				dataListenerIterator.next().dataAvailable(data, this.cursorState);
 			} catch (Exception ex) {
 				getLog().warn(ex.getMessage(), ex);
 			}

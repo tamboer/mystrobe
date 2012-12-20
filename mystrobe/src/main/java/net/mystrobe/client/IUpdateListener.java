@@ -36,6 +36,18 @@ public interface IUpdateListener<T extends IDataBean> extends IStateSource, ICon
 	public void createData(boolean copyData);
 	
 	/**
+	 * Create new data row and  fill it with info from parameter.
+	 * 
+	 * @param newData Data to put in new row. 
+	 */
+	public void createData(T newData);
+	
+	/**
+	 * Create new data empty data.
+	 */
+	public void createData(); 
+	
+	/**
 	 * Delete record.
 	 *  
 	 * @param dataType

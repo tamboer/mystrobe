@@ -414,10 +414,13 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 					}
 					
 					if (visiblePagesCount < (nextVisiblePages.size() + previousVisiblePages.size())) {
-						int previousPagesSize =  visiblePagesCount - nextVisiblePages.size();
-						previousVisiblePages = previousVisiblePages.tailSet(new PageNavigation(currentPageNumber - previousPagesSize, null, null), true);
+						if (DataTableNavigationState.FirstPage.equals(newNavigationState)) {
+							nextVisiblePages = nextVisiblePages.headSet(new PageNavigation(visiblePagesCount, null, null), true);
+						} else if (!previousVisiblePages.isEmpty()) {
+							int previousPagesSize =  visiblePagesCount - nextVisiblePages.size();
+							previousVisiblePages = previousVisiblePages.tailSet(new PageNavigation(currentPageNumber - previousPagesSize, null, null), true);
+						}
 					}
-					
 					displaySamePageNumbers = true;
 				}
 			}

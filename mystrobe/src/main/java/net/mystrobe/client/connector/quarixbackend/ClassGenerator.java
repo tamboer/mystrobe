@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +79,10 @@ public class ClassGenerator {
 	private static final StringTemplateGroup TEMPLATES = new StringTemplateGroup("SourceGeneratorTemplates", TEMPLATES_DIR, DefaultTemplateLexer.class);
     
 	private static String PKG_POSTFIX = "datatypes";
+	
+	private static final String TEST_PACKAGE = "databeans.test";
 
-    private static String PKG_NAME = "";//"com.tvh.prodsearch.databeans";// ClassGenerator.class.getPackage()
+    //private static String PKG_NAME = "";//"com.tvh.prodsearch.databeans";// ClassGenerator.class.getPackage()
                                                                     // .getName()
                                                                     // + "." +
                                                                     // PKG_POSTFIX;
@@ -88,7 +91,11 @@ public class ClassGenerator {
     public static final String DATA_OBJECT_CLASS_NAME_SUFFIX = "DataObject";
     public static final String DAO_SCHEMA_CLASS_NAME_SUFFIX = "Schema";
     
-    private static String HOST_FOLDER = System.getProperty("user.dir")
+    public static final String BEANS_PACKAGE_NAME = "beansPkg";
+    public static final String DAOS_PACKAGE_NAME = "daoPkg";
+    public static final String META_PACKAGE_NAME = "metaPkg";
+    
+    private static String destinationFolder = System.getProperty("user.dir")
             + File.separator + "src" + File.separator + PKG_POSTFIX;
     
     private static Logger logger = LoggerFactory.getLogger(ClassGenerator.class);
@@ -99,64 +106,7 @@ public class ClassGenerator {
 
     private static String doName;
 
-    public static Class<?> findDSSchemaClass(String urn) {
-
-        Class<?>[] classes = null;
-        try {
-            classes = getClasses(PKG_NAME);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-
-        if (classes == null) {
-            return null;
-        }
-
-        for (Class<?> clazz : classes) {
-            GeneratorMeta annotation = clazz.getAnnotation(GeneratorMeta.class);
-            if (annotation != null && annotation.urn().equals(urn)) {
-                if (clazz.getSuperclass().equals(DSSchema.class)) {
-                    return (Class<?>) clazz;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public static Class<?> findDataTypeClass(String dsId, String daoId) {
-
-        Class<?>[] classes = null;
-        try {
-            classes = getClasses(PKG_NAME);
-        } catch (ClassNotFoundException e) {
-            logger.error( "", e);
-            return null;
-        }
-        System.err.println("Classes length " + classes.length
-                + " Package name:" + PKG_NAME);
-
-        if (classes == null) {
-            return null;
-        }
-
-        for (Class<?> clazz : classes) {
-            GeneratorMeta annotation = clazz.getAnnotation(GeneratorMeta.class);
-            if (annotation != null && annotation.dsId().equals(dsId)
-                    && annotation.daoId().equals(daoId)) {
-                Class<?>[] interfaces = clazz.getInterfaces();
-                for (Class<?> interfce : interfaces) {
-                    if (interfce.equals(IDataBean.class)) {
-                        return (Class<?>) clazz;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-    
-    /**
+   /**
      * Generate data object class name prefixes using user input values 
      *  for arguments prefix or daoId. 
      * 
@@ -252,27 +202,109 @@ public class ClassGenerator {
 
 		return alreadyGeneratedDAOsMap;
     }
+   
+    /**
+     * Generate package folders for the new files.<br/>
+     * 
+     * <p>Package names can be fully specified for each class using -daoPkg/-beansPkg/metaPkg or
+     *  the -pkg option can be used as prefix for all other package names.<p/>
+     *  
+     * When no package option is specified the default test package is used.       
+     * 
+     * 
+     * @param pckName
+     * @param packageNames
+     * @param dstFolder
+     * @return
+     */
+    public static Map<String, String> generatePackageFolders(String pckName, Map<String, String> packageNames, String dstFolder) {
+    	
+    	File dstFolderFile = new File(!StringUtil.isNullOrEmpty(dstFolder) ? dstFolder : destinationFolder );	
+        
+    	String destinationFolderPath = null;
+    	if (!dstFolderFile.exists() && !dstFolderFile.mkdirs()) {
+            logger.error("Unable to create destination folder: " + dstFolder
+                    + " exiting");
+            System.exit(1);
+        } else {
+        	destinationFolderPath = dstFolderFile.getAbsolutePath();
+        }
+    	
+    	Map<String, String> filePaths = new HashMap<String, String>(3);
+    	
+    	String dsSchemaPath = null;
+    	
+        if (packageNames.containsKey(META_PACKAGE_NAME)) {
+        	if (!StringUtil.isNullOrEmpty(pckName)) {
+        		String newPackageName = pckName + "." + packageNames.get(META_PACKAGE_NAME); 
+        		packageNames.put(META_PACKAGE_NAME, newPackageName);
+        		dsSchemaPath = createPackage(newPackageName, destinationFolderPath);
+        	} else {
+        		dsSchemaPath = createPackage(packageNames.get(META_PACKAGE_NAME), destinationFolderPath);
+        	}
+        } else if (!StringUtil.isNullOrEmpty(pckName)) {
+        	dsSchemaPath = createPackage(pckName, destinationFolderPath);
+        	packageNames.put(META_PACKAGE_NAME, pckName);
+        } else {
+        	logger.debug("Please specify generic or specific (bean, dao, meta) package name(s).");
+        	dsSchemaPath = createPackage(TEST_PACKAGE, destinationFolderPath);
+        	packageNames.put(META_PACKAGE_NAME, TEST_PACKAGE);
+		}
+        filePaths.put(META_PACKAGE_NAME, dsSchemaPath);
+        
+        String beansPath = null;
+        if (packageNames.containsKey(BEANS_PACKAGE_NAME)) {
+        	if (!StringUtil.isNullOrEmpty(pckName)) {
+        		String newPackageName = pckName + "." + packageNames.get(BEANS_PACKAGE_NAME); 
+        		packageNames.put(BEANS_PACKAGE_NAME, newPackageName);
+        		beansPath = createPackage(newPackageName, destinationFolderPath);
+        	} else {
+        		beansPath = createPackage(packageNames.get(BEANS_PACKAGE_NAME), destinationFolderPath);
+        	}
+        } else if (!StringUtil.isNullOrEmpty(pckName)) {
+        	beansPath = createPackage(pckName, destinationFolderPath);
+        	packageNames.put(BEANS_PACKAGE_NAME, pckName);
+        } else {
+        	logger.debug("Please specify generic or specific (bean, dao, meta) package name(s).");
+        	beansPath = createPackage(TEST_PACKAGE, destinationFolderPath);
+        	packageNames.put(BEANS_PACKAGE_NAME, TEST_PACKAGE);
+        }
+        filePaths.put(BEANS_PACKAGE_NAME, beansPath);
+        
+        String daoPath = null;
+        if (packageNames.containsKey(DAOS_PACKAGE_NAME)) {
+        	if (!StringUtil.isNullOrEmpty(pckName)) {
+        		String newPackageName = pckName + "." + packageNames.get(DAOS_PACKAGE_NAME); 
+        		packageNames.put(DAOS_PACKAGE_NAME, newPackageName);
+        		daoPath = createPackage(newPackageName, destinationFolderPath);
+        	} else {
+        		daoPath = createPackage(packageNames.get(DAOS_PACKAGE_NAME), destinationFolderPath);
+        	}
+        } else if (!StringUtil.isNullOrEmpty(pckName)) {
+        	daoPath = createPackage(pckName, destinationFolderPath);
+        	packageNames.put(DAOS_PACKAGE_NAME, pckName);
+        
+        } else {
+        	logger.debug("Please specify generic or specific (bean, dao, meta) package name(s).");
+        	daoPath = createPackage(TEST_PACKAGE, destinationFolderPath);
+        	packageNames.put(DAOS_PACKAGE_NAME, TEST_PACKAGE);
+        }
+        filePaths.put(DAOS_PACKAGE_NAME, daoPath);
+        
+        return filePaths;
+        
+    }
 
-    public static void generate(IConfig config, String dstFolder,
-            String pkgName, String appName, String dsName, 
-            String dsSchemaClassNameParameterPrefix, Map<String, String> daoIdsClassNamesPrefixMap,
+    public static void generate(IConfig config, Map<String, String> packageNames, Map<String, String> filePaths,
+    		String appName, String dsName, String dsSchemaClassNameParameterPrefix, 
+    		Map<String, String> daoIdsClassNamesPrefixMap,
             GeneratedFilesInfo generatedFilesInfo) {
 
         ClassGenerator.appName = appName;
         ClassGenerator.dsName = dsName;
-        if (pkgName != null)
-            ClassGenerator.PKG_NAME = pkgName;
-
+        
         IServerConnector srvConnector = new QuarixServerConnector(config);
         IAppConnector appConnector = srvConnector.getAppConnector(appName);
-
-        File dstFolderFile = new File(dstFolder);	
-        if (!dstFolderFile.exists() && !dstFolderFile.mkdirs()) {
-            logger.error("Unable to create destination folder: " + dstFolder
-                    + " exiting");
-            System.exit(1);
-        } else
-            HOST_FOLDER = dstFolderFile.getAbsolutePath();
 
         IDSSchema dsSchema = appConnector.getSchema(dsName);
         if (dsSchema == null) {
@@ -280,8 +312,6 @@ public class ClassGenerator {
             System.exit(1);
             return;
         }
-
-        String path = createPackage(PKG_NAME);
 
         String dsSchemaClassNameGeneratedPrefix = dsSchemaClassNameParameterPrefix == null ? generateDSSchemaClassNamePrefix(dsSchema)
         		: dsSchemaClassNameParameterPrefix;
@@ -298,7 +328,7 @@ public class ClassGenerator {
         	dsSchemaSourceFileInfo  = generatedFilesInfo.getDatasetSchemaGeneratedFilesMap().get(dsSchema.getId());
         }
         
-        String dsClassName = generateDSSchema(path, dsSchema, dsSchemaClassNameGeneratedPrefix, dataObjectClassNamesGeneratedPrefixes, dsSchemaSourceFileInfo, alreadyGeneratedDAOIds);
+        String dsClassName = generateDSSchema(filePaths.get(META_PACKAGE_NAME), packageNames, dsSchema, dsSchemaClassNameGeneratedPrefix, dataObjectClassNamesGeneratedPrefixes, dsSchemaSourceFileInfo, alreadyGeneratedDAOIds);
 
         Enumeration<String> enu = dsSchema.getDataObjectIds();
         
@@ -335,90 +365,91 @@ public class ClassGenerator {
             }
             
             // generate DAO Schema
-            generateDAOSchema(path, dsSchema, daoSchema,
+            generateDAOSchema(filePaths.get(META_PACKAGE_NAME), packageNames, dsSchema, daoSchema,
                     dsClassName, dataObjectClassNamesPrefix, daoSchemaSourceFileInfo);
 
             // generate data object class
-            generateDataObject(path, dsSchema, daoSchema,
+            generateDataObject(filePaths.get(DAOS_PACKAGE_NAME), packageNames, dsSchema, daoSchema,
                     dsClassName, dataObjectClassNamesPrefix, dataObjectSourceFileInfo);
 
             // generate data type class
-            generateDataType(path, dsSchema, daoSchema, dataObjectClassNamesPrefix, dataTypeSourceFileInfo);
+            generateDataType(filePaths.get(BEANS_PACKAGE_NAME), packageNames, dsSchema, daoSchema, dataObjectClassNamesPrefix, dataTypeSourceFileInfo);
         }
     }
 
-    private static String generateDSSchema(String path, IDSSchema dsSchema, String dsSchemaClassNamePrefix,
+    private static String generateDSSchema(String filePath, Map<String, String> packageNames, IDSSchema dsSchema, String dsSchemaClassNamePrefix,
     		Map<String, String> dataObjectClassNamesGeneratedPrefixes, SourceFileInfo dsSchemaSourceFileInfo, Map<String, SourceFileInfo> alreadyGeneratedDaos) {
 
         String dsSchemaclassName = dsSchemaClassNamePrefix + DS_SCHEMA_CLASS_NAME_SUFFIX;
 
         // checking the lock mechanism
-        if (isLocked(dsSchemaclassName)) {
-            return dsSchemaclassName;
-        }
+//        if (isLocked(dsSchemaclassName)) {
+//            return dsSchemaclassName;
+//        }
 
         // generate the class body
         String content = generateDSSchemaClassFile(dsSchemaclassName, dsSchema,
-        		dsSchemaClassNamePrefix, dataObjectClassNamesGeneratedPrefixes, dsSchemaSourceFileInfo, alreadyGeneratedDaos );
+        		dsSchemaClassNamePrefix, dataObjectClassNamesGeneratedPrefixes,
+        		dsSchemaSourceFileInfo, alreadyGeneratedDaos, packageNames );
 
-        writeClassFile(path, dsSchemaclassName + ".java", content);
+        writeClassFile(filePath, dsSchemaclassName + ".java", content);
         
         return dsSchemaclassName;
     }
 
-    private static void generateDAOSchema(String path, IDSSchema dsSchema,
+    private static void generateDAOSchema(String filePath, Map<String, String> packageNames, IDSSchema dsSchema,
             IDAOSchema daoSchema, String dsClassName, String classNamePrefix,
             SourceFileInfo sourceFileInfo) {
 
         String className = generateDAOSchemaClassName(classNamePrefix);
 
         // checking the lock mechanism
-        if (isLocked(className)) {
-            return;
-        }
+//        if (isLocked(className)) {
+//            return;
+//        }
 
         // generate the class body
         String content = generateDAOSchemaClassFile(className, dsSchema,
-                daoSchema, dsClassName, classNamePrefix, sourceFileInfo);
+                daoSchema, dsClassName, classNamePrefix, sourceFileInfo, packageNames);
 
         // writing out to file
-        writeClassFile(path, className + ".java" , content);
+        writeClassFile(filePath, className + ".java" , content);
 
     }
 
-    private static void generateDataObject(String path, IDSSchema dsSchema,
+    private static void generateDataObject(String filePath, Map<String, String> packageNames, IDSSchema dsSchema,
             IDAOSchema daoSchema, String dsClassName, String classNamePrefix, SourceFileInfo sourceFileInfo) {
 
         String className = generateDataObjectClassName( classNamePrefix );
 
         // checking the lock mechanism
-        if (isLocked(className)) {
-            return;
-        }
+//        if (isLocked(className)) {
+//            return;
+//        }
 
         // generate the class body
         String content = generateDataObjectClassFile(className, dsSchema,
-                daoSchema, dsClassName, classNamePrefix, sourceFileInfo);
+                daoSchema, dsClassName, classNamePrefix, sourceFileInfo, packageNames);
 
         // writing out to file
-        writeClassFile(path, className + ".java", content);
+        writeClassFile(filePath, className + ".java", content);
     }
 
-    private static void generateDataType(String path, IDSSchema dsSchema,
+    private static void generateDataType(String filePath, Map<String, String> packageNames, IDSSchema dsSchema,
             IDAOSchema daoSchema, String classNamePrefix, SourceFileInfo sourceFileInfo) {
 
         String className = classNamePrefix;
 
         // checking the lock mechanism
-        if (isLocked(className)) {
-            return;
-        }
+//        if (isLocked(className)) {
+//            return;
+//        }
 
         // generate the class body
-        String content = generateClassFile(className, dsSchema, daoSchema, sourceFileInfo);
+        String content = generateClassFile(className, dsSchema, daoSchema, sourceFileInfo, packageNames);
 
         // writing out to file
-        writeClassFile(path, className + ".java", content);
+        writeClassFile(filePath, className + ".java", content);
     }
 
     private static String generateClassName(IDAOSchema daoSchema) {
@@ -454,23 +485,6 @@ public class ClassGenerator {
 
     private static String generateDAOSchemaClassName(String classNamePrefix) {
         return classNamePrefix + DAO_SCHEMA_CLASS_NAME_SUFFIX;
-    }
-
-    private static boolean isLocked(String className) {
-        try {
-            Class<?> clazz = Class.forName(PKG_NAME + "." + className);
-            GeneratorMeta annotation = clazz.getAnnotation(GeneratorMeta.class);
-            if (annotation != null) {
-                // if true the generation is denied
-                if (annotation.isLocked()) {
-                    logger.warn("The class is cannot be (re)generated because it is LOCKED. To unlock please modify the class @GeneratorMeta.isLocked annotation value (deleting the class is also a solution)!");
-                    return true;
-                }
-            }
-        } catch (ClassNotFoundException ignored) {
-        }
-
-        return false;
     }
 
     /**
@@ -526,7 +540,7 @@ public class ClassGenerator {
 
     private static String generateDataObjectClassFile(String className,
             IDSSchema dsSchema, IDAOSchema daoSchema, String dsClassName, String classNamePrexif,
-            SourceFileInfo dataObjectSourceFileInfo) {
+            SourceFileInfo dataObjectSourceFileInfo, Map<String, String> filesPackages) {
 
         List<StringTemplate> propList = new ArrayList<StringTemplate>();
         Collection<String> columnNames = daoSchema.getColumnNames();
@@ -554,7 +568,7 @@ public class ClassGenerator {
         body.setAttribute("daoId", daoSchema.getDAOId());
 
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
-        classST.setAttribute("packageName", PKG_NAME);
+        classST.setAttribute("packageName", filesPackages.get(DAOS_PACKAGE_NAME));
         
         String [] classImports = new String[] { DataObjectAdaptor.class.getName(),
                 IDAOSchema.class.getName(),
@@ -562,15 +576,31 @@ public class ClassGenerator {
                 GeneratorMeta.class.getName(),
                 Generated.class.getName()};
         
-        if (dataObjectSourceFileInfo != null  ) {
-        	classImports = buildClassImportsArray(classImports, dataObjectSourceFileInfo.getSourceFileImports());
+        String daoSChemaClassName = generateDAOSchemaClassName(classNamePrexif);
+        Set<String> additionalImports = new HashSet<String>();
+        if (!filesPackages.get(DAOS_PACKAGE_NAME).equals(filesPackages.get(META_PACKAGE_NAME))) {
+        	additionalImports.add(filesPackages.get(META_PACKAGE_NAME) + "." + dsClassName);
+        	additionalImports.add(filesPackages.get(META_PACKAGE_NAME) + "." + daoSChemaClassName);
+        }
+        
+        if (!filesPackages.get(DAOS_PACKAGE_NAME).equals(filesPackages.get(BEANS_PACKAGE_NAME))) {
+        	additionalImports.add(filesPackages.get(BEANS_PACKAGE_NAME) + "." + classNamePrexif);
+        }
+        
+        if (dataObjectSourceFileInfo != null ||  !additionalImports.isEmpty() ) {
+        	List<String> additionalImportsList = new ArrayList<String>(additionalImports);
+        	
+        	if (dataObjectSourceFileInfo != null) {
+        		additionalImportsList.addAll(dataObjectSourceFileInfo.getSourceFileImports());
+        	}
+        	classImports = buildClassImportsArray(classImports, additionalImportsList);
         }
         classST.setAttribute("import", classImports);
                 	
         classST.setAttribute("comment", getBodyComment());
         classST.setAttribute("annotation", getAnnotation(dsSchema, daoSchema));
         classST.setAttribute("className", className);
-        classST.setAttribute("daoClassName", generateDAOSchemaClassName(classNamePrexif));
+        classST.setAttribute("daoClassName", daoSChemaClassName);
         classST.setAttribute("extends", "DataObjectAdaptor");
         classST.setAttribute("extendsGenerics", classNamePrexif);
         classST.setAttribute("implements", "Serializable");
@@ -583,7 +613,7 @@ public class ClassGenerator {
 
     private static String generateDAOSchemaClassFile(String className,
             IDSSchema dsSchema, IDAOSchema daoSchema, String dsClassName, String classNamePrefix,
-            SourceFileInfo daoSchemaSourceFileInfo) {
+            SourceFileInfo daoSchemaSourceFileInfo, Map<String, String> filesPackages) {
     	
     	List<StringTemplate> columnsEnum = new ArrayList<StringTemplate>();
     	Collection<String> columnNames = daoSchema.getColumnNames();
@@ -636,7 +666,7 @@ public class ClassGenerator {
         body.setAttribute("columnsEnum", columnsEnum.toArray());
 
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
-        classST.setAttribute("packageName", PKG_NAME);
+        classST.setAttribute("packageName", filesPackages.get(META_PACKAGE_NAME));
         
         String [] classImports = new String[] { Map.class.getName(), HashMap.class.getName(),
                 LinkedHashMap.class.getName(),
@@ -645,8 +675,17 @@ public class ClassGenerator {
                 GeneratorMeta.class.getName(),
                 Generated.class.getName()};
         
-        if (daoSchemaSourceFileInfo != null  ) {
-        	classImports = buildClassImportsArray(classImports, daoSchemaSourceFileInfo.getSourceFileImports());
+        Set<String> additionalImports = new HashSet<String>();
+        if (!filesPackages.get(META_PACKAGE_NAME).equals(filesPackages.get(BEANS_PACKAGE_NAME))) {
+        	additionalImports.add(filesPackages.get(BEANS_PACKAGE_NAME) + "." + classNamePrefix);
+        }
+        
+        if (daoSchemaSourceFileInfo != null || !additionalImports.isEmpty()) {
+        	List<String> additionalImportsList = new ArrayList<String>(additionalImports);
+        	if (daoSchemaSourceFileInfo != null) {
+        		additionalImportsList.addAll(daoSchemaSourceFileInfo.getSourceFileImports());
+        	}
+        	classImports = buildClassImportsArray(classImports, additionalImportsList);
         }
         classST.setAttribute("import", classImports);
         
@@ -664,7 +703,7 @@ public class ClassGenerator {
 
     private static String generateDSSchemaClassFile(String className, IDSSchema dsSchema,
     		String beanPrefixName, Map<String, String> dataObjectClassNamesGeneratedPrefixes,
-    		SourceFileInfo dsSchemaSourceFileInfo, Map<String, SourceFileInfo> alreadyGeneratedDaos) {
+    		SourceFileInfo dsSchemaSourceFileInfo, Map<String, SourceFileInfo> alreadyGeneratedDaos, Map<String, String> filePackages) {
     	logger.debug( "Start generate ds schema" );
         String relations = "";
         Enumeration<IDSRelation> rels = dsSchema.getRelations();
@@ -706,7 +745,7 @@ public class ClassGenerator {
             	SourceFileInfo alredayGeneratedDAOInfo = alreadyGeneratedDaos.get(id);
             	daoSchemaClassName = alredayGeneratedDAOInfo.getClassName();
             	
-            	if (!alredayGeneratedDAOInfo.getPackageName().equals(PKG_NAME)) {
+            	if (!alredayGeneratedDAOInfo.getPackageName().equals(filePackages.get(META_PACKAGE_NAME))) {
             		alreadyGeneratedDaosImorts.add(alredayGeneratedDAOInfo.getPackageName()+ "." + alredayGeneratedDAOInfo.getClassName());
             	}
             } else {
@@ -734,7 +773,7 @@ public class ClassGenerator {
         body.setAttribute("daoMap", pairList.toArray());
 
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
-        classST.setAttribute("packageName", PKG_NAME);
+        classST.setAttribute("packageName", filePackages.get(META_PACKAGE_NAME));
         
         String [] classImports = new String[] { Collections.class.getName(),
                 DSSchema.class.getName(), GeneratorMeta.class.getName(),
@@ -746,6 +785,7 @@ public class ClassGenerator {
         	}
         	classImports = buildClassImportsArray(classImports, alreadyGeneratedDaosImorts);
         }
+        
         classST.setAttribute("import", classImports);
        
         classST.setAttribute("comment", getBodyComment());
@@ -762,7 +802,7 @@ public class ClassGenerator {
     }
 
     private static String generateClassFile(String className,
-            IDSSchema dsSchema, IDAOSchema daoSchema, SourceFileInfo sourceFileInfo) {
+            IDSSchema dsSchema, IDAOSchema daoSchema, SourceFileInfo sourceFileInfo, Map<String, String> filePackages) {
 
         String idField = null;
         String javaField = null;
@@ -772,7 +812,8 @@ public class ClassGenerator {
         Collection<String> columns = daoSchema.getColumnNames();
 
         boolean dateUsed = false;
-        boolean bigDecimalUsed = false; 
+        boolean bigDecimalUsed = false;
+        boolean bigIntegerUsed = false; 
         
         for (String column : columns) {
 
@@ -789,7 +830,10 @@ public class ClassGenerator {
                     || type.equalsIgnoreCase("character")) {
                 type = "String";
             } else if (type.equalsIgnoreCase("integer")) {
-                type = "Integer";
+            	 type = "Integer";
+            } else if (type.equalsIgnoreCase("int64")) {
+            	 type = "BigInteger"; 
+            	 bigIntegerUsed = true;
             } else if (type.equalsIgnoreCase("decimal")) {
                 bigDecimalUsed = true;
             	type = "BigDecimal";
@@ -859,6 +903,10 @@ public class ClassGenerator {
         	imports.add(BigDecimal.class.getName());
         }
         
+        if (bigIntegerUsed) {
+        	imports.add(BigInteger.class.getName());
+        }
+        
         imports.add(IDataSource.class.getName());
         imports.add(IDataBean.class.getName());
         imports.add(GeneratorMeta.class.getName());
@@ -871,7 +919,7 @@ public class ClassGenerator {
         body.setAttribute("methods", methods.toArray());
 
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
-        classST.setAttribute("packageName", PKG_NAME);
+        classST.setAttribute("packageName", filePackages.get(BEANS_PACKAGE_NAME));
         
         String [] classImports = imports.toArray(new String[imports.size()]);
         if (sourceFileInfo != null  ) {
@@ -917,8 +965,8 @@ public class ClassGenerator {
         return comment;
     }
 
-    private static String createPackage(String packageName) {
-        String ret = HOST_FOLDER;
+    private static String createPackage(String packageName, String destinationFolder) {
+        String ret = destinationFolder;
         StringTokenizer st = new StringTokenizer(packageName, ".");
         while (st.hasMoreElements()) {
             String folderName = (String) st.nextElement();
@@ -926,7 +974,7 @@ public class ClassGenerator {
         }
         File folder = new File(ret);
         if (!folder.exists()) {
-            folder.mkdirs();
+            folder.mkdirs();	
         }
         
         logger.debug("Created package path: " + ret);
@@ -1041,13 +1089,15 @@ public class ClassGenerator {
     	String dstFolder = "./generated/";
         String dsName = "";
         String beanNamePrefix = null;
-        String pkgName = "databeans.test";
+        String pkgName = null;
         String appName = "ProdSearch";
         String server = "AppServer://niko:5162/TVH_DEV_PRODSEARCH";
         String user = "";
         String password = "";
         String daoNamesPrefix = null;
         String sourcesFolder = null;
+        
+        Map<String, String> packageNames = new HashMap<String, String>(3); 
         
         
         if (args.length < 2) {
@@ -1087,6 +1137,12 @@ public class ClassGenerator {
             	daoNamesPrefix = optionValue;
             else if ("-sourcesFolder".equalsIgnoreCase(optionName))
             	sourcesFolder = optionValue;
+            else if (("-" + BEANS_PACKAGE_NAME).equalsIgnoreCase(optionName))
+            	packageNames.put(BEANS_PACKAGE_NAME, optionValue);
+            else if (("-" + DAOS_PACKAGE_NAME).equalsIgnoreCase(optionName))
+            	packageNames.put(DAOS_PACKAGE_NAME, optionValue);
+            else if (("-" + META_PACKAGE_NAME).equalsIgnoreCase(optionName))
+            	packageNames.put(META_PACKAGE_NAME, optionValue);
         }
 
         appName = args[args.length - 2];
@@ -1126,34 +1182,7 @@ public class ClassGenerator {
 			}
         }
         
-        ClassGenerator.generate(config, dstFolder, pkgName, appName, dsName, beanNamePrefix, daoIdsClassNamesPrefixMap, generatedFilesInfo);
-
-        /*
-         * //ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "ProdSearch", "server.dtflow"); ClassGenerator.generate(config,
-         * dstFolder, pkgName, appName, "server.dmprodscreenstepcondition");
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "server.dmprodscreenstep"); ClassGenerator.generate(config,
-         * dstFolder, pkgName, appName, "server.dmprodscreenflow");
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "server.dmprodscreenfield"); ClassGenerator.generate(config,
-         * dstFolder, pkgName, appName, "server.dmprodscreen");
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "server.checkquota");
-         * 
-         * 
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "columbus", "stamgegevens.server.dtfaci");
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "wicketds", "server.items"); ClassGenerator.generate(config,
-         * dstFolder, pkgName, appName, "wicketds", "server.state");
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "wicketds", "server.dtorder"); ClassGenerator.generate(config,
-         * dstFolder, pkgName, appName, "wicketds", "server.salesrep");
-         * ClassGenerator.generate(config, dstFolder, pkgName, appName,
-         * "wicketds", "server.customer");
-         */
+        ClassGenerator.generate(config, packageNames, generatePackageFolders(pkgName, packageNames, dstFolder) , appName, dsName, beanNamePrefix, daoIdsClassNamesPrefixMap, generatedFilesInfo);
     }
-
 }
 

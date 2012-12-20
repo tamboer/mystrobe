@@ -56,6 +56,10 @@ public interface IDataSource<T extends IDataBean> extends LinkSource {
 	 */
 	public void resetDataBuffer();
 
+	/**
+	 * Clears current data cache and fetches chunk of data from first position.
+	 */
+	public void clearDataBuffer();
 
 	/**
 	 * Returns a collections containing all the data listener to this source.
