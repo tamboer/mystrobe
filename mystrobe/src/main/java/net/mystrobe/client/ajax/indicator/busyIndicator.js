@@ -91,7 +91,7 @@ WorkIndicator = {
 	 * have been displayed yet so it is enough to clear / reset the timeout
 	 */
 	,
-	HideWorkingSign : function() {
+	HideWorkingSign : function(jqEvent, attributes, jqXHR, errorThrown, textStatus) {
 
 		if (WorkIndicator.overlayTimeoutPid != null) {
 			clearTimeout(WorkIndicator.overlayTimeoutPid);
@@ -127,7 +127,7 @@ WorkIndicator = {
 	 * milliseconds also the working sign will be displayed
 	 */
 	,
-	ActivateWorkingSign : function() {
+	ActivateWorkingSign : function(jqEvent, attributes, jqXHR, errorThrown, textStatus) {
 
 		if (WorkIndicator.BlockUI) {
 			if (WorkIndicator.overlayTimeoutPid != null) {
@@ -156,9 +156,9 @@ WorkIndicator = {
 	,
 	Initialize : function() {
 		/* Load feedback */
-		Wicket.Ajax.registerPreCallHandler(WorkIndicator.ActivateWorkingSign);
-		Wicket.Ajax.registerPostCallHandler(WorkIndicator.HideWorkingSign);
-		Wicket.Ajax.registerFailureHandler(WorkIndicator.HideWorkingSign);
+		Wicket.Event.subscribe('/ajax/call/beforeSend', WorkIndicator.ActivateWorkingSign);
+		/**Wicket.Event.subscribe('/ajax/call/failure', WorkIndicator.HideWorkingSign);**/
+		Wicket.Event.subscribe('/ajax/call/complete', WorkIndicator.HideWorkingSign);
 	}
 
 };
