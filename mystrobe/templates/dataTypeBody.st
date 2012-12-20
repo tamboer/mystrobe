@@ -21,3 +21,8 @@ public String getRowId() {
 @Generated
 public void detach() {		
 }
+
+@Override
+public String toString() {
+	return $toString$;
+}

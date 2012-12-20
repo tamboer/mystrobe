@@ -810,14 +810,16 @@ public class ClassGenerator {
         List<StringTemplate> fields = new ArrayList<StringTemplate>();
         List<StringTemplate> methods = new ArrayList<StringTemplate>();
         Collection<String> columns = daoSchema.getColumnNames();
-
+        StringBuilder toStringBuilder = new StringBuilder(" \" ").append(className).append("  [  \" + ") ;
+        
         boolean dateUsed = false;
         boolean bigDecimalUsed = false;
         boolean bigIntegerUsed = false; 
+        boolean first = true;
         
         for (String column : columns) {
 
-            StringTemplate field = TEMPLATES.getInstanceOf("field");
+        	StringTemplate field = TEMPLATES.getInstanceOf("field");
             StringTemplate setMethod = TEMPLATES.getInstanceOf("setterMethod");
             StringTemplate getMethod = TEMPLATES.getInstanceOf("getterMethod");
 
@@ -891,8 +893,16 @@ public class ClassGenerator {
 
                 methods.add(getMethod);
             }
-
+            
+            if (first) {
+            	first = false;
+            	toStringBuilder.append(" \" ").append( javaField ).append( " =\" + ").append(javaField).append(" + \"\\n\" +  \n  ");
+            } else {
+            	toStringBuilder.append("  \", ").append( javaField ).append( " =\" + ").append(javaField).append(" + \"\\n\" + \n ");
+            }
         }
+        
+        toStringBuilder.append(" \"] \" ");
 
         List<String> imports = new ArrayList<String>();
         if (dateUsed) {
@@ -917,6 +927,7 @@ public class ClassGenerator {
         body.setAttribute("rowid", idField == null ? "null" : idField);
         body.setAttribute("fields", fields.toArray());
         body.setAttribute("methods", methods.toArray());
+        body.setAttribute("toString", toStringBuilder.toString());
 
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
         classST.setAttribute("packageName", filePackages.get(BEANS_PACKAGE_NAME));
@@ -932,6 +943,7 @@ public class ClassGenerator {
         classST.setAttribute("className", className);
         classST.setAttribute("implements", "IDataBean");
         classST.setAttribute("body", body);
+        
         
         insertUserNotGeneratedCode(classST, sourceFileInfo);
 

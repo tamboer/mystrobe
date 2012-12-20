@@ -348,7 +348,6 @@ public class GeneratedFilesDataLoader {
 		}
 	}
 	
-	
 	/**
 	 * Check if current code block annotation is of type {@link Generated}.<br/>
 	 * 
@@ -416,6 +415,25 @@ public class GeneratedFilesDataLoader {
 		return generateMetaAnnotationInfoMap;
 	}
 	
+	private void displayAllChildren (BaseTree classBaseTree, int level) {
+		
+		StringBuilder prefix = new StringBuilder("");
+		for (int i = 0; i < level; i++) {
+			prefix.append("-");
+		}
+		
+		logger.debug(prefix.toString() + " " + classBaseTree.getText());
+		
+		if (classBaseTree.getChildCount() > 0) {
+			for (Object child : classBaseTree.getChildren() ) {
+				if (child instanceof BaseTree) {
+					BaseTree childBaseTree = (BaseTree) child;
+					displayAllChildren(childBaseTree, level + 1);
+				}
+			}
+		} 
+	}
+	
 	/**
 	 * Get class name.
 	 * 
@@ -423,8 +441,30 @@ public class GeneratedFilesDataLoader {
 	 * @param fileParserInfo Current file parsing info.
 	 */
 	private void getClassName(BaseTree classBaseTree, FileParserInfo fileParserInfo) {
+		
 		Tree classNameChild = classBaseTree.getChild(classBaseTree.getFirstChildWithType(JavaParser.MODIFIER_LIST).getChildIndex() + 1);
 		fileParserInfo.setClassName(classNameChild.getText());
+		
+		//displayAllChildren(classBaseTree, 0);
+		
+		if (classBaseTree.getFirstChildWithType(JavaParser.EXTENDS_CLAUSE) != null) {
+			Tree extendsNameChild = classBaseTree.getFirstChildWithType(JavaParser.EXTENDS_CLAUSE);
+			String extendsClassName = extendsNameChild.getChild(0).getChild(0).getChild(0).getText();
+			logger.debug("Extends class name : " + extendsClassName);
+			
+			fileParserInfo.setExtendsClassName(extendsClassName);
+		}
+		
+		if (classBaseTree.getFirstChildWithType(JavaParser.IMPLEMENTS_CLAUSE) != null) {
+			List<Tree> implementsInterfaceTreeList = ((BaseTree)classBaseTree.getFirstChildWithType(JavaParser.IMPLEMENTS_CLAUSE)).getChildren();
+			List<String> implementsInterfaceNames = new ArrayList<String>(implementsInterfaceTreeList.size());
+			
+			for ( Tree implementsClassNode : implementsInterfaceTreeList ) {
+				implementsInterfaceNames.add(implementsClassNode.getChild(0).getChild(0).getText());
+				logger.debug("Implements class name : " + implementsClassNode.getChild(0).getChild(0).getText());
+			}
+			fileParserInfo.setImplementInterfaceNames(implementsInterfaceNames);
+		}
 	}
 	
 	/**
