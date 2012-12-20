@@ -2,11 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>mystrobe</groupId>
-  <artifactId>mystrobe</artifactId>
+  <artifactId>mystrobe-generator</artifactId>
   <packaging>jar</packaging>
   <version>1.1.0</version>
-  <!-- TODO project name -->
-  <name>mystrobe</name>
+  <name>mystrobe-generator</name>
   <description></description>
   <!-- TODO <organization> <name>company name</name> <url>company url</url> </organization> -->
   <licenses>
@@ -16,73 +15,51 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
+  
   <properties>
     <slf4j.version>1.5.8</slf4j.version>
-    <log4j.version>1.2.14</log4j.version>
+	<log4j.version>1.2.14</log4j.version>
   </properties>
 
   <dependencies>
-    <!-- FRAMEWORK DEPENDENCIES -->
-    <dependency>
-      <groupId>app-frameworks-libs</groupId>
-      <artifactId>app-frameworks-libs</artifactId>
-      <version>2.0</version>
-      <type>pom</type>
+	<!-- FRAMEWORK DEPENDENCIES -->
+    <dependency> 
+		<groupId>mystrobe</groupId>
+		<artifactId>mystrobe-data</artifactId>
+		<version>1.1.0</version>
+	</dependency>
+	
+    <!-- LOGGING DEPENDENCIES - LOG4J -->
+   <dependency>
+     <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+   </dependency>
+   <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>${log4j.version}</version>
+   </dependency>
+  
+  	 <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+      <version>3.2</version>
     </dependency>
-
-    <!-- JUNIT DEPENDENCY FOR TESTING -->
-    <dependency>
+  	
+  
+   	<dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.1</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- LOGGING DEPENDENCIES - LOG4J -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>${log4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr-runtime</artifactId>
-      <version>3.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.resource</groupId>
-      <artifactId>connector-api</artifactId>
-      <version>1.5</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.jamonapi</groupId>
-      <artifactId>jamon</artifactId>
-      <version>2.7</version>
-    </dependency>
-
-  </dependencies>
+		
+  </dependencies>	
 
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
-      <resource>
-        <filtering>false</filtering>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
       <resource>
         <targetPath>./templates</targetPath>
         <filtering>false</filtering>
@@ -90,7 +67,7 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
+	   <plugin>
         <inherited>true</inherited>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -100,26 +77,13 @@
           <target>1.6</target>
           <optimize>true</optimize>
           <debug>true</debug>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/datatypes</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
+          <includes>
+			<include>net/mystrobe/client/connector/quarixbackend/ClassGenerator.java</include>
+			<include>net/mystrobe/client/connector/quarixbackend/GeneratorMeta.java</include>
+			<include>net/mystrobe/client/connector/quarixbackend/Generated.java</include>
+			<include>net/mystrobe/client/connector/quarixbackend/generate/**/*.*</include>
+		</includes>
+		</configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -158,18 +122,20 @@
           <skip>true</skip>
         </configuration>
       </plugin>
-        <plugin> 
-         <artifactId>maven-source-plugin</artifactId> 
-         <executions> 
-	         <execution> 
-                 <id>attach-sources</id> 
-                 <phase>verify</phase> 
-                 <goals> 
-                 	<goal>jar</goal> 
-                 </goals> 
-	         </execution> 
-         </executions> 
-        </plugin> 
+      <plugin> 
+       <artifactId>maven-source-plugin</artifactId> 
+       <version>2.1</version>
+       <executions> 
+        <execution> 
+               <id>attach-sources</id> 
+               <phase>verify</phase> 
+               <goals> 
+               	<goal>jar</goal> 
+               </goals> 
+        </execution> 
+       </executions> 
+      </plugin> 
     </plugins>
   </build>
 </project>
+
