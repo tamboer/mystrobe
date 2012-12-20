@@ -17,11 +17,14 @@
  */
  package net.mystrobe.client.ajax.indicator;
 
-import org.apache.wicket.ajax.WicketAjaxReference;
-import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.WicketEventReference;
+import org.apache.wicket.ajax.WicketAjaxJQueryResourceReference;
+import org.apache.wicket.ajax.WicketEventJQueryResourceReference;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.request.resource.CssResourceReference;
+import org.apache.wicket.request.resource.JavaScriptResourceReference;
 
 /**
  * Busy indicator panel.</p>
@@ -46,11 +49,11 @@ public class AjaxBusyIndicator extends Panel {
 	}
 	
 	public void renderHead(IHeaderResponse response) {
-	    super.renderHead(response);
-	    response.renderJavaScriptReference(WicketEventReference.INSTANCE);
-	    response.renderJavaScriptReference(WicketAjaxReference.INSTANCE);
-	    response.renderJavaScriptReference(new PackageResourceReference(AjaxBusyIndicator.class, JS_Resource));
-	    response.renderCSSReference(new PackageResourceReference( AjaxBusyIndicator.class, CSS_Resource));
+		super.renderHead(response);
+		response.render(JavaScriptHeaderItem.forReference(WicketEventJQueryResourceReference.get()));
+		response.render(JavaScriptHeaderItem.forReference(WicketAjaxJQueryResourceReference.get()));
+		response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(AjaxBusyIndicator.class, JS_Resource)));
+		response.render(CssHeaderItem.forReference(new CssResourceReference(AjaxBusyIndicator.class, CSS_Resource)));
 	 }
 }
 
