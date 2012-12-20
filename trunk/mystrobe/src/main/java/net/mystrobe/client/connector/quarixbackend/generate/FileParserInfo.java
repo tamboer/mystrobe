@@ -42,6 +42,10 @@ public class FileParserInfo {
 	
 	private String packageName;
 
+	private String extendsClassName;
+	
+	private List<String> implementInterfaceNames;
+	
 	/**
 	 * @return the generatedCodePositions
 	 */
@@ -112,6 +116,22 @@ public class FileParserInfo {
 	 */
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
+	}
+
+	public String getExtendsClassName() {
+		return extendsClassName;
+	}
+
+	public void setExtendsClassName(String extendsClassName) {
+		this.extendsClassName = extendsClassName;
+	}
+
+	public List<String> getImplementInterfaceNames() {
+		return implementInterfaceNames;
+	}
+
+	public void setImplementInterfaceNames(List<String> implementInterfaceNames) {
+		this.implementInterfaceNames = implementInterfaceNames;
 	}
 
 	/**
