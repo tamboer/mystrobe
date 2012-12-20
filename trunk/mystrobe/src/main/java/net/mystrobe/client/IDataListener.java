@@ -34,7 +34,7 @@ public interface IDataListener<T extends IDataBean> extends LinkListener  {
 	 * @param modelInstance    The new record that is selected.
 	 * 
 	 */
-	public void dataAvailable(T modelInstance);
+	public void dataAvailable(T modelInstance, CursorStates cursorState);
 
 	/**
 	 * Retrieve data link columns, values and data compare operators.

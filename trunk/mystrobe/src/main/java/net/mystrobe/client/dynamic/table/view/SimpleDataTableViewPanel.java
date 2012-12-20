@@ -130,7 +130,8 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	
 	@Override
 	protected boolean isDataRowSelected(IDataBean dataRow){
-		if( dataRow == null || this.tableDataSource.getData() == null ) return false;
+		if (dataRow == null || dataRow.getRowId() == null || this.tableDataSource.getData() == null)
+			return false;
 		
 		boolean response = dataRow.getRowId().equals(this.tableDataSource.getData().getRowId());
 		

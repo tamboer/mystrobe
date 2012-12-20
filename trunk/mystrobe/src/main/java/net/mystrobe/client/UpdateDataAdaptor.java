@@ -72,15 +72,14 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 	protected synchronized String getNextAppendingRowId() {
 		return "appending" + nextAppendingRowIdNumber++;
 	}
-
+	
 	/**
-	 * Create a new record and add it to the data buffer.
+	 * Create new record in data buffer.
 	 * 
-	 * @param copyData
-	 *            Flag whether to copy current record data to the new created
-	 *            record.
+	 * @param newRowData New row data.
+	 * @param copyData Flag whether to copy current record info to the new record.
 	 */
-	public void createData(boolean copyData) {
+	private void createData(T newRowData, boolean copyData) {
 		if (isLocked()) {
 			getLog().warn("DataObject [" + this.getSchema().getDAOId() + "] is locked unable to deleteData");
 			return;
@@ -100,7 +99,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		T rowData = null;
 		T beforeImageData = null;
 		try {
-			rowData = this.dataTypeClass.newInstance();
+			rowData = newRowData != null ? newRowData : this.dataTypeClass.newInstance();
 			beforeImageData = this.dataTypeClass.newInstance();
 		} catch (InstantiationException ex) {
 			getLog().error("Can not instantiate bean class " + this.dataTypeClass.getName(), ex);
@@ -113,15 +112,41 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		daoRow.setBeforeImage(beforeImageData);
 		daoRow.setRowState(RowState.New);
 		daoRow.setRowId(this.getNextAppendingRowId());
-
+		
 		if (copyData) {
 			// when copy data
 			daoRow.copyDataToRowData(this.currentData);
-			daoRow.copyDataToBeforeImageRowData(this.currentData);
 		}
 
 		this.dataBuffer.add(daoRow);
 		moveToRow(this.dataBuffer.size() - 1, true);
+	}
+
+	/**
+	 * Create a new record and add it to the data buffer.
+	 * 
+	 * @param copyData
+	 *            Flag whether to copy current record data to the new created
+	 *            record.
+	 */
+	public void createData(boolean copyData) {
+		createData(null, copyData);
+	}
+	
+	/**
+	 * Create new data row and  fill it with info from parameter.
+	 * 
+	 * @param newRowData Data to put in new row. 
+	 */
+	public void createData(T newRowData) {
+		createData(newRowData, false);
+	}
+	
+	/**
+	 * Create new data empty data.
+	 */
+	public void createData() {
+		createData(null, false);
 	}
 
 	public void cancelCRUDOpertaion() {
@@ -143,8 +168,18 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 				break;
 	
 			case Updated:
+				row.setConsideredForUpdate(false);
 				bufferChangedRows.remove(row);
 				resetData();
+				break;
+			
+			default:
+				//reset data even when no call to update was 
+				//	done but object in buffer might have been changed
+				if (this.dataBuffer.get(this.cursorPosition) != null ) {
+					resetData();
+				}
+				
 				break;
 		}
 
@@ -206,6 +241,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			T dataBean = null;
 
 			try {
+				//TODO: why do we create a new instance ?
 				dataBean = getSchema().getIDataTypeClass().newInstance();
 			} catch (InstantiationException e) {
 				getLog().error("Could not instantiate data bean of class:" + getSchema().getIDataTypeClass().getName());
@@ -394,18 +430,17 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 					IDAORow<T> currentRowData = this.dataBuffer.get(this.cursorPosition);
 					currentRowData.copyDataToBeforeImageRowData(receivedRow.getRowData());
 					currentRowData.copyDataToRowData(receivedRow.getRowData());
-					currentRowData.setRowState(receivedRow.getRowState());
-					currentRowData.setConsideredForUpdate(false);
-
-					if (currentRowData.getRowId() == null) {
+					
+					if (RowState.New.equals(currentRowData.getRowState())) {
 						currentRowData.setRowId(receivedRow.getRowId());
 						currentRowData.getRowData().setRowid(receivedRow.getRowId());
 						currentRowData.getBeforeImage().setRowid(receivedRow.getRowId());
 					}
+					
+					currentRowData.setRowState(receivedRow.getRowState());
+					currentRowData.setConsideredForUpdate(false);
 
 					this.currentData = currentRowData.getRowData();
-
-					publishDataAvailable(this.currentData);
 				}
 
 				publishDataAvailable(this.currentData);
@@ -435,6 +470,11 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 						receivedRowsIterator.remove();
 					}
 				}
+				
+				if (this.cursorPosition >= this.dataBuffer.size()) {
+					this.cursorPosition = this.dataBuffer.size() - 1;
+				}
+				
 				this.currentData = this.dataBuffer.get(this.cursorPosition).getRowData();
 				publishData = true;
 			}
@@ -452,6 +492,10 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 					this.dataBuffer.add(receivedRowData);
 				}
 
+				if (this.cursorPosition >= this.dataBuffer.size()) {
+					this.cursorPosition = this.dataBuffer.size() - 1;
+				}
+				
 				this.currentData = this.dataBuffer.get(this.cursorPosition).getRowData();
 				publishData = true;
 			}

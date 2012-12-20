@@ -47,7 +47,10 @@ public class Config implements IConfig {
                 // properties.setProperty(APP_SERVER_URL, "AppServerDC://localhost:3511");
                 //properties.setProperty(APP_SERVER_URL, "AppServerDC://c3-acc.yonder.local:30007/c3-xp");
                 //properties.setProperty(APP_SERVER_URL, "AppServerDC://192.168.1.25:3511");
-		properties.setProperty(APP_SERVER_URL, "AppServer://niko:5162/TVH_DEV_PRODSEARCH");
+		
+		String appServerURL = System.getProperty(APP_SERVER_URL);
+		
+		properties.setProperty(APP_SERVER_URL, appServerURL != null ? appServerURL : "AppServer://niko:5162/TVH_DEV_PRODSEARCH");
 		properties.setProperty(CONNECTOR, "net.mystrobe.client.connector.quarixbackend.dispatcher.QuarixOODispatcher");
 		properties.setProperty(USER, "");
 		properties.setProperty(PASSWORD, "");

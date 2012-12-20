@@ -306,12 +306,18 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 			case TextField :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
 				Boolean selectableFieldValue = (Boolean) configurationMap.get(IDynamicFormFieldConfig.Property.SelectableFieldValue);
+				
 				if (selectableFieldValue != null && selectableFieldValue) {
 					IDataObject<M> linkedDataSource = (IDataObject<M>) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedDataObject);
 					String linkedColumnName  = (String) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedColumnName);
-					Class<AbstractSelectRecordModalPanel<M>> selecatbleRecordMpdalPanelClass  = (Class<AbstractSelectRecordModalPanel<M>>) configurationMap.get(IDynamicFormFieldConfig.Property.SelectableModalWindowPanelClass);
-					if( selecatbleRecordMpdalPanelClass == null ) selecatbleRecordMpdalPanelClass = (Class) SelectRecordModalPanel.class; 
-					result = new SelectableTextFieldPanel<S, M, AbstractSelectRecordModalPanel<M>>(FORM_INPUT_PANEL_ID,  propertyModel, normalizedColumnName, columnLabel, required, readOnly, linkedDataSource, linkedColumnName, selecatbleRecordMpdalPanelClass);
+					
+					Class<AbstractSelectRecordModalPanel<M>> selecatbleRecordModalPanelClass  = (Class<AbstractSelectRecordModalPanel<M>>) configurationMap.get(IDynamicFormFieldConfig.Property.SelectableModalWindowPanelClass);
+					
+					if( selecatbleRecordModalPanelClass == null ) {
+						selecatbleRecordModalPanelClass = (Class) SelectRecordModalPanel.class; 
+					}
+					
+					result = new SelectableTextFieldPanel<S, M, AbstractSelectRecordModalPanel<M>>(FORM_INPUT_PANEL_ID,  propertyModel, normalizedColumnName, columnLabel, required, readOnly, linkedDataSource, linkedColumnName, selecatbleRecordModalPanelClass);
 				} else {
 					result = new TextFieldPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, 0);
 				}
@@ -482,7 +488,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		}
 	}
 
-	public void dataAvailable(IDataBean modelInstance) {
+	public void dataAvailable(IDataBean modelInstance, CursorStates cursorState) {
 		logger.debug("DynamicFormDataViewPanel received data with row id " + modelInstance.getRowId() 
 				+ " class " + modelInstance.getClass().getName() + " from data object " + getDataSource().hashCode());
 		updateFormModelObject(modelInstance);

@@ -20,6 +20,7 @@
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +61,8 @@ public class DataBeanUtil {
 	            value = strValue;
 	        } else if(type.equals(Integer.class)) {
 	        	value = Integer.valueOf(strValue);
+			} else if(type.equals(BigInteger.class)) {
+	        	value = new BigInteger(strValue);
 			} else if(type.equals(long.class) || type.equals(BigDecimal.class)) {
 				//value = StringToJavaNativeUtil.parseDouble(strValue, localizationProperties.getNumericalDecimalPoint(), localizationProperties.getNumericalSeparator());
 				int pos = strValue.indexOf(".");
@@ -95,9 +98,9 @@ public class DataBeanUtil {
 	private static void setFieldValue(Field field, Object instance, Object value) {
 		try {
 			
-			if( value != null) {
+			//if( value != null) {
 				field.set(instance, value);
-			}
+			//}
 		
 		} catch (IllegalAccessException e) {
 			Field[] fields = new Field[] { field };
@@ -172,7 +175,7 @@ public class DataBeanUtil {
      * @param fromInstance
      * @param toInstance
      */
-    public static void copyData(IDataBean fromInstance, IDataBean toInstance, boolean copyRowInfo, Class dataBeanClass) {
+    public static void copyData(IDataBean fromInstance, IDataBean toInstance, boolean copyRowInfo, Class dataBeanClass, boolean setNullValue) {
     	
     	Field[] fromInstanceFields = null;
     	Class classToCopyFieldsFor = dataBeanClass;  
@@ -194,9 +197,9 @@ public class DataBeanUtil {
     			Field toDeclaredField = classToCopyFieldsFor.getDeclaredField(fromDeclaredField.getName());
     			Object fieldValue = getFieldValue(fromDeclaredField, fromInstance);
 				
-				if (fieldValue != null) {
+				if (fieldValue != null || setNullValue) {
 					setFieldValue(toDeclaredField, toInstance, fieldValue);
-				}
+				} 
 				
     		} catch (SecurityException e) {
 			} catch (NoSuchFieldException e) {
@@ -205,7 +208,7 @@ public class DataBeanUtil {
     	
     	if (classToCopyFieldsFor.getSuperclass() != null) {
     		//copy data for superclass
-    		copyData(fromInstance, toInstance, copyRowInfo, classToCopyFieldsFor.getSuperclass());
+    		copyData(fromInstance, toInstance, copyRowInfo, classToCopyFieldsFor.getSuperclass(), setNullValue);
     	}
     }
     
@@ -223,7 +226,7 @@ public class DataBeanUtil {
     	
     	for ( IDAORow<T> objectToCopy : listToCopy) {
     		T newInstance = dataBeanClass.newInstance();
-    		copyData(objectToCopy.getRowData(), newInstance, true, null);
+    		copyData(objectToCopy.getRowData(), newInstance, true, null, false);
     		result.add(newInstance);
     	}
     	

@@ -49,7 +49,7 @@ public class DAOResponse<T extends IDataBean> implements IDAOResponse<T>, Serial
 
 	private Collection<IDAORow<T>> daoRows;
 	
-	private Collection<IDAORow<T>> beforeImage;
+	//private Collection<IDAORow<T>> beforeImage;
 	
     protected LocalizationProperties localizationProperties ;
 
@@ -167,16 +167,16 @@ public class DAOResponse<T extends IDataBean> implements IDAOResponse<T>, Serial
     /**
 	 * @return the beforeImage
 	 */
-	public Collection<IDAORow<T>> getBeforeImage() {
-		return beforeImage;
-	}
-
-	/**
-	 * @param beforeImage the beforeImage to set
-	 */
-	public void setBeforeImage(Collection<IDAORow<T>> beforeImage) {
-		this.beforeImage = beforeImage;
-	}
+//	public Collection<IDAORow<T>> getBeforeImage() {
+//		return beforeImage;
+//	}
+//
+//	/**
+//	 * @param beforeImage the beforeImage to set
+//	 */
+//	public void setBeforeImage(Collection<IDAORow<T>> beforeImage) {
+//		this.beforeImage = beforeImage;
+//	}
 
 	public LocalizationProperties getLocalizationProperties() {
        return this.localizationProperties;

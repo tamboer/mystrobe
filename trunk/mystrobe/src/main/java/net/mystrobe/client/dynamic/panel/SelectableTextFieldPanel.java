@@ -26,7 +26,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.markup.html.form.TextField;
@@ -93,7 +92,6 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 	 * @param linkedDataObjectColumn Linked data object column. used to fetch value for form text field.
 	 * @param selectRecordModalWindowPanelClass Modal window selectable panel type. Used to set the modal window contents.
 	 */
-	@SuppressWarnings("rawtypes")
 	public SelectableTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly,
 			IDataObject<S> linkedDataObject, String linkedDataObjectColumn, Class<M> selectRecordModalWindowPanelClass) {
 		
@@ -140,19 +138,6 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 			}
         });
         
-//		selectTextFieldValueWindow.setCloseButtonCallback(new ModalWindow.CloseButtonCallback()
-//        {
-//			private static final long serialVersionUID = 6102652471467741392L;
-//
-//			public boolean onCloseButtonClicked(AjaxRequestTarget target)
-//            {
-//				textField.getModel().setObject((T) DataBeanUtil.getFieldValue(SelectableTextFieldPanel.this.linkedDataObject.getData(),
-//								SelectableTextFieldPanel.this.linkedColumnName));
-//				target.addComponent(textField);
-//            	return true;
-//            }
-//        });
-		
 		lookupLink =  new AjaxLink<T>(TEXT_FIELD_LOOK_UP_ID, model) {
 			
 			private static final long serialVersionUID = -2204510354326558489L;
@@ -163,7 +148,7 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 				if( selectRecordModalPanel == null ) {
 
 					try {										
-						Class [] constructorArgumentTypes;
+						Class<?> [] constructorArgumentTypes;
 						Object [] constructorArgumentTypeInstances;
 						if (SelectableTextFieldPanel.this.linkedDataObject != null ) {
 							constructorArgumentTypes = new Class [] {String.class, ModalWindow.class, IDataObject.class};

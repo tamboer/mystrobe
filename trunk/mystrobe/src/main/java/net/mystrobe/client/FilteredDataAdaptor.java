@@ -190,7 +190,7 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
     	filterSource = filterView;
     }
     
-    public void dataAvailable(IDataBean data) {
+    public void dataAvailable(IDataBean data, CursorStates cursorState) {
 
     	boolean fkFilterValueChanged = false;
         
@@ -216,7 +216,10 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
     		}
         }
     	
-    	if (fkFilterValueChanged) {
+    	if (CursorStates.NoRecordAvailable.equals(cursorState)) {
+    		setFilters();
+    		clearDataBuffer();
+    	} else if (fkFilterValueChanged) {
     		setFilters();
     		resetDataBuffer();
     	}

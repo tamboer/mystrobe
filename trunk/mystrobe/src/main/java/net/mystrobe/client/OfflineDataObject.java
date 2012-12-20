@@ -17,6 +17,7 @@
  */
  package net.mystrobe.client;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import net.mystrobe.client.SortState.Sort;
 import net.mystrobe.client.connector.IDAORow;
 import net.mystrobe.client.connector.IDaoRowList;
 import net.mystrobe.client.connector.transaction.WicketDSBLException;
@@ -47,6 +49,15 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 		this.offlineMode = true;
 		this.schema = schema;
 		this.originalValuesList = values;
+	}
+	
+	public OfflineDataObject(final Collection<T> values, final IDAOSchema<T> schema, SortState sortState) {
+		this.offlineMode = true;
+		this.schema = schema;
+		this.originalValuesList = values;
+		this.sortState = sortState;
+		
+		this.itemsComparator = new ColumnsComparator();
 	}
 	
 	public void setItemsComparator(Comparator<T> itemsComparator) {
@@ -127,10 +138,6 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 		this.originalValuesList.remove(dataType);
 	}
 	
-	@Override
-	public void createData(boolean copyData) {
-		super.createData(copyData);
-	} 
 	
 	@Override
 	public void updateData() {
@@ -254,10 +261,40 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 		
 		return itemsList;
 	}
-
+	
+	@Override
+	public void setSortState(SortState sortState) {
+		this.sortState = sortState;
+	}
+	
 	@Override
 	protected void assignValues() {
 		// TODO Auto-generated method stub
+	}
+	
+	protected class ColumnsComparator implements Comparator<T>, Serializable {
+
+		public int compare(T o1, T o2) {
+			
+			Comparable o1ColumnValue = (Comparable<?>) DataBeanUtil.getFieldValue(o1, OfflineDataObject.this.sortState.getSortColumn(), null);
+			Comparable o2ColumnValue = (Comparable<?>) DataBeanUtil.getFieldValue(o2, OfflineDataObject.this.sortState.getSortColumn(), null);
+			
+			int result = 1;
+			
+			if (o1ColumnValue == null) {
+				result = -1;
+			} else if (o2ColumnValue == null) {
+				result = 1;
+			}
+			
+			result = o1ColumnValue.compareTo(o2ColumnValue);
+			
+			if (Sort.Descending.equals(OfflineDataObject.this.sortState.getSortOrder())) {
+				return -1 * result;
+			} else {
+				return result;
+			}
+		}
 	}
 }
 

@@ -86,11 +86,11 @@ public class DAORow<T extends IDataBean> implements IDAORow<T>, Serializable {
     }
     
     public void copyDataToRowData(IDataBean dataBean) {
-	   DataBeanUtil.copyData(dataBean, this.rowData, false, null); 	
+	   DataBeanUtil.copyData(dataBean, this.rowData, false, null, true); 	
 	}
     
     public void copyDataToBeforeImageRowData(IDataBean dataBean) {
-    	DataBeanUtil.copyData(dataBean, this.beforeImage, false, null); 	
+    	DataBeanUtil.copyData(dataBean, this.beforeImage, false, null, true); 	
     }
     
     public boolean equals(Object obj) {
