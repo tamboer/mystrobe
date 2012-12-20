@@ -22,9 +22,8 @@ import java.util.Iterator;
 
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
+import net.mystrobe.client.WicketDSRuntimeException;
 import net.mystrobe.client.connector.transaction.WicketDSBLException;
-
-import org.apache.wicket.WicketRuntimeException;
 
 
 /**
@@ -72,8 +71,9 @@ public class DataObjectIterator<T extends IDataBean> implements Iterator<T> {
 		try {
 			dao.deleteData();
 		} catch (WicketDSBLException e) {
-			throw new WicketRuntimeException("Can not delete data.", e);
-		}		
+			throw new WicketDSRuntimeException("Can not delete data");
+		}
+				
 	}	
 	
 }

@@ -27,8 +27,11 @@ import net.mystrobe.client.ISortListener;
 import net.mystrobe.client.ISortSource;
 import net.mystrobe.client.SortState;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
+import net.mystrobe.client.ui.UICssResourceReference;
 
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByLink.ICssProvider;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 
 
 /**
@@ -104,7 +107,7 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	 * @param tableSize Number of rows to be displayed.
 	 * @param additionalTableColumns Table columns to be added to the data table rows.
 	 */
-	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, int tableSize, List<DataTableColumn<T>> additionalTableColumns ) {
+	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, int tableSize, List<DataTableColumn<T, ?>> additionalTableColumns ) {
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize, additionalTableColumns);
 	}
 	
@@ -117,7 +120,7 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	 * @param cssSortProvider Css sort links display provider. 
 	 * @param additionalTableColumns Table columns to be added to the data table rows.
 	 */
-	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, int tableSize, ICssProvider cssSortProvider, List<DataTableColumn<T>> additionalTableColumns) {
+	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, int tableSize, ICssProvider cssSortProvider, List<DataTableColumn<T,?>> additionalTableColumns) {
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize, additionalTableColumns, cssSortProvider);
 	}
 	
@@ -178,5 +181,10 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	public int getSize() {
 		return this.tableSize;
 	}
+	
+	public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	 }
 }
 

@@ -19,7 +19,10 @@
 
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
+import net.mystrobe.client.ui.UICssResourceReference;
 
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentLabel;
 import org.apache.wicket.model.IModel;
@@ -69,6 +72,5 @@ public class AutoCompleteTextFieldPanel<T, S extends IDataBean> extends DynamicF
 	public void setFormComponentModelObject(IDataBean dataBean) {
 		autoCompleteTextField.setModel(new PropertyModel<T>(dataBean, this.propertyName));
 	}
-
 }
 

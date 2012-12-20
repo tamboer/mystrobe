@@ -116,7 +116,6 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 		add(label);
 		
 		selectTextFieldValueWindow = new ModalWindow(TEXT_FIELD_SELECT_RECORD_MODAL_WINDOW_ID, model);
-		selectTextFieldValueWindow.setCssClassName("tvh-modal-window");
 		selectTextFieldValueWindow.setInitialWidth(650);
         
 		add(selectTextFieldValueWindow);

@@ -19,6 +19,7 @@
 
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.attributes.AjaxRequestAttributes;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.model.IModel;
@@ -53,14 +54,12 @@ public class AjaxRadio<T> extends Radio<T> {
 				group.processInput();
 				onAjaxEvent(target);
 			}
-
-			protected CharSequence getEventHandler() {
-				AppendingStringBuffer stringBuffer = new AppendingStringBuffer(
-				  "wicketAjaxPost('").append(getCallbackUrl()).append(
-				  "', wicketSerialize(document.getElementById('"
-				    + AjaxRadio.this.getMarkupId() + "'))");
+			
+			protected void updateAjaxAttributes(AjaxRequestAttributes attributes) {
+				super.updateAjaxAttributes(attributes);
 				
-				return generateCallbackScript(stringBuffer);
+				attributes.getDynamicExtraParameters().add("Wicket.Form.serializeElement(document.getElementById('"
+					    + AjaxRadio.this.getMarkupId() + "'));");
 			}
 		});
 	}

@@ -37,10 +37,6 @@ import net.mystrobe.client.IDataBean;
  */
 public interface IDynamicFormConfig<T extends IDataBean> {
 	
-	public static final String RESOURCE_KEY_DEFAULT_PREFIX = "??";
-
-	public static final String RESOURCE_KEY_DEFAULT_SUFFIX = "??";
-	
 	/**
 	 * Retrieve map of properties for a a given column(<tt>columnName</tt>).
 	 * 

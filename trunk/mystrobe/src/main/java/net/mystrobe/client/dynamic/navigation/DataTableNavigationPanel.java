@@ -67,7 +67,8 @@ public class DataTableNavigationPanel<T extends IDataBean> extends AbstractDataT
 			public void onSubmit() {
 				super.onSubmit();
 				currentPageNumber++;
-				navigationListener.nextPageData(DataTableNavigationPanel.this, lastDataRowId, pageSize, currentPageNumber, false);
+				navigationListener.nextPageData(DataTableNavigationPanel.this, lastDataRowId, pageSize,
+						currentPageNumber, false);
 				
 				//last data row id is changed by the update navigator callback
 				navigationListener.moveToRow(firstDataRowId);
@@ -85,7 +86,8 @@ public class DataTableNavigationPanel<T extends IDataBean> extends AbstractDataT
 				if (currentPageNumber > 1) {
 					currentPageNumber--; 
 				}
-				navigationListener.previousPageData(DataTableNavigationPanel.this, firstDataRowId, pageSize, currentPageNumber, false);
+				navigationListener.previousPageData(DataTableNavigationPanel.this, firstDataRowId,
+						pageSize, currentPageNumber, false);
 				
 				//last data row id is changed by the update navigator callback
 				navigationListener.moveToRow(firstDataRowId);

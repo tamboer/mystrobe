@@ -30,7 +30,7 @@ import net.mystrobe.client.connector.IAppConnector;
  * 
  * @author TVH Group NV
  */
-public abstract class DataObjectAdaptor<T extends IDataBean> extends UpdateDataAdaptor<T> implements IDataObject<T>, Serializable {
+public class DataObjectAdaptor<T extends IDataBean> extends UpdateDataAdaptor<T> implements IDataObject<T>, Serializable {
 
 	/**
 	 * 
@@ -51,8 +51,8 @@ public abstract class DataObjectAdaptor<T extends IDataBean> extends UpdateDataA
 	 */
 	public DataObjectAdaptor(IDSSchema dsSchema) {
 		super();
-		assignValues();
 		this.dsSchema = dsSchema;
+		assignValues();
 	}
 	
 	/**
@@ -61,8 +61,8 @@ public abstract class DataObjectAdaptor<T extends IDataBean> extends UpdateDataA
 	 */
 	public DataObjectAdaptor(IAppConnector connector) {
 		super();
-		assignValues();
 		setAppConnector(connector);
+		assignValues();
 	}
 	
 	/**
@@ -72,11 +72,36 @@ public abstract class DataObjectAdaptor<T extends IDataBean> extends UpdateDataA
 	 */
 	public DataObjectAdaptor(IAppConnector connector, IDSSchema dsSchema) {
 		super();
-		assignValues();
 		setAppConnector(connector);
 		this.dsSchema = dsSchema;
+		assignValues();
 	}
 	
-	protected abstract void assignValues(); 
+	public DataObjectAdaptor(IAppConnector connector, IDSSchema dsSchema, IDAOSchema<T> daoSchema) {
+		super();
+		setAppConnector(connector);
+		this.dsSchema = dsSchema;
+		this.defaultDSSchema = dsSchema;
+		this.schema = daoSchema;
+		assignValues();
+	}
+	
+	/**
+	 * Support older versions.
+	 * 
+	 * Method is overridden when generation DO classes.
+	 * Data objects don't need to be generated anymore but 
+	 *  DAO schema and default data set schema have to be set.
+	 */
+	@Deprecated
+	protected void assignValues(){
+		if (this.schema == null) {
+			throw new IllegalStateException("DAO schema not set."); 
+		}
+		
+		if (this.defaultDSSchema == null) {
+			throw new IllegalStateException("Defaults data set schema not set."); 
+		}
+	}
 }
 

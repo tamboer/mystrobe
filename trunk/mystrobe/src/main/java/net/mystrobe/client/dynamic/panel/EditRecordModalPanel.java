@@ -30,10 +30,13 @@ import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.navigation.CRUDAjaxOperationsPanel;
 import net.mystrobe.client.dynamic.navigation.CRUDOperationsPanel;
 import net.mystrobe.client.dynamic.page.ModalWindowUpdateMode;
+import net.mystrobe.client.ui.UICssResourceReference;
 import net.mystrobe.client.util.StringUtil;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -206,6 +209,11 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 		logger.debug("EditRecordModalPanel hash " + hashCode() + " after detach datasource id" + this.dataObjectAdaptor.getSchema().getDAOId()  
 				+ " hash " + dataObjectAdaptor.hashCode() + " row id " + (dataObjectAdaptor.getData() != null ? dataObjectAdaptor.getData().getRowId() : "null"));		
 	}
+	
+	 public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	 }
 	
 }
 

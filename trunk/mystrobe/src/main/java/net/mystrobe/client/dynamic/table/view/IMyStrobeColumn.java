@@ -20,7 +20,7 @@ package net.mystrobe.client.dynamic.table.view;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 
-public interface IMyStrobeColumn<T> extends IColumn<T> {
+public interface IMyStrobeColumn<T,S> extends IColumn<T,S> {
 
 	public Behavior[] getHeaderBehaviors();
 

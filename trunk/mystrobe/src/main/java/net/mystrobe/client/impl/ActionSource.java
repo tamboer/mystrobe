@@ -35,7 +35,7 @@ public class ActionSource implements IActionSource {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.mystrobe.client.IActionSource#addActionListener(com.tvh.wicketds.IActionListener)
+	 * @see net.mystrobe.client.IActionSource#addActionListener(net.mystrobe.client.IActionListener)
 	 */
 	public void addActionListener(IActionListener actionListener) {
 		pool.add(actionListener);
@@ -53,7 +53,7 @@ public class ActionSource implements IActionSource {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.mystrobe.client.IActionSource#removeActionListener(com.tvh.wicketds.IActionListener)
+	 * @see net.mystrobe.client.IActionSource#removeActionListener(et.mystrobe.client.IActionListener)
 	 */
 	public void removeActionListener(IActionListener actionListener) {
 		pool.remove(actionListener);

@@ -29,6 +29,26 @@ import org.apache.wicket.model.IModel;
  */
 public class FieldValueHelper {
 	
+	/**
+	 * Build a drop down from list of {@link IFieldValue}.  
+	 * 
+	 * @param <T> Drop down and model object type.
+	 * @param id drop down markup id.
+	 * @param model Model instance.
+	 * @param fieldValues Collection of {@link IFieldValue} for the drop down optinos.
+	 *  
+	 * @return New drop down component.
+	 */
+	public static <T> DropDownChoice<T> buildFieldValueDropDownChoice(String id, IModel<T> model, Collection<IFieldValue<T>> fieldValues) {
+		
+		List<T> optionValuesList = new ArrayList<T>(fieldValues.size());
+		
+		for (IFieldValue<T> fieldValue : fieldValues) {
+			optionValuesList.add(fieldValue.getValue());
+		}
+		
+		return new DropDownChoice<T>(id, model, optionValuesList, new FieldValueOptionsRenderer<T>(fieldValues));
+	}
 	
 	/**
 	 * Build a drop down from list of {@link IFieldValue}.  
@@ -40,15 +60,9 @@ public class FieldValueHelper {
 	 *  
 	 * @return New drop down component.
 	 */
+	@Deprecated 
 	public static <T> DropDownChoice<T> buildFiledValueDropDownChoice(String id, IModel<T> model, Collection<IFieldValue<T>> fieldValues) {
-	
-		List<T> optionValuesList = new ArrayList<T>(fieldValues.size());
-		
-		for (IFieldValue<T> fieldValue : fieldValues) {
-			optionValuesList.add(fieldValue.getValue());
-		}
-		
-		return new DropDownChoice<T>(id, model, optionValuesList, new FieldValueOptionsRenderer<T>(fieldValues));
+		return buildFieldValueDropDownChoice(id, model, fieldValues);
 	}
 
 }

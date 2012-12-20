@@ -43,7 +43,7 @@ import org.apache.wicket.model.IModel;
  *
  * @param <T> Data bean type.
  */
-public class DataRowActionsToolbarColumn<T extends IDataBean> extends MyStrobeColumn<T>{
+public class DataRowActionsToolbarColumn<T extends IDataBean> extends MyStrobeColumn<T, Void>{
 
 	private static final long serialVersionUID = -4803598130593808441L;
 
@@ -73,7 +73,7 @@ public class DataRowActionsToolbarColumn<T extends IDataBean> extends MyStrobeCo
 		return new Label(componentId, "");
 	}
 
-	public String getSortProperty() {
+	public Void getSortProperty() {
 		return null;
 	}
 

@@ -27,7 +27,7 @@ import java.io.Serializable;
  *
  * @author TVH Group NV
  */
-public class DataTableColumn <T> implements Serializable {
+public class DataTableColumn <T,S> implements Serializable {
 	
 	/**
 	 * 
@@ -42,10 +42,10 @@ public class DataTableColumn <T> implements Serializable {
 	/**
 	 * Column render info.
 	 */
-	private IMyStrobeColumn<T> columnInfo;
+	private IMyStrobeColumn<T,S> columnInfo;
 
 	public DataTableColumn(int columnPosition,
-			IMyStrobeColumn<T> columnInfo) {
+			IMyStrobeColumn<T,S> columnInfo) {
 		this.columnPosition = columnPosition;
 		this.columnInfo = columnInfo;
 	}
@@ -60,7 +60,7 @@ public class DataTableColumn <T> implements Serializable {
 	/**
 	 * @return the columnInfo
 	 */
-	public IMyStrobeColumn<T> getColumnInfo() {
+	public IMyStrobeColumn<T,S> getColumnInfo() {
 		return columnInfo;
 	}
 }

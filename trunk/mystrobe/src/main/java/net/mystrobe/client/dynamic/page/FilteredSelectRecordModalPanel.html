@@ -17,25 +17,20 @@
 
 <wicket:panel>
 
-	<div wicket:id="searchFilterSection" class="box">
-		<form wicket:id="filterFormId">
-			<div wicket:id="feedback"></div>
-			<div wicket:id="filtersViewId">
-				<label wicket:id="filterLabelId">Filter</label> 
-				<input wicket:id="filterTextFieldId" type="text"/>		
-			</div>
-			<input type="button" class="button" wicket:id="searchButtonId" value="Search"/>
-		</form>
-	</div>
-	
-	<div wicket:id="dataTableId" />
+	<wicket:extend>
+		<div wicket:id="searchFilterSection" class="box">
+			<form wicket:id="filterFormId">
+				<div wicket:id="feedback"></div>
+				<div wicket:id="filtersViewId">
+					<label wicket:id="filterLabelId">Filter</label> 
+					<input wicket:id="filterTextFieldId" type="text"/>		
+				</div>
+				<input type="button" class="button" wicket:id="searchButtonId" value="Search"/>
+			</form>
+		</div>
+		<wicket:child/>
+	</wicket:extend>
 
-	<div wicket:id="dataTableNavigatorId" />
-
-	<div class="box-buttons-right">	
-		<input type="button" class="button ok-btn" wicket:id="selectLinkId" value="Select"/>
-		<input type="button"  class="button cancel-btn" wicket:id="cancelLinkId" value="Cancel"/>
-	</div>
 </wicket:panel>	
 
 </body>

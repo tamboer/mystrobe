@@ -35,19 +35,19 @@ import org.apache.wicket.extensions.markup.html.repeater.data.sort.SortOrder;
  * 
  * @author TVH Group NV
  */
-public abstract class PropertiesSort implements ISortStateLocator {
+public abstract class PropertiesSort implements ISortStateLocator<String> {
 	
 	private static final long serialVersionUID = -1601840873369844491L;
 	
 	private PropertiesSortState  propertiesSortStates = new PropertiesSortState();
 	
 
-	public ISortState getSortState() {
+	public ISortState<String> getSortState() {
 		return propertiesSortStates;
 	}
 
 					
-	public void setSortState(ISortState state) {
+	public void setSortState(ISortState<String> state) {
 		propertiesSortStates = (PropertiesSortState) state;
 	}
 	
@@ -63,7 +63,7 @@ public abstract class PropertiesSort implements ISortStateLocator {
 	 * 
 	 * Implementation is required by the order link wicket implementation.
 	 */
-	protected class PropertiesSortState implements ISortState, Cloneable {
+	protected class PropertiesSortState implements ISortState<String>, Cloneable {
 	
 		private static final long serialVersionUID = 3344772787685750317L;
 		

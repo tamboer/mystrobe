@@ -28,9 +28,12 @@ import net.mystrobe.client.IDataObject;
 import net.mystrobe.client.IFilterParameter;
 import net.mystrobe.client.impl.FilterParameter;
 import net.mystrobe.client.navigator.DataObjectIterator;
+import net.mystrobe.client.ui.UICssResourceReference;
 import net.mystrobe.client.util.DataBeanUtil;
 
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.model.IModel;
 
 /**
@@ -71,7 +74,5 @@ public class DataObjectAutoCompleteTextField<S extends IDataBean, T> extends Aut
 		return values.iterator();
 	}
 	
-	
-
 }
 

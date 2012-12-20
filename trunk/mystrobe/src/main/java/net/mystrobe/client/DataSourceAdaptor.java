@@ -26,10 +26,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.mystrobe.client.connector.DAOCommands;
 import net.mystrobe.client.connector.DAORequest;
+import net.mystrobe.client.connector.DAORequest.StartRowMarker;
 import net.mystrobe.client.connector.DSRequest;
 import net.mystrobe.client.connector.IAppConnector;
 import net.mystrobe.client.connector.IDAORequest;
@@ -38,10 +38,7 @@ import net.mystrobe.client.connector.IDAORow;
 import net.mystrobe.client.connector.IDSRequest;
 import net.mystrobe.client.connector.IDSResponse;
 import net.mystrobe.client.connector.IDaoRowList;
-import net.mystrobe.client.connector.DAORequest.StartRowMarker;
-import net.mystrobe.client.connector.LocalizationProperties;
 import net.mystrobe.client.connector.messages.IConnectorResponseMessages;
-import net.mystrobe.client.connector.quarixbackend.json.DAOResponse;
 import net.mystrobe.client.connector.quarixbackend.json.Message;
 import net.mystrobe.client.connector.quarixbackend.json.ResponseOption;
 import net.mystrobe.client.connector.transaction.IDSRequestTransactionManager;
@@ -133,6 +130,8 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 * Data buffer default size
 	 */
 	protected int dataBufferSize = 100;
+	
+	protected boolean isDataBufferEnabled = true;
 
 	/**
 	 * Data buffers
@@ -153,9 +152,14 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	protected Collection<IStateListener> stateListeners = new ArrayList<IStateListener>();
 
 	protected Class<T> dataTypeClass = null;
+	
+	/**
+	 * Flag on whether to reposition data buffer on new added rows
+	 */
+	protected boolean repositionOnNewAddedRecord = false;
 
 	public static enum AppendPosition {
-		BEGINING, END, REPLACE
+		BEGINING, END, REPLACE, DELETED_DATA, JUMP
 	};
 
 	public IDSSchema getDSSchema() {
@@ -222,12 +226,13 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 * @param isPrefetch
 	 *            Pre fetched flag.
 	 */
-	protected void createNewDAORequest(String command, String startRowId, long batchSize, boolean isPrefetch) {
+	protected void createNewDAORequest(String command, String startRowId, long batchSize, boolean isPrefetch, boolean skipRow) {
 
 		createNewDAORequest(command, startRowId);
 
 		this.lastDAORequest.setBatchSize(batchSize);
 		this.lastDAORequest.setPrefetch(isPrefetch);
+		this.lastDAORequest.setSkipRow(skipRow);
 	}
 
 	/**
@@ -249,7 +254,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 *            New fetched data buffer append position.
 	 */
 	protected void requestData(String command, String startRowId,
-			long batchSize, boolean isPrefetch, AppendPosition appendPosition) {
+			long batchSize, boolean isPrefetch, AppendPosition appendPosition, boolean skipRow) {
 		trace("Data request. Start row id:" + startRowId + ", batch size:"
 				+ batchSize + " appens position: " + appendPosition);
 
@@ -260,7 +265,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 		if (this.requestTransactionManager != null) {
 			if (isTransactionRequestMainObject) {
 				try {
-					createNewDAORequest(command, startRowId, batchSize, isPrefetch);
+					createNewDAORequest(command, startRowId, batchSize, isPrefetch, skipRow);
 					createNewDAORequest = false;
 					this.requestTransactionManager.dataRequest(appendPosition);
 				} finally {
@@ -269,7 +274,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 			}
 		} else {
 			
-			createNewDAORequest(command, startRowId, batchSize, isPrefetch);
+			createNewDAORequest(command, startRowId, batchSize, isPrefetch, skipRow);
 			
 			IDSRequest lastDSRequest = new DSRequest(this.lastDAORequest);
 	
@@ -352,8 +357,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 				removedRowsMap.put(dataBean.getRowId(), dataBean);
 			}
 
-			publishOnDataBufferChanged(flushedData, removedRowsMap,
-					appendPosition);
+			publishOnDataBufferChanged(flushedData, removedRowsMap, appendPosition);
 		}
 
 		return flushedData;
@@ -369,7 +373,8 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 			return;
 		}
 
-		requestData(DAOCommands.sendRows.name(), StartRowMarker.first.name(), getSchema().getBatchSize(), false, AppendPosition.REPLACE);
+		requestData(DAOCommands.sendRows.name(), StartRowMarker.first.name(), getSchema().getBatchSize(),
+				false, AppendPosition.REPLACE, true);
 		
 		cursorPosition = -1;
 		cursorPreviousPosition = -1;
@@ -395,6 +400,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 		
 		this.lastNextFetchedRowId = null;
 		this.lastPreviousFetchedRowId = null;
+		
 		
 		publishOnDataBufferReplaced();
 		
@@ -454,17 +460,19 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 * 
 	 * @param response
 	 *            Data set request response.
-	 * @param replace
+	 * @param appendPosition
 	 *            Data buffer caching strategy.
 	 */
-	private void processResponse(AppendPosition replace) {
+	private void processResponse(AppendPosition appendPosition) {
 
-		if (replace == AppendPosition.REPLACE) {
+		if (AppendPosition.REPLACE.equals(appendPosition) ||
+				!this.isDataBufferEnabled) {
 
 			this.dataBuffer = new IDaoRowList<T>(this.lastDAOResponse
 					.getDAORows());
+			
 			this.cursorPosition = -1;
-
+			
 			this.hasFirstRow = this.lastDAOResponse.hasFirstRow();
 			this.hasLastRow = this.lastDAOResponse.hasLastRow();
 			/*
@@ -476,7 +484,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 			// getSchema().getDAOId() + " item " +
 			// ((IDAORow)it.next()).getRowData().getRowId() );
 
-		} else if (replace == AppendPosition.END) {
+		} else if (AppendPosition.END.equals(appendPosition)) {
 
 			// TODO: After create and 'next' check that new record(s) isn't
 			// added twice to the data buffer
@@ -490,7 +498,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 
 			this.hasLastRow = this.lastDAOResponse.hasLastRow();
 
-		} else if (replace == AppendPosition.BEGINING) {
+		} else if (AppendPosition.BEGINING.equals(appendPosition)) {
 
 			IDaoRowList<T> buffer = new IDaoRowList<T>(this.lastDAOResponse
 					.getDAORows());
@@ -514,24 +522,26 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 			this.lastPreviousFetchedRowId = null;
 		}
 
-		if (replace == AppendPosition.REPLACE) {
+		if (AppendPosition.REPLACE.equals(appendPosition)) {
 
 			// notify buffer listeners that old buffer was replaced, cached data
 			// was cleared
 			// build map of removed row id's
+			
 			publishOnDataBufferReplaced();
 
-		} else {
+		} else if (this.isDataBufferEnabled) {
 
 			// check data buffer size does not exceed maximum allowed cache size
 			try {
-				flushDataBuffer(replace);
+				flushDataBuffer(appendPosition);
 			} catch (InstantiationException e) {
 				getLog().error("Unable to resize data buffer cache");
 			} catch (IllegalAccessException e) {
 				getLog().error("Unable to resize data buffer cache");
 			}
 		}
+		
 	}
 
 	/**
@@ -803,7 +813,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 *            append position.
 	 */
 	protected void publishOnDataBufferReplaced() {
-
+		
 	}
 
 	/**
@@ -814,15 +824,18 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 */
 	protected void publishOnDataBufferChanged(List<T> removedData,
 			Map<String, T> removedRowsMap, AppendPosition appendPosition) {
+		
 		trace("Publish data buffer changed. Removed data:" + removedRowsMap);
 	}
 
 	protected void trace(String message) {
-		getLog().trace(
+		if (getLog().isTraceEnabled()) {
+			getLog().trace(
 				"DataObject " + getSchema().getDAOId() + " hash " + hashCode()
 						+ message + " data buffer size is: "
 						+ this.dataBuffer.size() + " currsor position is "
 						+ this.cursorPosition);
+		}
 
 	}
 
@@ -853,8 +866,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 		
 			processResponse(appendPosition != null && isTransactionRequestMainObject ? appendPosition : AppendPosition.REPLACE);
 		
-
-			if (AppendPosition.REPLACE.equals(appendPosition) || !isTransactionRequestMainObject) {
+			if (AppendPosition.REPLACE.equals(appendPosition) || !isTransactionRequestMainObject ) {
 				
 				cursorPosition = -1;
 				cursorPreviousPosition = -1;
@@ -871,11 +883,11 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	public IDAORequest<T> getDataRequest() {
 		if (this.isTransactionRequestMainObject) {
 			if (this.lastDAORequest == null || createNewDAORequest) {
-				createNewDAORequest(DAOCommands.sendRows.name(), StartRowMarker.first.name(), this.schema.getBatchSize(), false );
+				createNewDAORequest(DAOCommands.sendRows.name(), StartRowMarker.first.name(), this.schema.getBatchSize(), false, true );
 			}
 		} else {
 			//when current data object is not the main transaction object then use standard request
-			createNewDAORequest(DAOCommands.sendRows.name(), StartRowMarker.first.name(), this.schema.getBatchSize(), false );
+			createNewDAORequest(DAOCommands.sendRows.name(), StartRowMarker.first.name(), this.schema.getBatchSize(), false, true );
 		}
 		
 		if (this.schema.getBatchSize() == 0 && this.dataBufferSize < Integer.MAX_VALUE) {
@@ -903,6 +915,21 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 		this.isTransactionRequestMainObject = mainDataRequestObject;
 		this.requestTransactionManager = dsRequestTransactionManager;
 	}
+	
+	public void setRepositionOnNewAddedRecord(boolean repositionOnNewAddedRecord) {
+		this.repositionOnNewAddedRecord = repositionOnNewAddedRecord;
+	}
 
+	public boolean isDataBufferEnabled() {
+		return isDataBufferEnabled;
+	}
+
+	public void setCacheData(boolean cacheData) {
+		if (this.lastDAOResponse != null) {
+			throw new IllegalStateException("Can not change data cache behavior after data is retrieved !!! ");
+		}
+		
+		this.isDataBufferEnabled = cacheData;
+	}
 }
 

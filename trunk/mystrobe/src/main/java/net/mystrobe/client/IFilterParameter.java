@@ -78,5 +78,14 @@ public interface IFilterParameter {
 	 * 
 	 */
 	public String getFormat();
+	
+	/**
+	 * Flag on whether filter should be removed when buffer repositioning occurs.
+	 * 
+	 * @return flag seting.
+	 */
+	public boolean isRemoveOnBufferRecordReposition();
+
+	public void setRemoveOnBufferRecordReposition(boolean clearOnBufferRecordReposition);
 
 }

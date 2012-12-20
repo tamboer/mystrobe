@@ -17,6 +17,7 @@
  */
  package net.mystrobe.client;
 
+
 /**
  * The available and supported filtering operations
  * 
@@ -61,5 +62,26 @@ public enum FilterOperator {
         /**
          * Matches
          */
-	MATCHES
+	MATCHES;
+	
+	public static FilterOperator getFilterOperator(String stringOperator) {
+		
+		if ("=".equals(stringOperator)) {
+			return EQ;
+		} else if (">".equals(stringOperator)) {
+			return GT;
+		} else if ("<".equals(stringOperator)) {
+			return LT;
+		} else if (">=".equals(stringOperator)) {
+			return GE;
+		} else if ("<=".equals(stringOperator)) {
+			return LE;
+		} else if ("!=".equals(stringOperator)) {
+			return NE;
+		} else if ("*".equals(stringOperator)) {
+			return MATCHES;
+		} 
+		
+		return null;
+	}
 }

@@ -47,5 +47,6 @@ public interface IDataBufferSource<T extends IDataBean> extends IDataSource<T> {
 	 * Returns all records in the data buffer.
 	 */
 	public List<T> getDataBuffer();
+	
 }
 

@@ -25,16 +25,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import net.mystrobe.client.connector.DAOCommands;
+import net.mystrobe.client.connector.DAORequest.StartRowMarker;
 import net.mystrobe.client.connector.IDAORequest;
 import net.mystrobe.client.connector.IDAOResponse;
 import net.mystrobe.client.connector.IDAORow;
 import net.mystrobe.client.connector.IDaoRowList;
 import net.mystrobe.client.connector.RowState;
-import net.mystrobe.client.connector.DAORequest.StartRowMarker;
 import net.mystrobe.client.connector.transaction.DSTransactionManager;
 import net.mystrobe.client.connector.transaction.IDSTransactionManager;
 import net.mystrobe.client.connector.transaction.WicketDSBLException;
 import net.mystrobe.client.impl.DAORow;
+import net.mystrobe.client.navigator.IDataTableNavigatorSource;
 import net.mystrobe.client.util.DataBeanUtil;
 
 /**
@@ -52,20 +53,12 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 	/**
 	 * Data buffers.
-	 * 
-	 * Currently each data operation is executed as it comes.
-	 * 
-	 * No buffering is performed for batch updates.
 	 */
 	protected IDaoRowList<T> bufferDeletedRows = new IDaoRowList<T>();
 	protected IDaoRowList<T> bufferChangedRows = new IDaoRowList<T>();
 	protected IDaoRowList<T> bufferAddedRows = new IDaoRowList<T>();
 
 	protected boolean updateDataCommitSuccess = true;
-
-	protected static enum SynchronizeDataType {
-		ADD, UPDATE, DELETE
-	};
 
 	protected static int nextAppendingRowIdNumber = 0;
 
@@ -79,7 +72,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 	 * @param newRowData New row data.
 	 * @param copyData Flag whether to copy current record info to the new record.
 	 */
-	private void createData(T newRowData, boolean copyData) {
+	private void createData(final T newRowData, boolean copyData) {
 		if (isLocked()) {
 			getLog().warn("DataObject [" + this.getSchema().getDAOId() + "] is locked unable to deleteData");
 			return;
@@ -149,7 +142,12 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		createData(null, false);
 	}
 
+	@Deprecated
 	public void cancelCRUDOpertaion() {
+		cancelCRUDOperation();
+	}
+	
+	public void cancelCRUDOperation() {
 
 		if (this.cursorPosition < 0 || this.dataBuffer.isEmpty()) {
 			return;
@@ -182,7 +180,6 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 				
 				break;
 		}
-
 	}
 
 	public void resetData() {
@@ -253,7 +250,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		}
 	}
 
-	public void deleteDataRow(IDataBean dataType) throws WicketDSBLException {
+	protected void deleteDataRow(IDataBean dataType) throws WicketDSBLException {
 		if (isLocked())
 			getLog().warn("DataObject [" + this.getSchema().getDAOId() + "] is locked unable to deleteData");
 
@@ -279,6 +276,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		}
 
 		if (!isAutoCommit()) {
+			
 			this.dataBuffer.remove(row);
 
 			// check current row is deleted
@@ -287,10 +285,35 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			if (currentRowRemoved) {
 				moveToAvailablePosition();
 			}
+			
+			//TODO: consider whether to update navigators and UI when transaction
+			
 		} else {
 			try {
 				// call update data to remove row
+				int removedRowBufferPosition = this.dataBuffer.getRowPosition(row.getRowId());
+				
 				updateDataRequest();
+				
+//				List<T> removedRows = new ArrayList<T>(1);
+//				removedRows.add(row.getRowData());
+//				
+//				Map<String, T> removedRowsMap = new HashMap<String, T>(1);
+//				removedRowsMap.put(row.getRowId(), row.getRowData());
+				
+				//inform buffer listeners on buffer changed
+				publishDataRowRemoved(row.getRowData(), removedRowBufferPosition);
+				 
+				if (tableNavigationSources != null &&
+						!tableNavigationSources.isEmpty()) {
+					
+					//force navigator to recompute pages  
+					for (IDataTableNavigatorSource<T> navigationSource : tableNavigationSources) {
+						navigationSource.reloadCurrentPage();
+					}
+				}
+				
+				moveToAvailablePosition();
 			
 			} catch (WicketDSBLException e) {
 				//clear rows in 'to delete' buffer, to avoid sending record for deletion
@@ -299,6 +322,8 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 				throw e;
 			}
 		}
+		
+		
 	}
 
 	public void updateData() throws WicketDSBLException {
@@ -326,26 +351,43 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			daoRow = this.dataBuffer.getRow(dataType.getRowId());
 		}
 
+		boolean repositionBuffer = repositionOnNewAddedRecord; 
+		
 		if (!daoRow.isConsideredForUpdate() && !offlineMode) {
 			switch (daoRow.getRowState()) {
-			case New:
-				bufferAddedRows.add(daoRow);
-				daoRow.setConsideredForUpdate(true);
-				getLog().info("updateData row is an new row, row position in the appendedRows ");
-				break;
-
-			default:
-				daoRow.setRowState(RowState.Updated);
-				daoRow.setConsideredForUpdate(true);
-				bufferChangedRows.add(daoRow);
-				getLog().info("updateData row is an updated row, row position in the changedRows " + bufferChangedRows.indexOf(daoRow));
-
-				break;
+				case New:
+					bufferAddedRows.add(daoRow);
+					daoRow.setConsideredForUpdate(true);
+					repositionBuffer = repositionBuffer && isAutoCommit();
+					getLog().info("updateData row is an new row, row position in the appendedRows ");
+					break;
+	
+				default:
+					daoRow.setRowState(RowState.Updated);
+					daoRow.setConsideredForUpdate(true);
+					bufferChangedRows.add(daoRow);
+					repositionBuffer = false;
+					getLog().info("updateData row is an updated row, row position in the changedRows " + bufferChangedRows.indexOf(daoRow));
+	
+					break;
 			}
 		}
 
 		// make back end call to update data
 		updateDataRequest();
+		
+		if (repositionBuffer) {
+			
+			//reset/clear data object filters 
+			updateFiltersForRecordReposition();
+			
+			resetDataBuffer();
+			
+			//call navigator to reposition on new record 
+			repositionToNewRecord(daoRow.getRowId());
+			
+			moveToRow(daoRow.getRowId());
+		}
 	}
 
 	/**
@@ -368,8 +410,8 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 	 */
 	protected void updateDataRequest() throws WicketDSBLException {
 
-		if (logger.isTraceEnabled()) {
-			logger.trace("Update data request");
+		if (getLog().isTraceEnabled()) {
+			getLog().trace("Update data request");
 		}
 
 		if (!this.getSchema().isAutosync())
@@ -421,7 +463,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 				// update current new/changed row
 				if (rows != null && rows.size() == 1) {
-					logger.debug("Synchronize data response rows:" + rows);
+					getLog().debug("Synchronize data response rows:" + rows);
 					IDAORow<T> receivedRow = rows.iterator().next();
 
 					// daoRow.copyDataToBeforeImageRowData(daoRow.getRowData());
@@ -531,8 +573,6 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		// initialize new request
 		createNewDAORequest(DAOCommands.submitCommit.name(), StartRowMarker.commit.name());
 
-		this.lastDAORequest.setSkipRow(false);
-
 		if (bufferDeletedRows != null && !bufferDeletedRows.isEmpty()) {
 			for (IDAORow<T> deletedRow : bufferDeletedRows) {
 				this.lastDAORequest.addRow(deletedRow);
@@ -606,8 +646,10 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 		// TODO: We could replace all buffer data with data saved in
 		// startTransaction
-
+		boolean reposition = false;
+		
 		if (!this.bufferAddedRows.isEmpty()) {
+			reposition = true;
 			for (IDAORow<T> addedRow : this.bufferAddedRows) {
 				this.dataBuffer.remove(addedRow);
 			}
@@ -624,6 +666,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 		// Normally we should not have any delete operations in transaction..
 		if (!this.bufferDeletedRows.isEmpty()) {
+			reposition = true;
 			for (IDAORow<T> deletedRow : this.bufferDeletedRows) {
 				// TODO: we have to know position of rows before being deleted
 				// in order
@@ -636,6 +679,10 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			}
 		}
 
+		if (reposition) {
+			moveToAvailablePosition();
+		}
+		
 		bufferDeletedRows.clear();
 		bufferAddedRows.clear();
 		bufferChangedRows.clear();
@@ -669,8 +716,8 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			// when external transaction manager set autocommit flag to false
 			this.transactionManager = new WeakReference<IDSTransactionManager>(transactionManager);
 		} else {
-			if (logger.isTraceEnabled()) {
-				logger.trace("Internal transaction manager");
+			if (getLog().isTraceEnabled()) {
+				getLog().trace("Internal transaction manager");
 			}
 		}
 	}
@@ -678,6 +725,6 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 	public void setUpdateSource(IUpdateSource<T> updateSource) {
 		this.updateSource = updateSource;
 	}
-
+	
 }
 
