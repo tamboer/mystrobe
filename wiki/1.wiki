@@ -8,9 +8,9 @@ MyStroBe 1.1.0 version was released and it requires latest apache wicket 6.x.0 v
 ==Details==
 
 Latest 1.1.0 version is split into multiple libraries. One can use maven and specific pom file to build each library. 
- * Data - use data-pom.xml 
- * Web - use web-pom.xml
- * Generator - use generator-pom.xml   
+ * Data - use _data-pom.xml_ 
+ * Web - use _web-pom.xml_
+ * Generator - use _generator-pom.xml_   
 
 Old general pom file is still available and can be used to build a single library.
 
@@ -18,4 +18,33 @@ New data library is composed of mystrobe core sources used to connect to the bus
 
 Web library has all the wicket components created on the UI interfaces.
 
-Generator libarary is to be used only for data bean and schema generation and is not required for mystrobe runtime.    
+Generator libarary is to be used only for data bean and schema generation and is not required for mystrobe runtime.  
+
+
+==Start-Up==
+
+To start using mystrobe you can download binaries from [http://code.google.com/p/mystrobe/downloads/list here] or sources.
+
+===Class Generation===
+
+First step is to generate classes that will connect to progress business logic. Generator library is required in generation phase and you can build the library using generator-pom.xml. Maven command:
+_mvn -f generator-pom.xml install_
+
+Before starting class generation you need to set up a progess app server and business logic classes. App server class path has to be specified in the generate sources command. Example:
+_mvn -f generator-pom.xml exec:java -Dexec.args="-dst=generated -server=AppServer://tvh:5162/TVH_QRXEX -pkg=net.quarix.qrx4j.samples.data -beansPkg=beans -daoPkg=dao -metaPkg=beans.meta -prefix=Customer qrxexmpl wicketds.server.dmcustomer"_
+
+Command arguments:
+ * *-dst* =<dedtination folder> Destination folder path, relative to current path - mandatory
+ *  *-pkg*=<package name> Generated package name.
+ *  *-beansPkg*=<beans package name> Full or relative to _-pkg_ if specified.
+ *  *-daoPkg*=<data access object package name> Full or relative to _-pkg_ if specified.
+ *  *-metaPkg*=<meta data package name> Full or relative to _-pkg_ if specified.
+ *  *-user*=<progress app server user> - mandatory 
+ *  *-password*=<progress app server password> - mandatory
+ *  *-server*=<progress app server> Application server URL (AppServer://host:port/APP_SERVER_NAME) - mandatory
+ * *-sourcesFolder* =<app server> Existing generated sources folder. Use it when any user code was added to previously generated sources and you want to pass(keep) it in the new sources.
+
+Last two parameters must be the business logic application set on the server (has to be penultimate parameter in the command) and the business logic clas name(has to be last parameter in the command) name. If any of the two is missing you will get an error message.
+   
+===Runtime===  
+  
