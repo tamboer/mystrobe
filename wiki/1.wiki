@@ -1,3 +1,4 @@
+#labels Featured
 =MyStroBe project details=
 
 ==Introduction==
@@ -47,4 +48,10 @@ Command arguments:
 Last two parameters must be the business logic application set on the server (has to be penultimate parameter in the command) and the business logic clas name(has to be last parameter in the command) name. If any of the two is missing you will get an error message.
    
 ===Runtime===  
+  
+Generated code requires _mystrobe-data_ library to compile. Yo can place the new code in a new/existing project and start connection to the progress class that was used for class generation.
+
+If you plan to create a web application using wicket you can use exiting built in web component of _mystrobe-web_ library. 
+
+Code samples will follow shortly..
   
