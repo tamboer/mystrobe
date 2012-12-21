@@ -1,4 +1,3 @@
-#labels Featured
 =MyStroBe project details=
 
 ==Introduction==
