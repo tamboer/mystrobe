@@ -1,4 +1,6 @@
+#summary Project Details
 #labels Featured
+
 =MyStroBe project details=
 
 ==Introduction==
