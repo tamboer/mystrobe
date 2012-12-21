@@ -1,16 +1,16 @@
-MyStroBe project details
+=MyStroBe project details=
 
-= Introduction =
+==Introduction==
 
 MyStroBe 1.1.0 version was released and it requires latest apache wicket 6.x.0 version. Previous 1.0.0 version requires apache wicket 1.5.x.    
 
 
-= Details =
+==Details==
 
 Latest 1.1.0 version is split into multiple libraries. One can use maven and specific pom file to build each library. 
- * data - use data-pom.xml 
- * web - use web-pom.xml
- * generator - use generator-pom.xml   
+ * Data - use data-pom.xml 
+ * Web - use web-pom.xml
+ * Generator - use generator-pom.xml   
 
 Old general pom file is still available and can be used to build a single library.
 
