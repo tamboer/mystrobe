@@ -28,6 +28,7 @@ import net.mystrobe.client.IDAOSchema;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.SchemaColumnProperties;
 import net.mystrobe.client.dynamic.config.IDynamicFormFieldConfig.Property;
+import net.mystrobe.client.util.StringToJavaNativeUtil;
 import net.mystrobe.client.util.StringUtil;
 
 
@@ -238,6 +239,11 @@ public class DynamicFormConfig<T extends IDataBean> implements IDynamicFormConfi
 						IDynamicFormFieldConfig.FieldType fieldType;
 						if ("logical".equals(schemaPropertyValue)) {
 							fieldType = IDynamicFormFieldConfig.FieldType.CheckBox;
+						} else if ( "date".equals(schemaPropertyValue) || 
+								"datetime".equals(schemaPropertyValue) ||
+								"datetime-tz".equals(schemaPropertyValue)){
+							fieldType = IDynamicFormFieldConfig.FieldType.DateField;
+							configColumnProperties.put(IDynamicFormFieldConfig.Property.Format, StringToJavaNativeUtil.getDateFormatPattern(schemaPropertyValue));
 						} else {
 							fieldType = IDynamicFormFieldConfig.FieldType.TextField;
 						}
@@ -245,9 +251,6 @@ public class DynamicFormConfig<T extends IDataBean> implements IDynamicFormConfi
 					break;
 					
 					case Format:
-						if (!StringUtil.isNullOrEmpty(schemaPropertyValue)) {
-							configColumnProperties.put(IDynamicFormFieldConfig.Property.Format, schemaPropertyValue);
-						}
 					break;
 					
 					case Sortable:

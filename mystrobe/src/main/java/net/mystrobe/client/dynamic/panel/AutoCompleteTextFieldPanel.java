@@ -17,6 +17,8 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
+
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
 import net.mystrobe.client.ui.UICssResourceReference;
@@ -31,7 +33,7 @@ import org.apache.wicket.model.PropertyModel;
 /**
  * @author TVH Group NV
  */
-public class AutoCompleteTextFieldPanel<T, S extends IDataBean> extends DynamicFormComponentPanel {
+public class AutoCompleteTextFieldPanel<T extends Serializable, S extends IDataBean> extends DynamicFormComponentPanel<T> {
 
 	private static final long serialVersionUID = -1869714905060029368L;
 
@@ -61,7 +63,7 @@ public class AutoCompleteTextFieldPanel<T, S extends IDataBean> extends DynamicF
 		add(label);
 	}
 
-	public FormComponent<?> getFormComponent() {
+	public FormComponent<T> getFormComponent() {
 		return autoCompleteTextField;
 	}
 

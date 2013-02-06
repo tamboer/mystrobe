@@ -204,7 +204,8 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
 
     	boolean fkFilterValueChanged = false;
         
-    	if (!this.dataLinkParameters.isEmpty()) {
+    	if (!this.dataLinkParameters.isEmpty() &&
+    			!CursorStates.NoRecordAvailable.equals(cursorState) && data != null ) {
         
     		for (DataLinkParameters dataLinkParameter : this.dataLinkParameters.keySet()) {
     			
@@ -468,7 +469,7 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
 							Date date = new SimpleDateFormat(searchFilter.format()).parse(defaultStringValue);
 							defaultValue = new Timestamp(date.getTime());
 						} else {
-							throw new Exception("Search bean reset class tpe not supported: " + type.getName());
+							throw new Exception("Search bean reset class type not supported: " + type.getName());
 						}
 						
 						//set filter value

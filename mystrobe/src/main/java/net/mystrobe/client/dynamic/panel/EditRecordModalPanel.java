@@ -69,6 +69,8 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 	
 	private Map<String, Object> initRecordValuesMap;
 	
+	protected boolean dataSavedSuccesfull = false;
+	
 	public EditRecordModalPanel(String panelId, IDataObject<T> dataObjectAdaptor, final ModalWindow modalWindow,
 			IDynamicFormConfig<T> formConfig, ModalWindowUpdateMode windowUpdateMode, Map<String, Object> initRecordValuesMap) {
 		
@@ -132,12 +134,15 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 				Collection<IDAOMessage> errorMessages = EditRecordModalPanel.this.dataObjectAdaptor.getMessages(MessageType.Error); 
 				if ( errorMessages == null || errorMessages.isEmpty()) {
 					if (ModalWindowUpdateMode.Add.equals(EditRecordModalPanel.this.windowUpdateMode)) {
-						EditRecordModalPanel.this.dataObjectAdaptor.resetDataBuffer();
+						//EditRecordModalPanel.this.dataObjectAdaptor.resetDataBuffer();
 					}
+					dataSavedSuccesfull = true;
+					onSaveSuccess(target, EditRecordModalPanel.this.windowUpdateMode);
 					modalWindow.close(target);
 				} else {
 					target.add(feedbackPanel);
 					target.add(dataViewPanel);
+					dataSavedSuccesfull = false;
 				}
 			}
 			
@@ -214,6 +219,13 @@ public class EditRecordModalPanel<T extends IDataBean> extends Panel {
 		super.renderHead(response);
 		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
 	 }
+
+	public boolean isDataSavedSuccesfull() {
+		return dataSavedSuccesfull;
+	}
 	
+	protected void onSaveSuccess(AjaxRequestTarget target, ModalWindowUpdateMode updateMode){
+		
+	}
 }
 

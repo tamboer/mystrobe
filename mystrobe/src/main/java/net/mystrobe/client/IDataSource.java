@@ -100,6 +100,12 @@ public interface IDataSource<T extends IDataBean> extends LinkSource {
 	 * @param cacheData
 	 */
 	public void setCacheData(boolean cacheData);
+	
+	/**
+	 * Get data object meta data information.
+	 * @return Data object meta data class instance 
+	 */
+	public IDAOSchema<T> getSchema();
 
 
 }

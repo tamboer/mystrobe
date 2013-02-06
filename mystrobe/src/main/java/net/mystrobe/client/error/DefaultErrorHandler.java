@@ -48,7 +48,7 @@ public class DefaultErrorHandler {
 	 * @return False when no error messages are present.
 	 */
 	public static boolean handleErrors(IConnectorResponseMessages connectorResponseMessages, 
-				Component errorReportingComponent, List<DynamicFormComponentPanel> formFields) {
+				Component errorReportingComponent, List<DynamicFormComponentPanel<?>> formFields) {
 		
 		if (!connectorResponseMessages.hasMessageType(MessageType.Error)) {
 			return false;
@@ -64,7 +64,7 @@ public class DefaultErrorHandler {
 						+ ". Message : "  + daoMessage.getMessage());
 				
 				if (formFields != null) {
-					for (DynamicFormComponentPanel fieldPanel : formFields) {
+					for (DynamicFormComponentPanel<?> fieldPanel : formFields) {
 						if (columnName.equalsIgnoreCase(fieldPanel.getInputPropertyName())) {
 							fieldPanel.markAsNotValid();
 							break;

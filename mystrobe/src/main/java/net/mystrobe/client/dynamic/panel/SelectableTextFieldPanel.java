@@ -17,8 +17,11 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
+
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
+import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.page.ISelectRecordComponent;
 import net.mystrobe.client.util.DataBeanUtil;
 
@@ -26,10 +29,11 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentLabel;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,21 +53,21 @@ import org.slf4j.LoggerFactory;
  * @param <S> Linked data object type.
  * @param <M> Selectable component panel type.  
  */
-public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectRecordComponent> extends DynamicFormComponentPanel {
+public class SelectableTextFieldPanel<T extends Serializable, S extends IDataBean, M extends ISelectRecordComponent> extends DynamicFormComponentPanel<T> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SelectableTextFieldPanel.class); 
 	
 	private static final long serialVersionUID = -3401492928135987240L;
 	
-	private static final String TEXT_FIELD_ID = "textField_id"; 
+	private static final String TEXT_LABEL_ID = "textField_label"; 
 	
-	private static final String TEXT_FIELD_LABEL_ID = "textField_label";
+	private static final String TEXT_DESCRIPTION_LABEL_ID = "textDescription_label";
 	
 	private static final String TEXT_FIELD_LOOK_UP_ID = "textField_lookUpLinkId";
 
 	private static final String TEXT_FIELD_SELECT_RECORD_MODAL_WINDOW_ID = "selectRecordModalWindowId";
 	
-	private TextField<T> textField;
+	private Label textLabel;
 	
 	private AjaxLink<T> lookupLink;
 	
@@ -79,6 +83,13 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 	
 	private IDataBean lastDataBean;
 	
+	private String visibleColumnName;
+	
+	private String displayText;
+	
+	private String modelObjectDescriptionField;
+	
+	private IDynamicFormConfig<S> selectRecordWindowTableConfig;
 	
 	/**
 	 * Constructor
@@ -92,36 +103,46 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 	 * @param linkedDataObjectColumn Linked data object column. used to fetch value for form text field.
 	 * @param selectRecordModalWindowPanelClass Modal window selectable panel type. Used to set the modal window contents.
 	 */
-	public SelectableTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly,
-			IDataObject<S> linkedDataObject, String linkedDataObjectColumn, Class<M> selectRecordModalWindowPanelClass) {
+	public SelectableTextFieldPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, 
+			boolean required, boolean readOnly, IDataObject<S> linkedDataObject, String linkedDataObjectColumn,
+			Class<M> selectRecordModalWindowPanelClass, String visibleColumnName, String modelObjectDescriptionField, IDynamicFormConfig<S> selectRecordWindowTableConfig) {
 		
 		super(id, model, propertyName, required, readOnly);
 		
 		if( selectRecordModalWindowPanelClass == null ) (new IllegalStateException("null panel class")).printStackTrace();
 		
 		this.selectRecordModalPanelClass = selectRecordModalWindowPanelClass;
+		this.selectRecordWindowTableConfig = selectRecordWindowTableConfig; 
 		this.linkedColumnName = linkedDataObjectColumn;
 		this.linkedDataObject = linkedDataObject;
+		this.visibleColumnName = visibleColumnName;
+		this.modelObjectDescriptionField = modelObjectDescriptionField;
+		 
+		this.displayText = (model.getObject() != null ? model.getObject().toString() : "");
 		
-		textField = new TextField<T>(TEXT_FIELD_ID, model);
-		textField.setRequired(required);
-		textField.setOutputMarkupId(true);
-		textField.setLabel(labelModel);
-		textField.add(FIELD_NOT_VALID_BEHAVIOR);
+		textLabel = new Label(TEXT_DESCRIPTION_LABEL_ID, new LoadableDetachableModel<String>() {
+			@Override
+			protected String load() {
+				return (SelectableTextFieldPanel.this.getModelObject() != null && displayText != null) ? displayText : "" ;
+			}
+		});
+		textLabel.setOutputMarkupId(true);
+		textLabel.add(FIELD_NOT_VALID_BEHAVIOR);
+		add(textLabel);
 		
-		add(textField);
+		setRequired(this.required);
+		setLabel(labelModel);
 		
-		FormComponentLabel label = new DynamicFormComponentLabel(TEXT_FIELD_LABEL_ID, textField, required);
+		FormComponentLabel label = new DynamicFormComponentLabel(TEXT_LABEL_ID, SelectableTextFieldPanel.this, required);
         label.setDefaultModel(labelModel);
 		add(label);
 		
 		selectTextFieldValueWindow = new ModalWindow(TEXT_FIELD_SELECT_RECORD_MODAL_WINDOW_ID, model);
-		selectTextFieldValueWindow.setInitialWidth(650);
+		selectTextFieldValueWindow.setInitialWidth(800);
         
 		add(selectTextFieldValueWindow);
 		
-		selectTextFieldValueWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback()
-        {
+		selectTextFieldValueWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
             private static final long serialVersionUID = -6131202734588658455L;
 
 			@SuppressWarnings("unchecked")
@@ -130,9 +151,25 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 				if (selectRecordModalPanel != null 
 						&& selectRecordModalPanel.isSelected() 
 						&& selectRecordModalPanel.getSelectedData() != null) {
-					textField.getModel().setObject((T) DataBeanUtil.getFieldValue(selectRecordModalPanel.getSelectedData(),
-														SelectableTextFieldPanel.this.linkedColumnName, null));
-					target.add(textField);
+					
+					T selectedObject =  (T) DataBeanUtil.getFieldValue(selectRecordModalPanel.getSelectedData(),
+							SelectableTextFieldPanel.this.linkedColumnName, null);
+					
+					getModel().setObject(selectedObject);
+					lookupLink.setModelObject(selectedObject);
+					
+					Object displayObject = null;
+					
+					if (SelectableTextFieldPanel.this.visibleColumnName != null ) {
+						displayObject = DataBeanUtil.getFieldValue(selectRecordModalPanel.getSelectedData(),
+								SelectableTextFieldPanel.this.visibleColumnName, null);
+					} else {
+						displayObject = selectedObject;
+					}
+					
+					displayText = displayObject != null ? displayObject.toString() : "";
+					
+					target.add(textLabel);
 				}
 			}
         });
@@ -150,8 +187,18 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 						Class<?> [] constructorArgumentTypes;
 						Object [] constructorArgumentTypeInstances;
 						if (SelectableTextFieldPanel.this.linkedDataObject != null ) {
-							constructorArgumentTypes = new Class [] {String.class, ModalWindow.class, IDataObject.class};
-							constructorArgumentTypeInstances = new Object [] {selectTextFieldValueWindow.getContentId(), selectTextFieldValueWindow, SelectableTextFieldPanel.this.linkedDataObject};
+							
+							if (SelectableTextFieldPanel.this.selectRecordWindowTableConfig != null) {
+								constructorArgumentTypes = new Class [] {String.class, ModalWindow.class, IDataObject.class, IDynamicFormConfig.class};
+								constructorArgumentTypeInstances = new Object [] {selectTextFieldValueWindow.getContentId(),
+										selectTextFieldValueWindow, SelectableTextFieldPanel.this.linkedDataObject, 
+										SelectableTextFieldPanel.this.selectRecordWindowTableConfig};
+							} else {
+								constructorArgumentTypes = new Class [] {String.class, ModalWindow.class, IDataObject.class};
+								constructorArgumentTypeInstances = new Object [] {selectTextFieldValueWindow.getContentId(),
+										selectTextFieldValueWindow, SelectableTextFieldPanel.this.linkedDataObject};
+							}
+							
 						} else {
 							constructorArgumentTypes = new Class [] {String.class, ModalWindow.class};
 							constructorArgumentTypeInstances = new Object [] {selectTextFieldValueWindow.getContentId(), selectTextFieldValueWindow};
@@ -190,27 +237,46 @@ public class SelectableTextFieldPanel<T, S extends IDataBean, M extends ISelectR
 	
 	@Override
 	public void disableFormFieldPanel() {
-		textField.setEnabled(false);
 		lookupLink.setEnabled(false);
 	}
 
 	
 	public void enableFormFieldPanel() {
 		if (!readOnly) {
-			textField.setEnabled(true);
 			lookupLink.setEnabled(true);
 		}
 	}
 
 	public FormComponent<T> getFormComponent() {
-		return textField;
+		return this;
 	}
 	
 	public void setFormComponentModelObject(IDataBean dataBean) {
+		super.setFormComponentModelObject(dataBean);
 		this.lastDataBean = dataBean;
-		IModel<T> newModel = new PropertyModel<T>(dataBean, propertyName);
-		textField.setModel(newModel);
-		lookupLink.setModel(newModel);
+		
+		IModel<T> newModel = PropertyModel.<T>of(dataBean, this.propertyName);
+		lookupLink.setDefaultModel(newModel);
+		
+		Object displayObject = null;
+		
+		if (modelObjectDescriptionField != null) {
+			displayObject = DataBeanUtil.getFieldValue(dataBean, modelObjectDescriptionField, null);
+		} else {
+			displayObject = newModel.getObject();
+		}
+		
+		displayText = displayObject != null ? displayObject.toString() : "";
+	}
+	
+	@Override
+	protected void convertInput() {
+		if (lookupLink.getModelObject() != null) {
+			T input = lookupLink.getModelObject();
+			setConvertedInput(input);
+		} else {
+			setModelObject(null);
+		}
 	}
 }
 

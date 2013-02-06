@@ -55,7 +55,13 @@ public class IDynamicFormFieldConfig {
 		
 		LinkedDataObject("autoCompleteDataObject"),
 
-		LinkedColumnName("autoCompleteColumnName");
+		LinkedColumnName("autoCompleteColumnName"),
+		
+		VisibleColumnName("visibleColumnName"),
+		
+		DescriptionColumn("descriptionColumn"),
+
+		SelectRecordTableConfig("selectRecordTableConfig");
 		
 		private String name;
 		

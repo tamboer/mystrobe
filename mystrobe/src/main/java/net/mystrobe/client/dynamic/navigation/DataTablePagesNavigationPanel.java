@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
-
 import net.mystrobe.client.DataSourceAdaptor.AppendPosition;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener;
@@ -835,7 +833,10 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		
 		if (this.pageNavigationSet.isEmpty() && currentPageNumber == 1) {
 			this.pageNavigationSet.add(new PageNavigation(1, null, null));
-			this.pageNavigationSet.add(new PageNavigation(2, null, lastRowId));
+			if (!DataTableNavigationState.FirstAndLastPage.equals(navigationState) &&
+					!DataTableNavigationState.LastPage.equals(navigationState)) {
+				this.pageNavigationSet.add(new PageNavigation(2, null, lastRowId));
+			}
 		} else {
 			
 			PageNavigation currentPage = this.pageNavigationSet.tailSet(new PageNavigation(currentPageNumber), true).first();

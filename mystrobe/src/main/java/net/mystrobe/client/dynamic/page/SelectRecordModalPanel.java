@@ -31,7 +31,6 @@ import net.mystrobe.client.util.StringUtil;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.model.ResourceModel;
@@ -72,17 +71,20 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 	protected IDataBean selectedData;
 	
 	
+	public SelectRecordModalPanel(String panelId, ModalWindow modalWindow, IDataObject<T> dataObject, IDynamicFormConfig<T> tableColumnsConfig) {
+		super(panelId, modalWindow, dataObject);
+		this.tableColumnsConfig = tableColumnsConfig;
+		initializeRecordData();		
+	}
+	
 	public SelectRecordModalPanel(String panelId, ModalWindow modalWindow) {
 		super(panelId, modalWindow);
-		this.modalWindow = modalWindow;
-		this.modalWindow.setTitle(  new ResourceModel("component.SelectRecordModalPanel.title", StringUtil.buildDefaultResourceValue("component.SelectRecordModalPanel.title")));
 		initializeRecordData();		
 	}
 	
 	public SelectRecordModalPanel(String panelId, ModalWindow modalWindow, IDataObject<T> dataObject) {
 		super(panelId, modalWindow, dataObject);
 		this.tableColumnsConfig = new DynamicFormConfig<T>(dataObject.getSchema());
-		this.modalWindow.setTitle(  new ResourceModel("component.SelectRecordModalPanel.title." + dataObject.getSchema().getDAOId(), StringUtil.buildDefaultResourceValue("component.SelectRecordModalPanel.title." + dataObject.getSchema().getDAOId())));
 		initializeRecordData();
 	}
 	
@@ -153,7 +155,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 			@Override
 			public void onClick(AjaxRequestTarget target) {
 				SelectRecordModalPanel.this.selected = true;
-				SelectRecordModalPanel.this.dataObject.cancelCRUDOpertaion();
+				SelectRecordModalPanel.this.dataObject.cancelCRUDOperation();
 				SelectRecordModalPanel.this.selectedData = SelectRecordModalPanel.this.dataObject.getData();  
 				SelectRecordModalPanel.this.modalWindow.close(target);	
 			}
@@ -173,7 +175,7 @@ public class SelectRecordModalPanel<T extends IDataBean> extends AbstractSelectR
 			@Override
 			public void onClick(AjaxRequestTarget target) {
 				SelectRecordModalPanel.this.selected = false;
-				SelectRecordModalPanel.this.dataObject.cancelCRUDOpertaion();
+				SelectRecordModalPanel.this.dataObject.cancelCRUDOperation();
 				SelectRecordModalPanel.this.modalWindow.close(target);
 			}
 		};

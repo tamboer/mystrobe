@@ -31,17 +31,17 @@ import org.apache.wicket.model.PropertyModel;
 /**
  * @author TVH Group NV
  */
-public class DateFieldPanel extends DynamicFormComponentPanel{
+public class DateFieldPanel extends DynamicFormComponentPanel<Date>{
 
 	private static final long serialVersionUID = -3401492928135987240L;
-
+	
 	private static final String DATE_FIELD_ID = "dateField_id"; 
 	
 	private static final String DATE_FIELD_LABEL_ID = "dateField_label";
 	
 	private DateTextField dateTextField;
 	
-	private DatePickerVisibilityAware datePicker;
+	private DatePicker datePicker;
 	
 	public DateFieldPanel(String id, IModel<Date> model, String propertyName, IModel<String> labelModel, boolean required, boolean readOnly, String dateFormat) {
 		super(id, model, propertyName, required, readOnly);
@@ -51,22 +51,25 @@ public class DateFieldPanel extends DynamicFormComponentPanel{
 		} else {
 			dateTextField = new DateTextField(DATE_FIELD_ID, model, dateFormat);
 		}
+		
+		FormComponentLabel label = new DynamicFormComponentLabel(DATE_FIELD_LABEL_ID, dateTextField, this.required);
+        label.setDefaultModel(labelModel);
+		add(label);
+		
 		dateTextField.setRequired(required);
 		dateTextField.setOutputMarkupId(true);
 		dateTextField.setLabel(labelModel);
 		dateTextField.add(FIELD_NOT_VALID_BEHAVIOR);
 		
-		datePicker = new DatePickerVisibilityAware();
+		datePicker = new DatePicker();
+		datePicker.setShowOnFieldClick(true);
 		dateTextField.add(datePicker);
 		
 		add(dateTextField);
-		
-		FormComponentLabel label = new DynamicFormComponentLabel(DATE_FIELD_LABEL_ID, dateTextField, required);
-        label.setDefaultModel(labelModel);
-		add(label);
+	
 	}
 	
-	public FormComponent<?> getFormComponent() {
+	public FormComponent<Date> getFormComponent() {
 		return dateTextField;
 	}
 
@@ -80,9 +83,14 @@ public class DateFieldPanel extends DynamicFormComponentPanel{
 
 	@Override
 	public String getDisableFormFieldJavaScript() {
-		return datePicker.getDoNotDisplayJavaScript();
+		return "";//datePicker.getDoNotDisplayJavaScript();
 	}
-
+	
+	@Override
+	public String getEnableFormFieldJavaScript() {
+		return "";//datePicker. getDisplayJavaScript();
+	}
+	
 	private class DatePickerVisibilityAware extends DatePicker {
 		
 		private static final long serialVersionUID = -3744342446586580608L;
@@ -94,7 +102,17 @@ public class DateFieldPanel extends DynamicFormComponentPanel{
 			javaScript.append("document.getElementById('").append(getIconId()).append("').style.display='none';");
 			javaScript.append("}");
 			
-			return javaScript.toString();
+			return "";
+		}
+		
+		public String getDisplayJavaScript() {
+			
+			StringBuilder javaScript = new StringBuilder(); 
+			javaScript.append("if (document.getElementById('").append(getIconId()).append("')!= null) { ");
+			javaScript.append("document.getElementById('").append(getIconId()).append("').style.display='inline-block';");
+			javaScript.append("}");
+			
+			return "";
 		}
 		
 	}

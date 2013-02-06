@@ -159,7 +159,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	protected boolean repositionOnNewAddedRecord = false;
 
 	public static enum AppendPosition {
-		BEGINING, END, REPLACE, DELETED_DATA, JUMP
+		BEGINING, END, REPLACE
 	};
 
 	public IDSSchema getDSSchema() {
@@ -182,6 +182,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	protected boolean canMove(int rowPosition) {
 		if (dataBuffer == null || this.dataBuffer.size() == 0) {
 			publishCursorState(CursorStates.NoRecordAvailable);
+			publishDataAvailable(null);
 			return false;
 		}
 
@@ -557,16 +558,23 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 	 */
 	private void processResponse(IDSResponse response, AppendPosition appendPosition) {
 		if (response == null) {
-			trace("received null response");
-			return;
+			
+			StringBuilder logMessage = new StringBuilder("Received null response from server. Datset schema:")
+				.append( getDSSchema().getClass().getName()).append("\n");
+			
+			logMessage.append(" Request daoId:").append(this.lastDAORequest.getDAOId()).append("\n");
+			logMessage.append(" Request filters:").append(this.lastDAORequest.getFilters());
+			getLog().error(logMessage.toString());
+			
+			throw new WicketDSRuntimeException("Received null response from server." + logMessage.toString());
 		}
-
-		trace("Process response"
-				+ response.getDAOResponse(getSchema().getDAOId(),
-						getSchema().getIDataTypeClass()).getDAORows());
 
 		this.lastDAOResponse = response.getDAOResponse(getSchema().getDAOId(),
 				getSchema().getIDataTypeClass());
+		
+		if (getLog().isTraceEnabled()) {
+			getLog().trace("Process response:" + this.lastDAOResponse.getDAORows());
+		}
 
 		//TODO For the future all request should go through transaction manager
 		// Dataset level messages will be available in the transaction manager
@@ -639,6 +647,7 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 		return this.hasLastRow && this.hasFirstRow;
 	}
 
+	@Override
 	public IDAOSchema<T> getSchema() {
 		return this.schema;
 	}
@@ -667,8 +676,10 @@ public abstract class DataSourceAdaptor<T extends IDataBean> implements
 
 	protected void publishDataAvailable(T data) {
 		this.currentData = data;
-		trace(" publishing dataAvailable for " + data.getRowId());
-
+		if (getLog().isTraceEnabled()) {
+			getLog().trace(" publishing dataAvailable for: " + (data != null ? data.getRowId() : null));
+		}
+		
 		Iterator<IDataListener<T>> dataListenerIterator = this
 				.getDataListeners().iterator();
 
