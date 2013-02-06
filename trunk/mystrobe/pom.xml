@@ -4,7 +4,7 @@
   <groupId>mystrobe</groupId>
   <artifactId>mystrobe</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <!-- TODO project name -->
   <name>mystrobe</name>
   <description></description>
