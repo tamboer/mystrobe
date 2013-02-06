@@ -1,0 +1,57 @@
+<html>
+<head>
+	<wicket:head>
+		<script>
+			
+  		</script>
+	</wicket:head>
+</head>
+<body>
+ 	<wicket:panel>
+		<form wicket:id="editForm">
+		
+			<div wicket:id="feedback"/>
+			
+			<div>
+				 <ul>
+					<li style="text-align:left;margin-left:20px;margin-top:15px;">
+						<label style="float: left; width: 100px;"><wicket:message key="LBL_NAME"/><font color="red">*</font></label>
+						<input type="text" wicket:id="itemname" style="width: 200px;"/>
+					</li>
+					
+					<li style="text-align:left;margin-left:20px;margin-top:15px;">
+						<label style="float: left; width: 100px;"><wicket:message key="LBL_CATEGORY"/><font color="red">*</font></label>
+						<select wicket:id="category1" style="width: 200px;"/>
+					</li>
+					
+					<li style="text-align:left;margin-left:20px;margin-top:15px;">
+						<label style="float: left; width: 100px;"><wicket:message key="LBL_DESCRIPTION"/></label>
+						<textarea  rows="3" wicket:id="catdescription" style="width: 200px;"/>
+					</li>
+					
+					<li style="text-align:left;margin-left:20px;margin-top:15px;">
+						<label style="float: left; width: 100px;"><wicket:message key="LBL_TYPE"/><font color="red">*</font></label>
+						<select wicket:id="category2" style="width: 200px;"/>
+					</li>
+					
+					<li style="text-align:left;margin-left:20px;margin-top:15px;">
+						<label style="float: left; width: 100px;"><wicket:message key="LBL_PRICE"/><font color="red">*</font></label>
+						<input type="text" wicket:id="price" style="width: 200px; text-align: right;"/>
+					</li>
+					
+					<li style="text-align:left;margin-left:20px;margin-top:15px;">
+						<label style="float: left; width: 100px;"><wicket:message key="LBL_WEIGHT"/><font color="red">*</font></label>
+						<input type="text" wicket:id="weight" style="width: 200px; text-align: right;"/>
+					</li>
+				</ul>	
+					
+				<div class="box-buttons-right">
+					<input type="button" class="button" wicket:id="saveBtn" value="Save" />
+					<input type="button" class="button" wicket:id="cancelBtn" value="Cancel" />
+					<input type="button" class="button" wicket:id="resetBtn" value="Reset" />
+				</div>
+			</div>
+		</form>
+	</wicket:panel>	
+</body>  
+</html>

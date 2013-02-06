@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		
+		
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		
+		<wicket:head>
+			<script>
+				activeTab=0;
+				
+				function newPopup(url) {
+					popupWindow = window.open(
+						url,'popUpWindow','height=600,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes');
+				}
+				
+			</script>
+		</wicket:head>
+	</head>
+	<body>
+		<div id="bd" style="width:700px;height:700px">
+			<wicket:extend>
+			
+			<div id="tabs-1" class="tabContent">	
+				
+				<div style="width: 80%; margin-left: 10%;">
+				
+					<div style="color:#FF5500">
+						<h3>Search Customer</h3> <!--  href="javascript:newPopup('CustomerPageInfo.html');" -->
+						<div style="float:right;">
+							<a style="color:#FF5500; font-size:10pt "  href="javascript:newPopup('../../CustomerInfo.html');">Info</a>
+						</div>	
+					</div>
+					
+					<form wicket:id="editCustomerForm">
+						<div wicket:id="editCustomerWindow"></div>
+					</form>
+					
+					<div style="width: 70%; margin-left: 15%;">
+						<form wicket:id="searchForm">
+							
+							<div wicket:id="feedback"/>
+							
+							<div>
+								<div style="display: inline;">
+									<label style="display: inline-block; width: 70px;">Name:</label> 
+									<input type="text" wicket:id="name"/>  
+								</div>
+								
+								<div style="display: inline; margin-left: 20px;">
+									<label style="display: inline-block; width: 70px;">Country:</label> 
+									<input type="text" wicket:id="country"/>  
+								</div>
+							</div>
+							
+							<div style="display: block; float: right; ">
+								<input type="button" class="button" wicket:id="searchButton" value="Search"/>
+								<input type="button" class="button"  wicket:id="addButton" value="Add"/>
+								<input type="button" class="button"  wicket:id="resetButton" value="Reset"/>
+							</div> 
+							
+						</form>
+					</div>
+					
+					<div class="spacer"></div>	
+					
+					<div>
+						<div wicket:id="dynamicForm"></div>	
+						
+						<div class="spacer"></div>	
+						
+						<div wicket:id="tableId"></div>
+						
+						<div class="spacer"></div>									
+						
+						<div wicket:id="navigatorId"></div>
+						
+						<div class="spacer"></div>	
+					</div>
+				</div>	
+			
+			</div>	
+			
+			<!-- <div id="tabs-2"/>
+			<div id="tabs-3"/>  -->
+					
+			</wicket:extend>	
+		</div>	
+	</body>
+</html>
