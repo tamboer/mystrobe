@@ -1,1 +1,0 @@
-@GeneratorMeta(appName="$appName$", urn="$urn$", dsName="$dsName$", dsId="$dsId$", $if(daoId)$daoId="$daoId$", $endif$isLocked=false)
