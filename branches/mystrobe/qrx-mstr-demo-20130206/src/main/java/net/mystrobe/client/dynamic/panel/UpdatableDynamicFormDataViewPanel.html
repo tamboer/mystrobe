@@ -1,0 +1,22 @@
+<html>
+<head>
+</head>
+<body>
+	<wicket:panel>
+		<div>
+			<table>
+				<wicket:container wicket:id="formInputFields_Id">
+					<!-- Dynamic html to be replaced with tr html tags according to user configurations -->
+					<span wicket:id="dynamicHtmlBeforeInputPanel"/>
+						<wicket:container wicket:id="formInput_PanelId" />
+					<span wicket:id="dynamicHtmlAfterInputPanel"/>
+				</wicket:container>
+			</table>
+			<input type="submit" wicket:id="submitButton" value="Save"/>
+			<input type="button" wicket:id="cancelButton" value="Cancel"/>
+			<input type="button" wicket:id="editButton" value="Edit"/>
+			<input type="button" wicket:id="newButton" value="New"/> 	
+		</div>
+	</wicket:panel>
+</body>
+</html>
