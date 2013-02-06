@@ -1,0 +1,3 @@
+@echo off
+rem This command tool is no longer supported. Please use the maven command to generate sources 
+java -cp .\lib\antlr-2.7.7.jar;.\lib\wicket-1.4.8.jar;.\lib\scannotation-1.0.2.jar;.\lib\javassist.jar;.\lib\jackson-core-asl-1.6.4.jar;.\lib\jackson-mapper-asl-1.6.4.jar;.\lib\messages.jar;.\lib\progress.jar;.\lib\slf4j-api-1.5.8.jar;.\lib\slf4j-log4j12-1.5.8.jar;.\lib\log4j-1.2.14.jar;.\lib\stringtemplate-3.2.1.jar;.\src\connector-oo-quarix\;.\bin; net.mystrobe.client.connector.quarixbackend.ClassGenerator -dst=generated ProdSearch server.dmprodscreenfield
