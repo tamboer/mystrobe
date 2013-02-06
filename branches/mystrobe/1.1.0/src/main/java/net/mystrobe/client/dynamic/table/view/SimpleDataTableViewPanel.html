@@ -1,0 +1,41 @@
+<html>
+<head>
+</head>
+<body>
+	<!-- 
+	<wicket:head>
+      	<script type="text/javascript">
+      		function selectTableRow(id, selectedCssClassName) {
+      			var tableRow = document.getElementById(id);
+      			var row = tableRow.parentNode.firstChild;
+      			
+      			while(row != null ) {
+      				if (row.className != null) {
+      					row.className = row.className.replace(selectedCssClassName, '');
+      				}
+      				row = row.nextSibling;		
+      			}
+      			tableRow.className = tableRow.className.replace('over', '') + ' ' + selectedCssClassName;
+         	}
+    	</script>
+	</wicket:head>
+	 -->
+	 
+	<wicket:extend></wicket:extend>
+		<!--<div>
+			<table class="striped">
+				<tr>
+					<th wicket:id = "headers">
+						<span wicket:id="header_label">Header</span>
+						<a wicket:id="header" class="sort-btn"></a>
+					</th>
+				</tr>
+				<tr wicket:id="rows">
+		       		<td wicket:id="cells">
+		            	<span wicket:id="cell"></span>
+		        	</td>
+	    		</tr>
+			</table>	
+		</div> -->
+</body>
+</html>

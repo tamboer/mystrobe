@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:wicket="http://wicket.apache.org">
+
+ <head>
+    <style>
+    	@CHARSET "ISO-8859-1";
+		table.striped tr.selected{
+			border-top: 2px solid #eab808;
+			border-bottom: 2px solid #eab808;
+			background-color: #FF9;
+		}
+    </style>
+</head>    
+
+<body>
+
+<wicket:panel>
+
+	<wicket:extend>
+		<div wicket:id="searchFilterSection" class="box">
+			<form wicket:id="filterFormId">
+				<div wicket:id="feedback"></div>
+				<div wicket:id="filtersViewId">
+					<label wicket:id="filterLabelId">Filter</label> 
+					<input wicket:id="filterTextFieldId" type="text"/>		
+				</div>
+				<input type="button" class="button" wicket:id="searchButtonId" value="Search"/>
+			</form>
+		</div>
+		<wicket:child/>
+	</wicket:extend>
+
+</wicket:panel>	
+
+</body>
+</html>
