@@ -150,6 +150,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>Quickstart.war</finalName>
+		<finalName>Quickstart</finalName>
 	</build>
 </project>
