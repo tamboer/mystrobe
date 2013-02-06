@@ -1,0 +1,23 @@
+
+<wicket:head>
+	<script>
+		 $(function() {
+		   $( "#radio" ).buttonset();
+		 });
+	</script>
+</wicket:head>
+
+<wicket:panel>
+	
+	<form wicket:id="headerLinksForm">
+	  <div wicket:id="headerLinksGroup">
+	    <div id="radio">
+	    	<input type="radio" wicket:id="homeRadioLink" id="radio1"/><label for="radio1" style="font-size: 11pt; height:20px; padding: 0.1em 1em;">Home</label>
+	    	<input type="radio" wicket:id="customerRadioLink" id="radio2"/><label for="radio2" style="font-size: 11pt; height:20px; padding: 0.1em 1em;">Customer</label>
+	    	<input type="radio" wicket:id="orderRadioLink" id="radio3" /><label for="radio3" style="font-size: 11pt; height:20px;  padding: 0.1em 1em;">Order</label>
+	    	<!--  <input type="radio" wicket:id="itemsRadioLink" id="radio4" /><label for="radio4" style="font-size: 11pt; height:20px;  padding: 0.1em 1em;">Purchase Orders</label> -->
+	    	<input type="radio" wicket:id="settingsRadioLink" id="radio4"/><label for="radio4" style="font-size: 11pt; height:20px;  padding: 0.1em 1em;">Settings</label>
+	    </div>
+	  </div>
+	</form>
+</wicket:panel>

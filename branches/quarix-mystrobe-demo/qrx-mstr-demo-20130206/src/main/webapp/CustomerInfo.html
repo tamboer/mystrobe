@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<head>
+		<meta charset="utf-8" />
+		<title>Customer Page Info</title>
+		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="Stylesheet" charset="utf-8" />
+	</head>
+	<body style="background-color: #092E67;;">
+	
+		<div class="info" style="font-size: 12pt;">
+			
+			<p>Customer page is build from MyStroBe standard components.</p>
+
+			<p>Customer details, table and navigator are built in components linked together through component linker. Sample code:</p>
+			<div style="padding-left: 50px; padding-top:10px; font-size: 10pt; color: #21759B; font-style: italic;">	
+				tableView = new SimpleDataTableViewPanel&lt;Customer&gt;("tableId", custFormConfig, 10, additionalColumns){..	};<br/>
+    	    	ComponentLinker.bindDataTableData(customerDo, tableView);<br/>
+		    	<br/>
+	    		pagesNavigator = new DataTablePagesNavigationPanel&lt;Customer&gt;("navigatorId", 10, 4) {..};<br/>
+    			ComponentLinker.bindDataTableNavigation(pagesNavigator, customerDo);<br/>
+    			<br/>
+    			custForm  = new DynamicFormDataViewPanel&lt;Customer&gt;( "dynamicForm" , new Customer() , custDetailsConfig);<br/>
+  				ComponentLinker.bindData( customerDo, custForm, null);<br/>
+  				..
+  			</div>
+  	
+  			<p>Wicket html for MyStroBe components:</p>
+			<div style="padding-left: 50px; padding-top:10px;  font-size: 10pt; color: #21759B; font-style: italic;">	
+				..<br/>
+				&lt;div wicket:id="dynamicForm"&gt;&lt;/div&gt;<br/>
+				&lt;div wicket:id="tableId"&gt;&lt;/div&gt; <br/>
+				&lt;div wicket:id="navigatorId"&gt;&lt;/div&gt; <br/>
+				..	
+			</div>
+			
+			<p>Modal window uses standard MyStroBe edit record panel, configured for lookup fields, required fields and others.</p>
+			<p>Configuration has multiple options and offers support for all details off the edit record panel. Same configuration class is used for both table and edit record form.
+			One can specify the visible columns, order of columns, labels, column width, required fields, field types and many others.</p>
+			
+			<p>For table component you can also configure additional columns using IMyStrobeColumn which inherits from wicket IColumn.</p>
+		</div>
+	
+	</body>
+</html>

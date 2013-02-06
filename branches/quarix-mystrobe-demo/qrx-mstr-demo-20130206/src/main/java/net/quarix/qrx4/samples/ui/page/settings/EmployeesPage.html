@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		
+		<wicket:head>
+			<script>
+				activeTab=0;
+			</script>
+		</wicket:head>
+	</head>
+	<body>
+		<div id="bd" style="width:700px;height:700px">
+			
+			<wicket:extend>
+			
+				<div id="tabs-1" class="tabContent">	
+					
+					<div style="width: 80%; margin-left: 10%;">
+					
+						<div style="color:#FF5500">
+							<h3>Employees</h3>
+						</div>
+						
+						<form wicket:id="employeeForm">
+							
+							<div wicket:id="feedback"/>
+							
+							<div wicket:id="employeeView"></div>
+						
+							<div wicket:id="crudOperations"></div>
+	
+						</form>
+						
+						<div wicket:id="employeeTable"></div>
+	
+						<div wicket:id="employeeNavigator"></div>
+					</div>
+					
+				</div>	
+				
+				<div id="tabs-2"/>
+				
+				<div id="tabs-3"/>
+				
+					
+			</wicket:extend>	
+		</div>	
+	</body>
+</html>

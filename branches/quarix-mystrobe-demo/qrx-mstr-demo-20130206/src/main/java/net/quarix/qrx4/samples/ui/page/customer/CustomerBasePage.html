@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		
+		<wicket:head>
+			<script>
+				  var activeTab = 0;
+				  var disabledTabs = [1, 2];
+				  
+				  $(function() {
+				     $( "#tabs" ).tabs( { disabled: disabledTabs, active: activeTab});
+				  });
+		  	</script>
+	  	</wicket:head>
+	</head>
+		
+	<body>
+		<div id="bd">
+			<wicket:extend>
+			
+				<div id="tabs">
+				  <ul>
+				    <li><a href="#tabs-1" wicket:id="searchTab">Search</a></li>
+				   <!--   <li><a href="#tabs-2" wicket:id="editTab">Edit</a></li>
+				    <li><a href="#tabs-3" wicket:id="ordersTab">Orders</a></li> -->
+				  </ul>
+				  
+				  <wicket:child/>
+				  
+				</div>
+			
+				<div class="spacer"></div>		
+				
+			</wicket:extend>	
+		</div>	
+	</body>
+</html>

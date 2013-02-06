@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<head>
+		<meta charset="utf-8" />
+		<title>Search Order Page Info</title>
+		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="Stylesheet" charset="utf-8" />
+	</head>
+	<body style="background-color: #092E67;;">
+	
+		<div class="info" style="font-size: 12pt;">
+			
+			<p>Search Order uses MyStroBe data object link parameters to connect selected order with order lines display.</p>
+
+			<p>Connection is made through the component linker by providing the link parameters:</p>
+			<div style="padding-left: 50px; padding-top:10px; font-size: 10pt; color: #21759B; font-style: italic;">	
+				..<br/>
+				orderDo = new OrderDataObject();<br/>
+				orderLineDo = new OrderLineDataObject(); <br/>
+				..<br/>
+				DataLinkParameters orderOrderLineLink = new DataLinkParameters(OrderSchema.Cols.ORDERNUM.id());<br/>
+				Set&lt;DataLinkParameters&gt; linkParams = new HashSet&lt;DataLinkParameters&gt;(1);<br/>
+				linkParams.add( orderOrderLineLink);<br/>
+				ComponentLinker.bindData(orderDo, orderLineDo, linkParams);<br/>
+				..<br/>
+  			</div>
+  	
+  			<p>On click event on order tables uses ajax to reload order lines table.
+  				 MyStroBe components expose methods that handle ajax events. One can easily extend default behavior or override it. 
+  				</p>
+			<div style="padding-left: 50px; padding-top:10px;  font-size: 10pt; color: #21759B; font-style: italic;">	
+				..<br/>
+				SimpleDataTableViewPanel&lt;Order&gt; tableView = new SimpleDataTableViewPanel&lt;Order&gt;<br/>
+				&nbsp;&nbsp;("orderViewId", orderFormConfig, 10, additionalColumns){<br/>
+
+				&nbsp;&nbsp;@Override<br/>
+				&nbsp;&nbsp;protected void onDataChanged(AjaxRequestTarget target) {<br/>
+				&nbsp;&nbsp;&nbsp;&nbsp;super.onDataChanged(target);<br/>
+				&nbsp;&nbsp;&nbsp;&nbsp;target.add(SearchOrderPage.this.get("orderLineNavigatorId"));<br/>
+				&nbsp;&nbsp;&nbsp;&nbsp;target.add(SearchOrderPage.this.get("orderLineViewId"));<br/>
+				&nbsp;&nbsp;}<br/>
+				};<br/>
+				..	
+			</div>
+		</div>
+	
+	</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+	</head>
+	<body>
+		<div id="bd">
+			<div><ul id="breadcrumb"><li><a href="/">Home</a></li></ul></div>
+			<div class="spacer"></div>							
+			
+			<wicket:extend>
+			
+				<div class="wicket-modal">
+				
+					<div class="tvh-modal-window">
+					
+					<div class="w_caption">
+						<h3 class="w_captionText">D with record navigation</h3>
+					</div>
+							
+					<div class="box-content clearfix">
+					
+						<div class="legend">Customer</div>
+						<div><label>Number:</label><span wicket:id="custnum"></span></div>
+						<div><label>Name:</label><span wicket:id="name"></span></div>
+						<div><label>Phone:</label><span wicket:id="phone"></span></div>					
+	
+						<form wicket:id="form">								
+							<div class="panel">
+						      <div wicket:id="navigationPanel"> </div>
+							</div>						
+						</form>
+					</div>
+					
+					</div>			
+				</div>
+			
+			</wicket:extend>	
+		</div>
+				
+	</body>
+</html>

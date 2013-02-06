@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		
+		<wicket:head>
+			<script>
+				activeTab=1;
+				
+				function initSelectableItems() {
+					$("#selectable li").bind("click", function() {
+						if (!$(this).hasClass()) {
+							$(this).siblings().removeClass("ui-selected");
+							$(this).addClass("ui-selected");
+						}
+					});
+					
+					$("#selectable li").hover(function(){$(this).toggleClass("selectable_hover");});
+				}
+				
+				$(function() {
+				  	initSelectableItems(); 	 
+				  });
+ 			</script>
+ 			
+		<style>
+			  .selectable_hover { background: #FECA40; }
+			  #selectable .ui-selecting { background: #FECA40; }
+			  #selectable .ui-selected { background: #F39814; color: white; }
+			  #selectable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+			  #selectable li { line-height:20px; margin: 5px; font-size: 12px; cursor: pointer;}
+			  #selectable li label { cursor: pointer;}
+		  </style>
+		</wicket:head>
+	</head>
+	<body>
+		<div id="bd">
+			
+			<wicket:extend>
+			
+				<div id="tabs-1"/>	
+			
+				<div id="tabs-2" class="tabContent" style="width: 80%; margin-left: 10%;">
+					
+					<form wicket:id="editItemWindowForm">
+						<div wicket:id="editItemModalWindow"/>
+					</form>
+				
+					<div style="color:#FF5500">
+						<h3>Items</h3>
+					</div>
+					
+					<div class="spacer"></div>		
+					
+					<form wicket:id="itemSearchForm">
+						
+						<div wicket:id="feedback"/>
+						
+						<div style="width: 80%; margin-left: 10%;" >
+							<div>
+								<div style="display: inline; width:300px;">
+									<label  style="display: inline-block; width:100px; margin-top: 5px; ">Name:</label>
+									<input type=text wicket:id="name"/> 	
+								</div>
+								
+								<div style="margin-left: 50px; display: inline; width:300px; ">
+									<label style="display: inline-block;  width:100px;  margin-top: 7px; ">Category:</label>
+									<select wicket:id="category1" /> 	
+								</div>
+							</div>	
+							
+							<div>	
+								<div style="display: inline; width:300px; ">
+									<label style="display: inline-block; width:100px; margin-top: 5px;">Price(&lt;=):</label>
+									<input type=text wicket:id="price" style=""/> 	
+								</div>
+								
+								<div style="margin-left: 50px; display: inline; width:300px; ">
+									<label style="display: inline-block; margin-top: 7px; width:100px; ">Type:</label>
+									<select wicket:id="category2" style=""/> 	
+								</div>
+							</div>
+							
+							<div style="display: block; float: right; ">
+								<input type="button" class="button" wicket:id="searchBtn" value="Search"/>
+								<input type="button" class="button"  wicket:id="resetBtn" value="Reset"/>
+							</div> 
+						
+						</div>
+						
+					</form>
+					
+					<div class="spacer"></div>		
+					
+					<div wicket:id="feedback" style="margin-top: 10px; margin-bottom: 10px;"></div>	
+					
+					<div>
+						
+						<!-- <div wicket:id="itemsTable"></div> -->
+						
+						<div wicket:id="listHolder">
+							<ol id="selectable" class="ui-selectable">
+								<li wicket:id="itemsList" class="ui-widget-content ui-selectee" style="cursor: pointer;">
+									
+									<span style="font-size: 14px;  padding-left:50px; margin:50px 10px 10px 0px;  font-weight: bold; width: 100%; ">
+										<label style="padding-left: 10px;" wicket:id="lblName"/>
+									</span>
+									
+									<br/>
+									
+									<span style="font-size: 12px; font-style:italic; padding-left: 100px; margin: 0px 20px 20px 0px;">
+										<span style="width :'300px'; padding-left: 50px; padding-right: 20px;">
+											<label>Category:</label><label style="padding-left: 10px;" wicket:id="lblCategory"/>
+										</span>
+										
+										<span style="width :'300px'; padding-left: 20px; padding-right: 20px;">
+											<label>Type:</label><label style="padding-left: 10px;"  wicket:id="lblType"/>
+										</span>
+											
+										<span style="width :'300px'; padding-left: 20px; padding-right: 20px;">
+											<label>Price:</label><label style="padding-left: 10px;"  wicket:id="lblPrice"/>
+										</span>
+										
+										<span style="width :'300px'; padding-left: 20px; padding-right: 20px;">
+											<label>Weight:</label><label style="padding-left: 10px;" wicket:id="lblWeight"/>
+										</span>	
+									</span>
+								</li>
+							</ol>
+							<p wicket:id="noResultId" style="text-align: center; font-size: 14px;"><wicket:message key="LBL_NO_RESULTS"/></p>
+						</div>
+						
+						<div class="spacer"></div>									
+						
+						<div style="display: block; float: right; ">
+							<input type="button" class="button" wicket:id="addBtn"  value="Add"/> 
+							<input type="button" class="button"  wicket:id="editBtn" value="Edit"/>
+							<input type="button" class="button"  wicket:id="deleteBtn" value="Delete"/>
+						</div> 
+						
+						<div wicket:id="itemsNavigator"></div>
+						
+						<div class="spacer"></div>	
+					</div>
+				
+				</div>
+				<div id="tabs-3"/>
+					
+			</wicket:extend>	
+		</div>	
+	</body>
+</html>
