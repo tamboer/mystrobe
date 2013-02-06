@@ -18,6 +18,8 @@
  package net.mystrobe.client.dynamic.panel;
 
 
+import java.io.Serializable;
+
 import net.mystrobe.client.IDataBean;
 
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -37,7 +39,7 @@ import org.apache.wicket.model.PropertyModel;
  * 
  * @author TVH Group NV
  */
-public class TextFieldPanel<T> extends DynamicFormComponentPanel{
+public class TextFieldPanel<T extends Serializable> extends DynamicFormComponentPanel<T> {
 
 	private static final long serialVersionUID = -3401492928135987240L;
 
@@ -71,10 +73,5 @@ public class TextFieldPanel<T> extends DynamicFormComponentPanel{
 	public FormComponent<T> getFormComponent() {
 		return textField;
 	}
-	
-	public void setFormComponentModelObject(IDataBean dataBean) {
-		textField.setModel(new PropertyModel<T>(dataBean, propertyName));
-	}
-
 }
 

@@ -34,7 +34,7 @@ import org.apache.wicket.model.PropertyModel;
  * @author TVH Group NV
  *
  */
-public class CheckBoxPanel extends DynamicFormComponentPanel  {
+public class CheckBoxPanel extends DynamicFormComponentPanel<Boolean>  {
 
 	private static final long serialVersionUID = -776109128438026167L;
 
@@ -70,7 +70,5 @@ public class CheckBoxPanel extends DynamicFormComponentPanel  {
 	public void setFormComponentModelObject(IDataBean dataBean) {
 		checkBox.setModel(new PropertyModel<Boolean>(dataBean, propertyName));
 	}
-	
-
 }
 

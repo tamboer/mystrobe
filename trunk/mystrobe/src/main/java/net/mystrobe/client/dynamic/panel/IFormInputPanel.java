@@ -17,6 +17,8 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
+
 import net.mystrobe.client.IDataBean;
 
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -36,7 +38,7 @@ import org.apache.wicket.markup.html.form.FormComponent;
  *  
  * @author TVH Group NV
  */
-public interface IFormInputPanel {
+public interface IFormInputPanel<T extends Serializable> {
 	
 	/**
 	 * Model property name attached to form input.  
@@ -50,7 +52,7 @@ public interface IFormInputPanel {
 	 * 
 	 * @return Form input filed contained by the panel.
 	 */
-	public FormComponent<?> getFormComponent();
+	public FormComponent<T> getFormComponent();
 	
 	/**
 	 * Method updates the form component model object.

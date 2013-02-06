@@ -268,7 +268,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 		if (row.getBeforeImage() == null)
 			row.setBeforeImage(row.getRowData());
-		row.setRowData(null);
+		//row.setRowData(null);
 
 		if (bufferDeletedRows.getRow(dataType.getRowId()) == null) {
 			bufferDeletedRows.add(row);
@@ -277,16 +277,28 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 		if (!isAutoCommit()) {
 			
+			// call update data to remove row
+			int removedRowBufferPosition = this.dataBuffer.getRowPosition(row.getRowId());
+			
 			this.dataBuffer.remove(row);
 
+			publishDataRowRemoved(row.getBeforeImage(), removedRowBufferPosition);
+			 
+			if (tableNavigationSources != null &&
+					!tableNavigationSources.isEmpty()) {
+				
+				//force navigator to recompute pages  
+				for (IDataTableNavigatorSource<T> navigationSource : tableNavigationSources) {
+					navigationSource.reloadCurrentPage();
+				}
+			}
+			
 			// check current row is deleted
 			boolean currentRowRemoved = this.currentData != null && dataType.getRowId().equals(this.currentData.getRowId());
 
 			if (currentRowRemoved) {
 				moveToAvailablePosition();
 			}
-			
-			//TODO: consider whether to update navigators and UI when transaction
 			
 		} else {
 			try {
@@ -302,7 +314,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 //				removedRowsMap.put(row.getRowId(), row.getRowData());
 				
 				//inform buffer listeners on buffer changed
-				publishDataRowRemoved(row.getRowData(), removedRowBufferPosition);
+				publishDataRowRemoved(row.getBeforeImage(), removedRowBufferPosition);
 				 
 				if (tableNavigationSources != null &&
 						!tableNavigationSources.isEmpty()) {

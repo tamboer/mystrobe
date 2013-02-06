@@ -25,7 +25,7 @@
 html, body { height: 100%;}
 body { 	background-color:#FFF; font: 12px Tahoma, Verdana, Arial, Helvetica, sans-serif; line-height: 1.1em; color: #585858; }
 
-a:link, a:visited {	color: #21759B; border-bottom: 1px solid #21759B; }
+a:link, a:visited {	color: #21759B;}
 a:hover { }
 
 p { margin-bottom: 1.5em; }
@@ -112,11 +112,13 @@ div.autocomplete .lookup-btn { width: 18px; height: 18px; cursor: pointer; posit
 		Filters
 ------------------------------*/
 
-div.lookupLabel, div.longLookupLabel, div.extraLongLookupLabel {display:inline-block;width:230px;margin:4px 0;background-color: #EEEEEE;}
+div.formLookupLabel, div.lookupLabel, div.longLookupLabel, div.extraLongLookupLabel {display:inline-block;width:230px;margin:4px 0;background-color: #EEEEEE;}
 div.longLookupLabel {width:350px;}
-div.extraLongLookupLabel {width:100%;}
-div.lookupLabel label, div.longLookupLabel label, div.extraLongLookupLabel label {display:inline-block;width:200px; margin-left:2px;margin-bottom:2px;height:15px;}
 div.longLookupLabel label {width:320px;}
+div.extraLongLookupLabel {width:100%;}
+div.formLookupLabel {width:180px;}
+div.lookupLabel label, div.longLookupLabel label, div.extraLongLookupLabel label {display:inline-block;width:200px; margin-left:2px;margin-bottom:2px;height:15px;}
+div.formLookupLabel label {display:inline-block;width:150px; margin-left:2px;margin-bottom:2px;height:15px;}
 div.extraLongLookupLabel label {width:96.7%;}
-div.lookupLabel a, div.longLookupLabel a, div.extraLongLookupLabel a {background-position: center;height:18px;}
+div.lookupLabel a, div.longLookupLabel a, div.extraLongLookupLabel a, div.formLookupLabel a {background-position: center;height:18px;}
 	

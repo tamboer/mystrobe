@@ -17,7 +17,9 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +52,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T>
  */
-public class DropDownPanel<T> extends DynamicFormComponentPanel {
+public class DropDownPanel<T extends Serializable> extends DynamicFormComponentPanel<T> {
 	
 	private static final long serialVersionUID = -4437270061698645543L;
 	
@@ -65,7 +67,7 @@ public class DropDownPanel<T> extends DynamicFormComponentPanel {
 	
 	private DropDownChoice<T> dropDown;
 	
-	public DropDownPanel(String id, IModel<T> model, final String propertyName, IModel<String> labelModel, List<IFieldValue<T>> options,
+	public DropDownPanel(String id, IModel<T> model, final String propertyName, IModel<String> labelModel, Collection<IFieldValue<T>> options,
 			boolean required, boolean readOnly) {
 	
 		super(id, model, propertyName, required, readOnly);
@@ -118,7 +120,7 @@ public class DropDownPanel<T> extends DynamicFormComponentPanel {
 	}
 	
 	
-	public FormComponent<?> getFormComponent() {
+	public FormComponent<T> getFormComponent() {
 		return dropDown;
 	}
 

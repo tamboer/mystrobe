@@ -97,8 +97,8 @@ public interface IDAOSchema<T extends IDataBean>  extends Serializable {
 
     /**
      * Returns the Java class that is responsible for representing this schema.
-     * It is used by the DAOResponse to actualy instantiate and fill the proper Java data
-     * type and fill it with data from the backend protocol.
+     * It is used by the DAOResponse to instantiate and fill the proper Java data
+     * type and fill it with data from the back end protocol.
      */
     public Class<T> getIDataTypeClass();
 

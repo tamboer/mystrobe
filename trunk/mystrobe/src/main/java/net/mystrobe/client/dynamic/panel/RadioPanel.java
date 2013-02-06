@@ -17,9 +17,10 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.mystrobe.client.IDataBean;
@@ -40,7 +41,7 @@ import org.apache.wicket.model.PropertyModel;
  * 
  * @author TVH Group NV
  */
-public class RadioPanel<T> extends DynamicFormComponentPanel {
+public class RadioPanel<T extends Serializable> extends DynamicFormComponentPanel<T> {
 
 	private static final long serialVersionUID = -6022662995120166158L;
 	
@@ -52,7 +53,7 @@ public class RadioPanel<T> extends DynamicFormComponentPanel {
 	
 	private RadioChoice<T> radioChoice;
 	
-	public RadioPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, List<IFieldValue<T>> options, boolean displayInLine, boolean required, boolean readOnly) {
+	public RadioPanel(String id, IModel<T> model, String propertyName, IModel<String> labelModel, Collection<IFieldValue<T>> options, boolean displayInLine, boolean required, boolean readOnly) {
 		super(id, model, propertyName, required, readOnly);
 		
 		Map<T, IFieldValue<T>> optionsMap = new HashMap<T, IFieldValue<T>>(options.size());
@@ -72,7 +73,7 @@ public class RadioPanel<T> extends DynamicFormComponentPanel {
 		add(label);
 	}
 	
-	public FormComponent<?> getFormComponent() {
+	public FormComponent<T> getFormComponent() {
 		return radioChoice;
 	}
 

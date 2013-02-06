@@ -17,10 +17,14 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
+
+import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.ui.UICssResourceReference;
 import net.mystrobe.client.util.StringUtil;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.Behavior;
@@ -28,9 +32,11 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 
 
 /**
@@ -39,7 +45,7 @@ import org.apache.wicket.model.Model;
  * @author TVH Group NV
  *
  */
-public abstract class DynamicFormComponentPanel extends Panel implements IFormInputPanel{
+public abstract class DynamicFormComponentPanel<T extends Serializable> extends FormComponentPanel<T> implements IFormInputPanel<T> {
 
 	private static final long serialVersionUID = 534266307888283782L;
 	
@@ -74,40 +80,47 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 		private static final long serialVersionUID = -9060204060870131886L;
 
 		@Override
-		public void onComponentTag(final Component component, final ComponentTag tag)
-		{
+		public void onComponentTag(Component component, ComponentTag tag) {
+		
+			FormComponent<?> formComponent = null; 
+			
 			if ( component instanceof FormComponent<?>) {
-				
-				boolean backEndError = component.getMetaData(ErrorKey.ERROR_KEY) != null;
-				if (backEndError) {
-					component.setMetaData(ErrorKey.ERROR_KEY, null);
-				}
-				
-				if (!((FormComponent<?>)component).isValid() || backEndError) {
-					tag.addBehavior(new AttributeAppender(STYLE_CLASS_ATTRIBUTE_NAME, Model.of(INVALID_STYLE_CLASS), " "));
-				}
+				formComponent = (FormComponent<?>)component;
+			} else {
+				formComponent = component.findParent(DynamicFormComponentPanel.class);
+			}
+			
+			boolean backEndError = formComponent.getMetaData(ErrorKey.ERROR_KEY) != null;
+			if (backEndError) {
+				formComponent.setMetaData(ErrorKey.ERROR_KEY, null);
+			}
+			
+			if (!formComponent.isValid() || backEndError) {
+				tag.append(STYLE_CLASS_ATTRIBUTE_NAME, INVALID_STYLE_CLASS, " ");
 			}
 		}
 	};
 	
-	public DynamicFormComponentPanel(String id, IModel<?> model, String propertyName, boolean required, boolean readOnly) {
+	public DynamicFormComponentPanel(String id, IModel<T> model, String propertyName, boolean required, boolean readOnly) {
 		super(id, model);
 		this.propertyName = propertyName;
 		this.readOnly = readOnly;
 		this.required = required;
 	}
 	
-	public DynamicFormComponentPanel(String id, IModel<?> model) {
+	public DynamicFormComponentPanel(String id, IModel<T> model) {
 		super(id, model);
 	}
 	
 	public void disableFormFieldPanel() {
-		getFormComponent().setEnabled(false);
+		if (getFormComponent() != null ) {
+			getFormComponent().setEnabled(false);
+		}
 	}
 
 	
 	public void enableFormFieldPanel() {
-		if (!readOnly) {
+		if (!readOnly && getFormComponent() != null) {
 			getFormComponent().setEnabled(true);
 		} 
 	}
@@ -127,6 +140,27 @@ public abstract class DynamicFormComponentPanel extends Panel implements IFormIn
 	public void renderHead(IHeaderResponse response) {
 		super.renderHead(response);
 		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
+	}
+	
+	@Override
+	protected void convertInput() {
+		if (getFormComponent() != null) {
+			T input = getFormComponent().getConvertedInput();
+			if(input == null)
+				setModelObject(null);
+			setConvertedInput(input);
+		} else {
+			super.convertInput();
+		}
+	}
+	
+	@Override
+	public void setFormComponentModelObject(IDataBean dataBean) {
+		IModel<T> newModel = PropertyModel.<T>of(dataBean, this.propertyName); 
+		setDefaultModel(newModel);
+		if (getFormComponent() != null && getFormComponent() != this) {
+			getFormComponent().setDefaultModel(newModel);
+		}
 	}
 }
 

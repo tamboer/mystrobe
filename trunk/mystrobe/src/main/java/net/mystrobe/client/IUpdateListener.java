@@ -86,9 +86,7 @@ public interface IUpdateListener<T extends IDataBean> extends IStateSource, ICon
 	/**
 	 * Reset data as it was before any changes were done. 
 	 * 
-	 * Use cancelCRUDOperation() instead.
 	 */
-	@Deprecated
 	public void resetData();
 	
 	/**

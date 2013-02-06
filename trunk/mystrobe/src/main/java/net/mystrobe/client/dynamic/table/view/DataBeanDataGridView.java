@@ -20,9 +20,12 @@
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.ISortListener;
@@ -33,6 +36,7 @@ import net.mystrobe.client.dynamic.config.IDynamicFormFieldConfig;
 import net.mystrobe.client.dynamic.navigation.DataTablePagesNavigationPanel;
 import net.mystrobe.client.util.StringUtil;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -426,22 +430,11 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 							
 						};
 					});
+					
+					result.add(new SelectRowCssModifier(dataBean));
+					
+					result.add(new AttributeAppender("style", new Model<String>("cursor:pointer;")));
 				}
-				
-				result.add(new AttributeAppender("class",  new LoadableDetachableModel<String>() {
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					protected String load() {
-						if(DataBeanDataGridView.this.selectableRows && 
-								(dataBean.getRowId() != null && 
-										(dataBean.getRowId().equals(selectedRowId)) ||
-								isDataRowSelected(dataBean))){
-							return getSelectedRowCSSClassName();
-						}
-						return StringUtil.EMPTY_STRING;	
-					}
-				}, " "));
 				
 				//call data table method to support additional customizations
 				DataBeanDataGridView.this.newRowItem(id, index, model, result);
@@ -464,7 +457,8 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	}
 	
 	protected boolean isDataRowSelected(IDataBean dataRow){
-		return this.selectedRowId != null && this.selectedRowId.equals(dataRow.getRowId());
+		return dataRow != null && this.selectedRowId != null && 
+				this.selectedRowId.equals(dataRow.getRowId());
 	}
 	
 	protected void onDataRowClick(AjaxRequestTarget target) {
@@ -565,6 +559,47 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 		@Override
 		public Behavior[] getHeaderBehaviors() {
 			return null;
+		}
+	}
+	
+	protected class SelectRowCssModifier extends AttributeModifier {
+
+		private static final long serialVersionUID = 1L;
+		
+		private T dataBean;
+		
+		public SelectRowCssModifier(T dataBean) {
+			super("class", Model.of(getSelectedRowCSSClassName()));
+			this.dataBean = dataBean;
+		}
+		
+		@Override
+		protected String newValue(String currentValue, String selectedCssClass) {
+			
+			if (currentValue == null && isDataRowSelected(dataBean)) 
+					return selectedCssClass;
+			
+			if (currentValue == null) return "";
+
+			Set<String> classes = new HashSet<String>(Arrays.asList(currentValue.split(" ")));
+			
+			if (!isDataRowSelected(dataBean) && classes.contains(selectedCssClass)) {
+				classes.remove(selectedCssClass);
+			    
+			    StringBuilder builder = new StringBuilder();
+			    for (String styleDef : classes) {
+			    	builder.append(styleDef).append(" ");
+			    }
+			    
+			    return builder.toString();
+			    
+			} else if (isDataRowSelected(dataBean) && !classes.contains(selectedCssClass)) {
+				
+				return (new StringBuilder(currentValue).append(" ").append(selectedCssClass)).toString();
+			}
+		    
+			return currentValue;
+		    
 		}
 	}
 }

@@ -87,7 +87,7 @@ public class StringListDAORow<T extends IDataBean> extends DAORow<T> implements 
                     }
                 }
                 else {
-                    LoggerFactory.getLogger(StringListDAORow.class.getName()).error( "No JSON value found for: "+ column);
+                    LoggerFactory.getLogger(StringListDAORow.class.getName()).warn( "No JSON value found for: "+ column);
                 }
             }
             
@@ -126,7 +126,7 @@ public class StringListDAORow<T extends IDataBean> extends DAORow<T> implements 
                         }
                     }
                     else {
-                        LoggerFactory.getLogger(StringListDAORow.class.getName()).error( "No JSON value found for: "+ column);
+                        LoggerFactory.getLogger(StringListDAORow.class.getName()).warn( "No JSON value found for: "+ column);
                     }
                 }
             } catch (InstantiationException e) {

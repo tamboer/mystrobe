@@ -21,11 +21,13 @@ import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataObject;
 import net.mystrobe.client.connector.transaction.WicketDSBLException;
 import net.mystrobe.client.ui.UICssResourceReference;
+import net.mystrobe.client.util.StringUtil;
 
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.ResourceModel;
 
 /**
  * @author TVH Group NV
@@ -38,15 +40,23 @@ public abstract class AbstractSelectRecordModalPanel<T extends IDataBean> extend
 	
 	protected ModalWindow modalWindow;
 	
+	protected static String WINDOW_TITLE_RESOURCE_KEY = "component.SelectRecordModalPanel.title"; 
+	
 	public AbstractSelectRecordModalPanel(String id, ModalWindow modalWindow) {
 		super(id);
 		this.modalWindow = modalWindow;
+		String titleKey = WINDOW_TITLE_RESOURCE_KEY; 
+		this.modalWindow.setTitle(  new ResourceModel(titleKey, 
+				StringUtil.buildDefaultResourceValue(titleKey)));
 	}
 	
 	public AbstractSelectRecordModalPanel(String id, ModalWindow modalWindow, IDataObject<T> dataObject) {
-		super(id);
-		this.modalWindow = modalWindow;
+		this(id, modalWindow);
 		this.dataObject = dataObject;
+		
+		String titleKey = WINDOW_TITLE_RESOURCE_KEY + "." + dataObject.getSchema().getDAOId(); 
+		this.modalWindow.setTitle(  new ResourceModel(titleKey,
+				StringUtil.buildDefaultResourceValue(titleKey)));
 	}
 
 	/*

@@ -18,6 +18,7 @@
  package net.mystrobe.client.util;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -414,6 +415,14 @@ public class StringToJavaNativeUtil {
 		public boolean isTimeZoneAware() {
 			return isTimeZoneAware;
 		}
+    }
+    
+    public static String getDateFormatPattern(String type) {
+    	if ("datetime".equals(type) || "datetime-tz".equals(type) ) {
+        	return ((SimpleDateFormat)DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)).toPattern();
+        } else {
+        	return ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT)).toPattern();
+        }
     }
 }
 

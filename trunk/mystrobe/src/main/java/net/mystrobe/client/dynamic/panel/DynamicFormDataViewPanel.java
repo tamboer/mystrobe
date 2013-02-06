@@ -17,6 +17,7 @@
  */
  package net.mystrobe.client.dynamic.panel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -38,8 +39,10 @@ import net.mystrobe.client.IUpdateSource;
 import net.mystrobe.client.IUpdateUIActionListener;
 import net.mystrobe.client.IUpdateUIActionSource;
 import net.mystrobe.client.UpdateStates;
+import net.mystrobe.client.WicketDSRuntimeException;
 import net.mystrobe.client.connector.quarixbackend.NamingHelper;
 import net.mystrobe.client.connector.transaction.WicketDSBLException;
+import net.mystrobe.client.dynamic.config.DynamicFormComponentFactory;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.config.IDynamicFormFieldConfig;
 import net.mystrobe.client.dynamic.config.IFieldValue;
@@ -109,7 +112,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
     private CursorStates cursorState = CursorStates.NoRecordAvailable;
 	protected int formFieldsOnRow = 1; 
 	
-	protected List<DynamicFormComponentPanel> formFields;
+	protected List<DynamicFormComponentPanel<?>> formFields;
 	
 	public DynamicFormDataViewPanel(String id, T dataBean, IDynamicFormConfig<T> formConfig) {
 		super(id);
@@ -122,12 +125,12 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 		
 		formFields = buildFormInputFields(formConfig, dataBean);
 		
-		ListView<DynamicFormComponentPanel> panelInputFields = new ListView<DynamicFormComponentPanel>("formInputFields_Id", formFields) {
+		ListView<DynamicFormComponentPanel<?>> panelInputFields = new ListView<DynamicFormComponentPanel<?>>("formInputFields_Id", formFields) {
 
 			private static final long serialVersionUID = -3290979835468097717L;
 
 			@Override
-			protected void populateItem(ListItem<DynamicFormComponentPanel> item) {
+			protected void populateItem(ListItem<DynamicFormComponentPanel<?>> item) {
 				
 				int inputFieldPosition = item.getIndex()  + 1;
 				
@@ -162,6 +165,8 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 			}
 		};
 		
+		panelInputFields.setReuseItems(true);
+		
 		panelInputFields.setRenderBodyOnly(true);
 		
 		add(panelInputFields);
@@ -171,7 +176,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * Enable form input fields and buttons for editing.
 	 */
 	public void enableFormInputFields () {
-		for (DynamicFormComponentPanel fieldPanel : formFields) {
+		for (DynamicFormComponentPanel<?> fieldPanel : formFields) {
 			fieldPanel.enableFormFieldPanel();
 		}
 	}
@@ -180,7 +185,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * Disable form input fields and buttons for editing.
 	 */
 	public void disableFormInputFields () {
-		for (DynamicFormComponentPanel fieldPanel : formFields) {
+		for (DynamicFormComponentPanel<?> fieldPanel : formFields) {
 			fieldPanel.disableFormFieldPanel();
 		}
 	}
@@ -189,7 +194,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * Change model object
 	 */
 	public void updateFormModelObject(IDataBean modelInstance) {
-		for (DynamicFormComponentPanel fieldPanel : formFields) {
+		for (DynamicFormComponentPanel<?> fieldPanel : formFields) {
 			fieldPanel.setFormComponentModelObject(modelInstance);
 		}
 	}
@@ -203,9 +208,9 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * 
 	 * @return List of form input fields panels
 	 */
-	private List<DynamicFormComponentPanel>  buildFormInputFields(IDynamicFormConfig<T> config, T dataBean) {
+	private List<DynamicFormComponentPanel<?>>  buildFormInputFields(IDynamicFormConfig<T> config, T dataBean) {
 		
-		List<DynamicFormComponentPanel> formInputFields = new ArrayList<DynamicFormComponentPanel>();
+		List<DynamicFormComponentPanel<?>> formInputFields = new ArrayList<DynamicFormComponentPanel<?>>();
 		
 		Collection<String> columnNames = config.getVisibleColumnNames();
 				
@@ -218,7 +223,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 			
 			Map<IDynamicFormFieldConfig.Property, Object> configurationMap =  config.getColumnProperties(columnName);
 			
-			DynamicFormComponentPanel formFieldPanel = buildFormFieldPanel(columnName, configurationMap, dataBean, config.getLocalizableFormLabels());
+			DynamicFormComponentPanel<?> formFieldPanel = buildFormFieldPanel(columnName, configurationMap, dataBean, config.getLocalizableFormLabels());
 			
 			if (formFieldPanel != null) {
 				formFieldPanel.disableFormFieldPanel();
@@ -242,7 +247,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * 
 	 * @return New form input panel according to schema and config.
 	 */
-	private <S> DynamicFormComponentPanel buildFormFieldPanel(String columnName, Map<IDynamicFormFieldConfig.Property, Object> configurationMap, T dataBean, boolean localizabeLabels) {
+	private <S extends Serializable> DynamicFormComponentPanel<S> buildFormFieldPanel(String columnName, Map<IDynamicFormFieldConfig.Property, Object> configurationMap, T dataBean, boolean localizabeLabels) {
 		
 		IModel<String> columnLabel = null;
 		Object formFieldLabel = configurationMap.get(IDynamicFormFieldConfig.Property.Label);
@@ -281,7 +286,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	}
 	
 	/**
-	 * Buld form field panel using type from configuration.
+	 * Build form field panel using type from configuration.
 	 * @param <S>
 	 * 
 	 * @param columnName Field db column name
@@ -292,65 +297,55 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	 * 
 	 * @return Form input field panel.
 	 */
-	private <S, M extends IDataBean> DynamicFormComponentPanel buildFormPanelFromConfigType(String columnName, IDynamicFormFieldConfig.FieldType fieldType, T dataBean,
+	private <S extends Serializable, M extends IDataBean> DynamicFormComponentPanel<S> buildFormPanelFromConfigType(String columnName, IDynamicFormFieldConfig.FieldType fieldType, T dataBean,
 					IModel<String> columnLabel, List<IFieldValue<S>> options,  boolean required, boolean readOnly, String format, Map<IDynamicFormFieldConfig.Property, Object> configurationMap) {
 		
-		DynamicFormComponentPanel result = null;
+		DynamicFormComponentPanel<S> result = null;
 		PropertyModel<S> propertyModel; 
 		String normalizedColumnName = NamingHelper.getFieldName(columnName);
 		switch (fieldType) {
 			case CheckBox: 
 				PropertyModel<Boolean> model = new PropertyModel<Boolean>(dataBean, normalizedColumnName);
-				result = new CheckBoxPanel(FORM_INPUT_PANEL_ID, model, normalizedColumnName, columnLabel, required, readOnly);
+				result = (DynamicFormComponentPanel<S>) DynamicFormComponentFactory.getBuilder().createCheckBoxPanel(FORM_INPUT_PANEL_ID, model, normalizedColumnName, columnLabel, required, readOnly, configurationMap);
+				//result = (DynamicFormComponentPanel<S>) new CheckBoxPanel(FORM_INPUT_PANEL_ID, model, normalizedColumnName, columnLabel, required, readOnly);
 				break;
 				
 			case TextField :
+				
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
 				Boolean selectableFieldValue = (Boolean) configurationMap.get(IDynamicFormFieldConfig.Property.SelectableFieldValue);
 				
 				if (selectableFieldValue != null && selectableFieldValue) {
-					IDataObject<M> linkedDataSource = (IDataObject<M>) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedDataObject);
-					String linkedColumnName  = (String) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedColumnName);
-					
-					Class<AbstractSelectRecordModalPanel<M>> selecatbleRecordModalPanelClass  = (Class<AbstractSelectRecordModalPanel<M>>) configurationMap.get(IDynamicFormFieldConfig.Property.SelectableModalWindowPanelClass);
-					
-					if( selecatbleRecordModalPanelClass == null ) {
-						selecatbleRecordModalPanelClass = (Class) SelectRecordModalPanel.class; 
-					}
-					
-					result = new SelectableTextFieldPanel<S, M, AbstractSelectRecordModalPanel<M>>(FORM_INPUT_PANEL_ID,  propertyModel, normalizedColumnName, columnLabel, required, readOnly, linkedDataSource, linkedColumnName, selecatbleRecordModalPanelClass);
+					result = DynamicFormComponentFactory.getBuilder().createSelectablePanel(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap); 
 				} else {
-					result = new TextFieldPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, 0);
+					result = DynamicFormComponentFactory.getBuilder().createTextFieldPanel(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap); 
 				}
 				
 				break;
 				
 			case DateField :
 				PropertyModel<Date> dateModel = new PropertyModel<Date>(dataBean, normalizedColumnName);
-				result = new DateFieldPanel(FORM_INPUT_PANEL_ID, dateModel, normalizedColumnName, columnLabel, required, readOnly, format);
+				result = (DynamicFormComponentPanel<S>) DynamicFormComponentFactory.getBuilder().createDateFieldPanel(FORM_INPUT_PANEL_ID, dateModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap); 
 				break;	
 				
 			case TextArea :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				result = new TextAreaPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, 0);
+				result =  DynamicFormComponentFactory.getBuilder().createTextAreaPanel(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap); 
 				break;
 				
 			case Radio :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				result = new RadioPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, options, false, required, readOnly);
+				result = DynamicFormComponentFactory.getBuilder().createRadioPanel(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap); 
 				break;
 				
 			case DropDown :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				result = new DropDownPanel<S>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, options, required, readOnly);
+				result = DynamicFormComponentFactory.getBuilder().createDropDownPanel(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap);
 				break;
 				
 			case AutoCompleteTextField :
 				propertyModel = new PropertyModel<S>(dataBean, normalizedColumnName);
-				IDataObject<M> autoCompleteDataSource = (IDataObject<M>) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedDataObject);
-				String autoCompleteFilterColumnName  = (String) configurationMap.get(IDynamicFormFieldConfig.Property.LinkedColumnName);
-				result = new AutoCompleteTextFieldPanel<S,M>(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, 
-						required, readOnly, autoCompleteDataSource, autoCompleteFilterColumnName);
+				result = DynamicFormComponentFactory.getBuilder().createAuoCompleteTextFieldPanel(FORM_INPUT_PANEL_ID, propertyModel, normalizedColumnName, columnLabel, required, readOnly, configurationMap);
 				break;
 		}
 		
@@ -378,7 +373,7 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	public void cancelRecord() {
 		if( this.updateListener == null ) throw new IllegalStateException("Unable to add record because dataview does not have a update listener set");
         
-		this.updateListener.cancelCRUDOpertaion() ;
+		this.updateListener.cancelCRUDOperation() ;
         this.updateMode(UpdateStates.UpdateComplete);
     }
 
@@ -490,16 +485,32 @@ public class DynamicFormDataViewPanel<T extends IDataBean> extends Panel impleme
 	}
 
 	public void dataAvailable(IDataBean modelInstance, CursorStates cursorState) {
-		logger.debug("DynamicFormDataViewPanel received data with row id " + modelInstance.getRowId() 
+		if (logger.isTraceEnabled() && modelInstance != null) {
+			logger.trace("DynamicFormDataViewPanel received data with row id " + modelInstance.getRowId() 
 				+ " class " + modelInstance.getClass().getName() + " from data object " + getDataSource().hashCode());
-		updateFormModelObject(modelInstance);
+		}
+		
+		if (modelInstance != null) {
+			updateFormModelObject(modelInstance);
+		} else if (CursorStates.NoRecordAvailable.equals(cursorState)) {
+			T dataBean;
+			try {
+				dataBean = dataSource.getSchema().getIDataTypeClass().newInstance();
+				updateFormModelObject(dataBean);
+			} catch (InstantiationException e) {
+				throw new WicketDSRuntimeException("Can not instantiate bean class.", e);
+			} catch (IllegalAccessException e) {
+				throw new WicketDSRuntimeException("Can not instantiate bean class.", e);
+			}
+			
+		}
 	}
 	
-	public IDataSource getDataSource() {
+	public IDataSource<T> getDataSource() {
 		return this.dataSource;
 	}
 
-	public void setDataSource(IDataSource dataSource) {
+	public void setDataSource(IDataSource<T> dataSource) {
 		this.dataSource = dataSource;
 	}
 
