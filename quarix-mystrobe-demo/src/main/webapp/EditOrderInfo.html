@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<head>
+		<meta charset="utf-8" />
+		<title>Search Order Page Info</title>
+		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="Stylesheet" charset="utf-8" />
+	</head>
+	<body style="background-color: #092E67;;">
+	
+		<div class="info" style="font-size: 12pt;">
+			
+			<p>Edit order is a good example for MyStroBe data manipulation transaction support.</p>
+
+			<p>First one can change order details and than the order lines info. Data is only sent to the Quarix server on the last tab as a single transaction.
+				Even though separate data objects are used for order and order lines changed data is sent together.</p>
+				
+			<p>'Edit Order' is an example of a custom edit record form. It does not use any of the framework built in components 
+				and can be used as a startup for any custom forms. </p>
+				
+			<div style="padding-left: 50px; padding-top:10px; font-size: 10pt; color: #21759B; font-style: italic;">	
+				
+				protected class EditOrderForm extends Form&lt;Order&gt; {<br/>
+					..<br/>
+					<br/>		
+					&nbsp;&nbsp;FeedbackPanel feedback = new FeedbackPanel("feedback"); <br/>
+					&nbsp;&nbsp;feedback.setOutputMarkupId(true);<br/>
+					&nbsp;&nbsp;add(feedback);<br/>
+					<br/>
+					&nbsp;&nbsp;TextField&lt;String&gt; instructionsTxt = new TextField&lt;String&gt;(OrderSchema.Cols.INSTRUCTIONS.id());<br/>
+					&nbsp;&nbsp;add(instructionsTxt);<br/>
+					<br/>
+					&nbsp;&nbsp;TextField&lt;String&gt; carrierTxt = new TextField&lt;String&gt;(OrderSchema.Cols.CARRIER.id());<br/>
+					&nbsp;&nbsp;add(carrierTxt);<br/>
+					<br/>
+					..<br/>	
+			</div>
+  	
+  			<p>Html form that goes with custom form:</p>
+			<div style="padding-left: 50px; padding-top:10px;  font-size: 10pt; color: #21759B; font-style: italic;">	
+				..<br/>
+				&lt;li style=" width: 300px; display: inline;"&gt;<br/>
+				&nbsp;&nbsp;&lt;label style="width: 100px; display: inline-block;"&gt;&lt;wicket:message key="LBL_INSTRUCTIONS"/&gt;&lt;/label&gt;<br/>
+				&nbsp;&nbsp;&lt;input type="text" wicket:id="instructions" style="width: 200px;"/&gt;<br/>
+				&lt;/li&gt;<br/>
+				<br/>
+				&lt;li style="padding-left:64px;width:300px; display: inline;"&gt;<br/>
+				&nbsp;&nbsp;&lt;label style="width: 100px; display: inline-block;">&lt;wicket:message key="LBL_CARRIER"/&gt;&lt;/label&gt;<br/>
+				&nbsp;&nbsp;&lt;input type="text" wicket:id="carrier" style="width: 200px;"/&gt;<br/>
+				&lt;/li&gt;<br/>
+				..	
+			</div>
+		</div>
+	
+	</body>
+</html>

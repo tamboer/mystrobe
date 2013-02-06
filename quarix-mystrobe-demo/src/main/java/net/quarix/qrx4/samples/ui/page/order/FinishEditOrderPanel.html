@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		<wicket:head>
+			<script>
+				activeTab = 1;
+				disabledTabs = [0];
+				/**$(function() {
+				    $( "#accordion" ).accordion({ heightStyle: "content" });
+		  		});**/
+			</script>
+		</wicket:head>
+	</head>
+	<body>
+		<div>
+			<wicket:panel>
+			 	<div style="width:70%; margin-left: 15%;">
+					 <ul style="margin-top:25px;">
+						<li style="padding-left:40x; width:300px; display: inline;">
+							<label style="width: 100px; display: inline-block;"><wicket:message key="LBL_CARRIER"/></label>
+							<label style=" width: 200px; display: inline-block;" wicket:id="carrier"></label>
+						</li>
+						
+						<li style="padding-left:40px; display: inline;">
+							<label style="display: inline-block; width: 100px;"><wicket:message key="LBL_TERMS"/></label>
+							<label style=" width: 200px; display: inline-block;"  wicket:id="terms"></label>
+						</li>
+						
+					</ul>
+						
+					<ul style="margin-top:25px;">	
+						<li style="display: inline;">
+							<label style="width: 100px; display: inline-block;" ><wicket:message key="LBL_PROMISE_DATE"/></label>
+							<label style=" width: 200px; display: inline-block;" wicket:id="promisedate"></label>
+						</li>
+						
+						<li style="padding-left:40px; display: inline;">
+							<label style=" width: 100px; display: inline-block;"><wicket:message key="LBL_SALES_REP"/></label>
+							<label style=" width: 200px; display: inline-block;" wicket:id="salesrep"></label>
+						</li>
+					</ul>
+						
+					<ul style="margin-top:25px;">
+						<li style="display: inline">
+							<label style="display: inline-block; width: 100px;"><wicket:message key="LBL_STATUS"/></label>
+							<label style=" width: 200px; display: inline-block;" wicket:id="orderstatus"></label>
+						</li>
+						
+						<li style="display: inline; padding-left:40px;">
+							<label style="display: inline-block; width: 100px;"><wicket:message key="LBL_CUSTOMER"/></label>
+							<label style=" width: 200px; display: inline-block;" wicket:id="customerLabel"></label>
+						</li>
+					</ul>	
+					
+					<ul style="margin-top:25px;">	
+						<li style="display: inline;">
+							<label style="display: inline-block; width: 100px;" ><wicket:message key="LBL_SHIP_DATE"/></label>
+							<label style=" width: 200px; display: inline-block;"  wicket:id="shipdate"></label>
+						</li>
+					</ul>
+					
+					<div class="spacer"/>
+					
+					<div wicket:id="listHolder">
+						<ol class="ui-selectable">
+							<li wicket:id="itemsList" class="ui-widget-content ui-selectee" style="margin-top: 10px; padding: 5px 0px 5px 0px">
+								<span style="font-size: 14px;  padding-left:50px; margin:50px 10px 10px 0px;  font-weight: bold; width: 100%; ">
+									<label style="padding-left: 10px;" wicket:id="lblName"/>
+								</span>
+								
+								<br/>
+								
+								<span style="font-size: 12px; font-style:italic; padding-left: 100px; margin: 0px 20px 20px 0px;">
+									<span style="width :'300px'; padding-left: 50px; padding-right: 20px;">
+										<label>Status:</label><label style="padding-left: 10px;" wicket:id="lblStatus"/>
+									</span>
+									
+									<span style="width :'300px'; padding-left: 20px; padding-right: 20px;">
+										<label>Price:</label><label style="padding-left: 10px;"  wicket:id="lblPrice"/>
+									</span>
+										
+									<span style="width :'300px'; padding-left: 20px; padding-right: 20px;">
+										<label>Quantity:</label><label style="padding-left: 10px;"  wicket:id="lblQty"/>
+									</span>
+									
+									<span style="width :'300px'; padding-left: 20px; padding-right: 20px;">
+										<label>Extended Price:</label><label style="padding-left: 10px;" wicket:id="lblExtendedPrice"/>
+									</span>	
+								</span>
+							</li>
+						</ol>
+						<p wicket:id="noResultId" style="text-align: center; font-size: 14px;">No order lines on current order.</p>
+						<div class="box-buttons-right">
+							<label wicket:id="totalOrderPrice"></label>
+						</div>
+					</div>
+					
+					<form wicket:id="buttonsForm" class="box-buttons-right">
+						<div wicket:id="feedback"/>
+						<input type="button" class="button" wicket:id="btnSaveChanges"  value="Save Changes"/> 
+						<input type="button" class="button" wicket:id="previousBtn" value="Previous" />
+						<input type="button" class="button" wicket:id="btnBckToSearch" value="Back To Search" />
+					</form>
+					
+				</div>
+			</wicket:panel>	
+		</div>	
+	</body>
+</html>

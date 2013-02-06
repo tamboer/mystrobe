@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>QRX4J Samples</title>
+		<wicket:head>
+			<script>
+				activeTab = 0 ;
+				disabledTabs = [1, 2, 3];
+				
+				function newPopup(url) {
+					popupWindow = window.open(
+						url,'popUpWindow','height=600,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes');
+				}
+			</script>
+		</wicket:head>
+	</head>
+	<body>
+		<div>
+			
+			<wicket:extend>
+				<div id="tabs-1" class="tabContent">
+					<div style="width: 80%; margin-left: 10%;">
+						
+						<div style="color:#FF5500">
+							<h3>Search Orders</h3>
+							<div style="float:right;">
+								<a style="color:#FF5500; font-size:10pt "  href="javascript:newPopup('../../SearchOrderInfo.html');">Info</a>
+							</div>	
+						</div>
+						
+						<form wicket:id="editOrderForm">
+							<div wicket:id="editOrderWindow"></div>
+							<div wicket:id="editOrderLineWindow"></div>
+						</form>
+						
+						<div style="width: 70%; margin-left: 15%;">
+							<form wicket:id="searchForm">
+								
+								<div wicket:id="feedback"/>
+								
+								<div>
+									<div style="display: inline;">
+										<label style="width:100px; display:inline-block;">PO:</label> 
+										<input type="text" wicket:id="po"/>  
+									</div>
+									
+									<div style="display: inline; margin-left: 50px;">
+										<label style="width:100px; display:inline-block;">Customer:</label> 
+										<wicket:container wicket:id="custnum"/>
+									</div>
+								</div>
+								
+								<div>
+									<div style="display: inline;">
+										<label style="width:100px; display:inline-block;">Status:</label> 
+										<select wicket:id="orderstatus"></select>  
+									</div>
+								</div>
+								
+								<div style="display: block; float: right; ">
+									<input type="button" class="button" wicket:id="searchButton" value="Search"/>
+									<input type="button" class="button"  wicket:id="addButton" value="Add"/>
+									<input type="button" class="button"  wicket:id="resetButton" value="Reset"/>
+								</div> 
+								
+							</form>
+						</div>
+						
+						<div class="spacer"></div>	
+						 		
+						<div class="box-content clearfix">
+						
+							<div wicket:id="orderViewId"></div>
+							
+							<div class="spacer"></div>									
+							
+							<div wicket:id="orderNavigatorId"></div>
+							
+							<div class="spacer"></div>
+							<div class="spacer"></div>
+							
+							<div wicket:id="orderLineViewId"></div>
+							
+							<div class="spacer"></div>									
+							
+							<div wicket:id="orderLineNavigatorId"></div>
+							
+							<div class="spacer"></div>	
+						</div>
+					</div>
+				</div>
+				<div id="tabs-2"/>
+				<div id="tabs-3"/>
+			</wicket:extend>	
+		</div>	
+	</body>
+</html>

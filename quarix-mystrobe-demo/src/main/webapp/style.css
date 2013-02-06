@@ -1,0 +1,112 @@
+body, p, li, a { }
+h1, h2, h3 { font-family: 'Tenor Sans', arial, serif;}
+body { margin:0;padding:0;}
+#hd {
+	width : 100%;
+	height : 30px;
+	background-color : #092E67;
+	margin-top : 0;
+	padding-top : 5px;
+	border-bottom : 1px solid #888;
+	z-index : 0;
+}
+#ft {
+	position : absolute;
+	bottom : 0;
+	width : 100%;
+	height : 50px;
+	background-color : #6493D2;
+	border-top : 1px solid #888;
+	z-index : 0;
+}
+#logo,#bd {
+	width : 80%;
+	margin: 0 auto;
+	padding: 10px 30px 0 30px;
+}
+#logo h1 {
+	color : white;
+	font-size : 16pt;
+	line-height : 16pt;
+	display: inline;
+}
+#logo img { 
+	display:inline;
+	vertical-align: bottom;
+	margin-left : 50px;
+	margin-right : 5px;
+}
+body { margin-top : 0; padding-top : 0;}
+#logo, #logo h1 { margin-top : 0; padding-top : 0;}
+#bd {
+	position : absolute;
+	top : 30px;
+	bottom : 30px;
+	left : 10%;
+	right : 10%;
+	z-index : 1;
+	overflow: auto;
+	background-color : #fff;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	-moz-box-shadow: 0px 0px 10px #888;
+	-webkit-box-shadow: 0px 0px 10px #888;
+	box-shadow: 0px 0px 10px #888;
+}
+a, a:visited, a:hover, a:active {
+	color : #6493D2;
+	text-decoration: none;
+}
+h2 {
+	padding : 0; margin:0;
+	font-size:18pt;
+	color:#FF5500;
+}
+h3 {
+	padding : 0; margin:0;
+	font-size:14pt;
+	line-height:14pt;
+	color:#FF5500;
+}
+
+.spacer {
+	clear:both;
+	margin-bottom:1em;	
+}
+
+#tabs {
+	margin: 0 auto;
+    text-align: left;
+}
+
+.tabContent{
+	margin: 0 auto;
+    text-align: left;
+    padding-left: 20px;
+    padding-right: 20px;  
+    width: 90%;
+}
+
+.headLinks {
+	margin-bottom: 25px;
+}
+
+.info {
+	position : absolute;
+	top : 30px;
+	bottom : 30px;
+	width: 90%;
+	left : 5%;
+	right : 5%;
+	padding: 10px; 
+	z-index : 1;
+	overflow: auto;
+	background-color : #fff;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	-moz-box-shadow: 0px 0px 10px #888;
+	-webkit-box-shadow: 0px 0px 10px #888;
+	box-shadow: 0px 0px 10px #888;
+}

@@ -1,0 +1,44 @@
+	
+	<wicket:head>	
+	   <script>
+		 
+		  $(function() {
+		    $( "#accordion" ).accordion({ heightStyle: "content" });
+		  });
+  		</script> 
+		
+  	</wicket:head> 
+
+	 <wicket:extend>
+		
+		<div class="spacer" style="margin-top: 50px;"/>
+		
+		<div id="accordion">
+			<h3 style="font-size: 16pt; color:#FF5500; ">Welcome</h3>
+			<div style="height: 200px; font-size: 12pt;">
+				<p>MyStroBe-Quarix application purpose is to give you a quick start in developing software using <a href="http://code.google.com/p/mystrobe/">MyStroBe</a> and 
+					<a href="http://wicket.apache.org/">Apache Wicket</a> for the UI and <a href="http://code.google.com/p/qrx-srv-oe/">Quarix</a> OpenEdge for business logic.
+				</p>
+				
+				<p>
+					Samples illustrate use and practices of built in UI components, but also how you can build your own components and bind them to the data layer.    
+				</p>
+			</div>
+			
+			<h3 style="font-size: 16pt; color:#FF5500; ">Hello MyStroBe</h3>
+			<div style="font-size: 12pt;">
+				<p>MyStroBe is a framework developed in Java for fast application deployment and development using Quarix for business logic.</p>
+				<div>MyStroBe has 3 modules that can be build separately. Each module handles a specific functionality:
+					<ul><li style="list-style: circle; margin-left: 30px;">Connector - Connects to Quarix and serializes data from/to the server.</li>
+						<li style="list-style: circle; margin-left: 30px;">Generator - Generates the bean java classes used to send/receive data from the business logic</li>   
+						<li style="list-style: circle; margin-left: 30px;">Web - Wicket UI components to build simple/complex html pages.</li>   
+					</ul>
+				</div>
+				<p style="font-size: 12pt; margin-top: 10px">For more details please visit <a href="http://code.google.com/p/mystrobe/">MyStroBe</a>. </p>
+			</div>
+			
+			<h3 style="font-size: 16pt; color:#FF5500; ">Hello Quarix</h3>
+			<div style=" font-size: 12pt;">Quarix text and links</div>
+		</div>	
+	
+	</wicket:extend>	
