@@ -268,7 +268,7 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
 	@Override
 	public void addOption(String optionName, Serializable optionValue) {
 		if (optionName == null || optionValue == null) {
-			throw new WicketDSRuntimeException("Option name and value can not be null."); 
+			throw new WicketDSRuntimeException("Option name [" + optionName + "] and value [" + optionValue + "] can not be null."); 
 		}
 		
 		if (QUERY_NAME.equals(optionName)) {
