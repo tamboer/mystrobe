@@ -101,9 +101,11 @@ WorkIndicator = {
 			WorkIndicator.overlayTimeoutPid = null;
 		}
 
-		$('#wrk_overlay').hide();
-		$('#wrk_inner').hide();
-		$('#wrk_indicator').hide();
+		if (WorkIndicator.BlockUI){
+			$('#wrk_overlay').hide();
+			$('#wrk_inner').hide();
+			$('#wrk_indicator').hide();
+		}
 	}
 
 	/**
@@ -139,9 +141,21 @@ WorkIndicator = {
 				WorkIndicator.hideTimeoutPid = null;
 				WorkIndicator.overlayTimeoutPid = null;
 			}
+                        
+                        var showIndicator = true;
 
-			WorkIndicator.overlayTimeoutPid = setTimeout(WorkIndicator.ActivateOverlay, WorkIndicator.OverlayDisplayTimeout);
+                        var clickedElement = document.getElementById(attributes.c);
+                        if (clickedElement != null) {
+                            var attribute = clickedElement.getAttribute("disableBigPopupAjaxIndicator");
+                            if (attribute != null && attribute.toUpperCase() == 'TRUE') {
+                                showIndicator = false;
+                            }
+                        }
 
+                        if(showIndicator) {
+                            WorkIndicator.overlayTimeoutPid = setTimeout(WorkIndicator.ActivateOverlay, WorkIndicator.OverlayDisplayTimeout);
+                        }
+                        
 			WorkIndicator.hideTimeoutPid = setTimeout(WorkIndicator.ShowWorkingSign, WorkIndicator.WorkingSignDisplayTimeout);
 		}
 	}
