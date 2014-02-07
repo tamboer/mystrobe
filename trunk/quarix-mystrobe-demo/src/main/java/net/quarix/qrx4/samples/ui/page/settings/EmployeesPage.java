@@ -19,7 +19,7 @@ import net.mystrobe.client.dynamic.table.view.DataTableColumn;
 import net.mystrobe.client.dynamic.table.view.IMyStrobeColumn;
 import net.mystrobe.client.dynamic.table.view.MyStrobeColumn;
 import net.mystrobe.client.dynamic.table.view.SimpleDataTableViewPanel;
-import net.quarix.qrx4j.samples.AppConnector;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Department;
 import net.quarix.qrx4j.samples.data.beans.Employee;
 import net.quarix.qrx4j.samples.data.beans.State;
@@ -30,6 +30,7 @@ import net.quarix.qrx4j.samples.data.dao.DepartmentDataObject;
 import net.quarix.qrx4j.samples.data.dao.EmployeeDataObject;
 import net.quarix.qrx4j.samples.data.dao.StateDataObject;
 import net.quarix.qrx4j.samples.settings.Position;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -62,9 +63,8 @@ public class EmployeesPage extends SettingsBasePage {
 	}
 	
 	private void initComponents(){
-		
-		employeeDO = new EmployeeDataObject();
-		employeeDO.setAppConnector(AppConnector.getInstance());
+		Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		employeeDO = new EmployeeDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		Form<Employee> employeeForm = new Form<Employee>("employeeForm");
 		FeedbackPanel feedback = new FeedbackPanel("feedback");
@@ -82,8 +82,7 @@ public class EmployeesPage extends SettingsBasePage {
 		
 		IDynamicFormConfig<Employee> employeeViewConfig = new DynamicFormConfig<Employee>(new EmployeeSchema(), employeeViewVisibleColumns, true);
 		
-		DepartmentDataObject departmentDO = new DepartmentDataObject();
-		departmentDO.setAppConnector(AppConnector.getInstance());
+		DepartmentDataObject departmentDO = new DepartmentDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		String [] departmentVisibleColumns = new String [] {DepartmentSchema.Cols.DEPTNAME.id(), DepartmentSchema.Cols.DEPTCODE.id()};
 		IDynamicFormConfig<Department> departmentDisplay = new DynamicFormConfig<Department>(new DepartmentSchema(), departmentVisibleColumns, true );
@@ -95,8 +94,7 @@ public class EmployeesPage extends SettingsBasePage {
 		employeeViewConfig.setColumnProperty(EmployeeSchema.Cols.DEPTCODE, Property.DescriptionColumn, EmployeeSchema.Cols.DEPTNAME.id());
 		employeeViewConfig.setColumnProperty(EmployeeSchema.Cols.DEPTCODE, Property.Required, true);
 		
-		StateDataObject stateDO = new StateDataObject();
-		stateDO.setAppConnector(AppConnector.getInstance());
+		StateDataObject stateDO = new StateDataObject(application.getMystrobeConfig(), application.getAppName());
 		String [] stateVisibleColumns = new String [] {StateSchema.Cols.STATENAME.id(), StateSchema.Cols.STATECODE.id(),
 				StateSchema.Cols.REGION.id()};
 		IDynamicFormConfig<State> stateDisplay = new DynamicFormConfig<State>(new StateSchema(), stateVisibleColumns, true );

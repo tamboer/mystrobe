@@ -18,7 +18,7 @@ import net.mystrobe.client.impl.FilterParameter;
 import net.mystrobe.client.navigator.DataObjectIterator;
 import net.quarix.qrx4.samples.ui.page.settings.SelectCustomerPanel;
 import net.quarix.qrx4.samples.ui.panel.LookupFormComponent;
-import net.quarix.qrx4j.samples.AppConnector;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.beans.Item;
 import net.quarix.qrx4j.samples.data.beans.Order;
@@ -31,6 +31,7 @@ import net.quarix.qrx4j.samples.data.dao.ItemDataObject;
 import net.quarix.qrx4j.samples.data.dao.OrderDataObject;
 import net.quarix.qrx4j.samples.data.dao.OrderLineDataObject;
 import net.quarix.qrx4j.samples.order.OrderStatus;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -42,7 +43,6 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.extensions.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -133,16 +133,15 @@ public class EditOrderPage extends OrderBasePage {
 		orderLineFormConfig.setColumnProperty(OrderLineSchema.Cols.ORDERLINESTATUS, Property.Label, 
 				new StringResourceModel("LBL_STATUS", EditOrderPage.this, null));
 		
-		this.orderDO = new OrderDataObject();
-		this.orderDO.setAppConnector(AppConnector.getInstance());
+                Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		this.orderDO = new OrderDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		if (!addOrder && orderNumber != null ){
 			this.orderDO.addFilter(new FilterParameter(OrderSchema.Cols.ORDERNUM, FilterOperator.EQ, orderNumber));
 		}
 		
-		this.orderLineDO = new OrderLineDataObject();
-		this.orderLineDO.setAppConnector(AppConnector.getInstance());
-		this.orderLineDO.getSchema().setBatchSize(0);
+		this.orderLineDO = new OrderLineDataObject(application.getMystrobeConfig(), application.getAppName());
+		this.orderLineDO.fetchAllRecords();
 		if (!addOrder && orderNumber != null ){
 			this.orderLineDO.addFilter(new FilterParameter(OrderLineSchema.Cols.ORDERNUM, FilterOperator.EQ, orderNumber));
 		}
@@ -216,8 +215,8 @@ public class EditOrderPage extends OrderBasePage {
 
 			@Override
 			protected void onSaveChanges() throws Exception {
-				
-				DSTransactionManager transactionManager = new DSTransactionManager(new OrderInfoDSSchema(), AppConnector.getInstance(), 
+				Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+				DSTransactionManager transactionManager = new DSTransactionManager(new OrderInfoDSSchema(), application.getMystrobeConfig(), application.getAppName(), 
 						new IDSTransactionable<?> [] {orderDO, orderLineDO});
 				
 				Map<String, Void> rowIdsMap = new HashMap<String, Void>(this.orderLinesList.size());
@@ -513,8 +512,8 @@ public class EditOrderPage extends OrderBasePage {
 			orderLineStatusDropDown.setRequired(true);
 			add(orderLineStatusDropDown);
 			
-			IDataObject<Item> itemDO = new ItemDataObject();
-			itemDO.setAppConnector(AppConnector.getInstance());
+                        Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+			IDataObject<Item> itemDO = new ItemDataObject(application.getMystrobeConfig(), application.getAppName());
 			
 			String [] itemVisibleColumns = new String [] {ItemSchema.Cols.ITEMNAME.id(), ItemSchema.Cols.CATEGORY1.id(),
 					ItemSchema.Cols.CATEGORY1.id(), ItemSchema.Cols.PRICE.id(), ItemSchema.Cols.WEIGHT.id()};

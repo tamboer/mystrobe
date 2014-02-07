@@ -23,10 +23,11 @@ import net.mystrobe.client.dynamic.page.ModalWindowUpdateMode;
 import net.mystrobe.client.impl.FilterParameter;
 import net.quarix.qrx4.samples.item.ItemFirstCategory;
 import net.quarix.qrx4.samples.item.ItemSecondCategory;
-import net.quarix.qrx4j.samples.AppConnector;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Item;
 import net.quarix.qrx4j.samples.data.beans.meta.ItemSchema;
 import net.quarix.qrx4j.samples.data.dao.ItemDataObject;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -80,9 +81,8 @@ public class ItemsPage extends SettingsBasePage {
 	
 	
 	private void initPageComponents() {
-		
-		itemsDO = new ItemDataObject();
-		itemsDO.setAppConnector(AppConnector.getInstance());
+		Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		itemsDO = new ItemDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		Form<Void> modalWindowForm = new Form<Void>("editItemWindowForm");
 		ModalWindow editItemWindow = new ModalWindow("editItemModalWindow"); 

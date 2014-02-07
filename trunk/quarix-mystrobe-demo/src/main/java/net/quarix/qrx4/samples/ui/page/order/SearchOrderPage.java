@@ -29,8 +29,8 @@ import net.mystrobe.client.filter.SearchFilter;
 import net.mystrobe.client.impl.FilterParameter;
 import net.mystrobe.client.util.StringUtil;
 import net.quarix.qrx4.samples.ui.panel.LookupFormComponent;
-import net.quarix.qrx4j.samples.AppConnector;
 import net.quarix.qrx4j.samples.HeaderLink;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.beans.Order;
 import net.quarix.qrx4j.samples.data.beans.OrderLine;
@@ -45,6 +45,7 @@ import net.quarix.qrx4j.samples.data.dao.OrderDataObject;
 import net.quarix.qrx4j.samples.data.dao.OrderLineDataObject;
 import net.quarix.qrx4j.samples.data.dao.SalesRepDataObject;
 import net.quarix.qrx4j.samples.order.OrderStatus;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -98,17 +99,16 @@ public class SearchOrderPage extends OrderBasePage {
 		modalWindowForm.add(editOrderLineWindow);
 		
 		add(modalWindowForm);
-		
-		orderDo = new OrderDataObject() {
+                
+		Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		orderDo = new OrderDataObject(application.getMystrobeConfig(), application.getAppName()) {
 			@Override
 			protected Serializable getSearchBean() {
 				return getSearchForm().getModelObject();
 			}
 		};
-		orderDo.setAppConnector(AppConnector.getInstance());
 		
-		orderLineDo = new OrderLineDataObject();
-		orderLineDo.setAppConnector(AppConnector.getInstance());
+		orderLineDo = new OrderLineDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		initSearchForm(parameters);
 		
@@ -248,7 +248,8 @@ public class SearchOrderPage extends OrderBasePage {
 				
 				orderDo.moveToRow(model.getObject().getRowId());
 				
-				DSTransactionManager transactionManager = new DSTransactionManager(new OrderInfoDSSchema(), AppConnector.getInstance());
+                                Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+				DSTransactionManager transactionManager = new DSTransactionManager(new OrderInfoDSSchema(), application.getMystrobeConfig(), application.getAppName());
 				transactionManager.addTransactionParticipant(orderDo);
 				
 				try {
@@ -343,8 +344,8 @@ public class SearchOrderPage extends OrderBasePage {
     			CustomerSchema.Cols.STATE.id(), CustomerSchema.Cols.COUNTRY.id(),
     			CustomerSchema.Cols.CITY.id(), CustomerSchema.Cols.COMMENTS.id()};
 		IDynamicFormConfig<Customer> customerDisplay = new DynamicFormConfig<Customer>(new CustomerSchema(), customerVisibleColumns, true );
-		CustomerDataObject customerDO = new CustomerDataObject();
-		customerDO.setAppConnector(AppConnector.getInstance()); 
+                Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		CustomerDataObject customerDO = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
 		editPanelConfig.setColumnProperty(OrderSchema.Cols.CUSTNUM, Property.SelectableFieldValue, Boolean.TRUE);
 		editPanelConfig.setColumnProperty(OrderSchema.Cols.CUSTNUM, Property.LinkedColumnName, CustomerSchema.Cols.CUSTNUM.id());
 		editPanelConfig.setColumnProperty(OrderSchema.Cols.CUSTNUM, Property.LinkedDataObject, customerDO);
@@ -356,8 +357,7 @@ public class SearchOrderPage extends OrderBasePage {
 		String [] salesRepVisibleColumns = new String [] {SalesRepSchema.Cols.REPNAME.id(), SalesRepSchema.Cols.SALESREP.id(),
 				SalesRepSchema.Cols.REGION.id()};
 		IDynamicFormConfig<SalesRep> salesRepDisplay = new DynamicFormConfig<SalesRep>(new SalesRepSchema(), salesRepVisibleColumns, true );
-		SalesRepDataObject salesRepDO = new SalesRepDataObject();
-		salesRepDO.setAppConnector(AppConnector.getInstance()); 
+		SalesRepDataObject salesRepDO = new SalesRepDataObject(application.getMystrobeConfig(), application.getAppName());
 		editPanelConfig.setColumnProperty(OrderSchema.Cols.SALESREP, Property.SelectableFieldValue, Boolean.TRUE);
 		editPanelConfig.setColumnProperty(OrderSchema.Cols.SALESREP, Property.LinkedColumnName, SalesRepSchema.Cols.SALESREP.id());
 		editPanelConfig.setColumnProperty(OrderSchema.Cols.SALESREP, Property.SelectRecordTableConfig, salesRepDisplay);
@@ -470,8 +470,8 @@ public class SearchOrderPage extends OrderBasePage {
 		TextField<String> poNumberTextField = new TextField<String>("po");
 		searchForm.add(poNumberTextField);
 		
-		IDataObject<Customer> customereDO = new CustomerDataObject();
-		customereDO.setAppConnector(AppConnector.getInstance());
+                Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		IDataObject<Customer> customereDO = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		String [] customerVisibleColumns = new String [] {CustomerSchema.Cols.NAME.id(), CustomerSchema.Cols.CONTACT.id(),
     			CustomerSchema.Cols.STATE.id(), CustomerSchema.Cols.COUNTRY.id(),

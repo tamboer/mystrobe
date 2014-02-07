@@ -7,10 +7,11 @@ import java.util.List;
 import net.mystrobe.client.FilterOperator;
 import net.mystrobe.client.IDataObject;
 import net.mystrobe.client.impl.FilterParameter;
-import net.quarix.qrx4j.samples.AppConnector;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.SalesRep;
 import net.quarix.qrx4j.samples.data.beans.meta.SalesRepSchema;
 import net.quarix.qrx4j.samples.data.dao.SalesRepDataObject;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
 
@@ -26,9 +27,9 @@ public class SalesRepresentativeAutocompleteTextField extends AutoCompleteTextFi
 	protected Iterator<String> getChoices(String input) {
 		
 		if (salesRepDO == null) {
-			salesRepDO = new SalesRepDataObject();
-			salesRepDO.setAppConnector(AppConnector.getInstance());
-			salesRepDO.getSchema().setBatchSize(0);
+                    Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+			salesRepDO = new SalesRepDataObject(application.getMystrobeConfig(), application.getAppName());
+			salesRepDO.fetchAllRecords();
 		}
 		
 		salesRepDO.clearFilters();

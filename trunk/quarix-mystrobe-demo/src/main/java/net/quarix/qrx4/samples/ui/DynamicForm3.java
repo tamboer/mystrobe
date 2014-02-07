@@ -8,11 +8,12 @@ import net.mystrobe.client.DataLinkParameters;
 import net.mystrobe.client.IDataListener;
 import net.mystrobe.client.IDataSource;
 import net.mystrobe.client.dynamic.navigation.NavigationPanel;
-import net.quarix.qrx4j.samples.AppConnector;
 import net.quarix.qrx4j.samples.BasePage;
 import net.quarix.qrx4j.samples.HeaderLink;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.dao.CustomerDataObject;
+import org.apache.wicket.Application;
 
 
 import org.apache.wicket.markup.html.basic.Label;
@@ -29,9 +30,8 @@ public class DynamicForm3 extends BasePage implements IDataListener<Customer>{
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
     public DynamicForm3(final PageParameters parameters) {
-    	
-    	CustomerDataObject customerDao = new CustomerDataObject();
-    	customerDao.setAppConnector(AppConnector.getInstance());
+    	Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+    	CustomerDataObject customerDao = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
     	
     	add(new Label("custnum"));
     	add(new Label("name"));
