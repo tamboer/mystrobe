@@ -6,12 +6,12 @@ import net.mystrobe.client.dynamic.config.DynamicFormConfig;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.navigation.DataTablePagesNavigationPanel;
 import net.mystrobe.client.dynamic.table.view.SimpleDataTableViewPanel;
-import net.quarix.qrx4j.samples.AppConnector;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.beans.meta.CustomerSchema;
 import net.quarix.qrx4j.samples.data.dao.CustomerDataObject;
 
-import org.apache.wicket.Component;
+import org.apache.wicket.Application;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -31,8 +31,8 @@ public abstract class SelectCustomerPanel extends Panel {
 	}
 
 	protected void initPanelComponents() {
-		customerDO = new CustomerDataObject();
-		customerDO.setAppConnector(AppConnector.getInstance());
+                Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		customerDO = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		String [] visiblecolumns = new String [] { CustomerSchema.Cols.NAME.id(),
 				CustomerSchema.Cols.ADDRESS.id(), CustomerSchema.Cols.CITY.id(),

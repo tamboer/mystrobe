@@ -14,12 +14,13 @@ import net.mystrobe.client.dynamic.navigation.CRUDAjaxOperationsPanel;
 import net.mystrobe.client.dynamic.navigation.CRUDOperationsPanel.CRUDButton;
 import net.mystrobe.client.dynamic.navigation.NavigationPanel;
 import net.mystrobe.client.dynamic.panel.DynamicFormDataViewPanel;
-import net.quarix.qrx4j.samples.AppConnector;
 import net.quarix.qrx4j.samples.BasePage;
 import net.quarix.qrx4j.samples.HeaderLink;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.beans.meta.CustomerSchema;
 import net.quarix.qrx4j.samples.data.dao.CustomerDataObject;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
@@ -41,9 +42,8 @@ public class DynamicFormCRUD extends BasePage {
 	protected CustomerDataObject customerDao;
 	
 	public DynamicFormCRUD () { 
-	
-		customerDao = new CustomerDataObject();
-		customerDao.setAppConnector(AppConnector.getInstance());
+                Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+		customerDao = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
 		
 		feedbackPanel = new FeedbackPanel("feedbackPanelId");
 		feedbackPanel.setOutputMarkupId(true);

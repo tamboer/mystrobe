@@ -6,12 +6,13 @@ import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.config.IDynamicFormFieldConfig;
 import net.mystrobe.client.dynamic.navigation.DataTablePagesNavigationPanel;
 import net.mystrobe.client.dynamic.table.view.SimpleDataTableViewPanel;
-import net.quarix.qrx4j.samples.AppConnector;
 import net.quarix.qrx4j.samples.BasePage;
 import net.quarix.qrx4j.samples.HeaderLink;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.beans.meta.CustomerSchema;
 import net.quarix.qrx4j.samples.data.dao.CustomerDataObject;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -27,9 +28,8 @@ public class DataTable extends BasePage {
 	private CustomerDataObject customerDo;
 	
     public DataTable(final PageParameters parameters) {
-    	
-    	customerDo = new CustomerDataObject();
-    	customerDo.setAppConnector(AppConnector.getInstance());
+    	Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+    	customerDo = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
     	
     	IDynamicFormConfig<Customer> custFormConfig = new DynamicFormConfig<Customer>(
     			customerDo.getSchema(), false);

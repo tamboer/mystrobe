@@ -5,11 +5,12 @@ import net.mystrobe.client.dynamic.config.DynamicFormConfig;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.navigation.NavigationPanel;
 import net.mystrobe.client.dynamic.panel.DynamicFormDataViewPanel;
-import net.quarix.qrx4j.samples.AppConnector;
 import net.quarix.qrx4j.samples.BasePage;
 import net.quarix.qrx4j.samples.HeaderLink;
+import net.quarix.qrx4j.samples.Qrx4jSampleApplication;
 import net.quarix.qrx4j.samples.data.beans.Customer;
 import net.quarix.qrx4j.samples.data.dao.CustomerDataObject;
+import org.apache.wicket.Application;
 
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.Model;
@@ -21,9 +22,8 @@ public class DynamicForm2 extends BasePage {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
     public DynamicForm2(final PageParameters parameters) {
-    	
-    	CustomerDataObject customerDao = new CustomerDataObject();
-    	customerDao.setAppConnector(AppConnector.getInstance());
+    	Qrx4jSampleApplication application = (Qrx4jSampleApplication)Application.get();
+    	CustomerDataObject customerDao = new CustomerDataObject(application.getMystrobeConfig(), application.getAppName());
     	customerDao.fetchFirst();
     	Customer customer = customerDao.getData();
 
