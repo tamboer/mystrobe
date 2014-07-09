@@ -17,6 +17,8 @@
  */
  package net.mystrobe.client.connector.quarixbackend.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+ 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +27,6 @@ import java.util.Set;
 import net.mystrobe.client.FilterOperator;
 import net.mystrobe.client.IFilterParameter;
 import net.mystrobe.client.impl.FilterParameter;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 
 
