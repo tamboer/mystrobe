@@ -26,8 +26,10 @@ import net.mystrobe.client.IDataTableDataSource;
 import net.mystrobe.client.ISortListener;
 import net.mystrobe.client.ISortSource;
 import net.mystrobe.client.SortState;
+import net.mystrobe.client.WicketDSRuntimeException;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.ui.UICssResourceReference;
+import net.mystrobe.client.ui.config.MyStrobeWebSettingsProvider;
 
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByLink.ICssProvider;
 import org.apache.wicket.markup.head.CssHeaderItem;
@@ -64,6 +66,11 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	 */
 	protected ISortListener sortListener;
 	
+	
+	protected boolean useApplicationSettingForPageSize = false;
+	
+	protected static int defaultTableSize = 10;
+	
 	/**
 	 * Constructor. 
 	 * 
@@ -73,6 +80,12 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	 */
 	public SimpleDataTableViewPanel(String id, final IDynamicFormConfig<T> columnsConfig, int tableSize) {
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize);
+	}
+	
+	public SimpleDataTableViewPanel(String id, final IDynamicFormConfig<T> columnsConfig) {
+		super(id, new ArrayList<T>(0), columnsConfig, defaultTableSize);
+		useApplicationSettingForPageSize = true;
+		this.tableSize = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageSize();
 	}
 	
 	/**
@@ -87,6 +100,12 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize, sortableColumns);
 	}
 	
+	public SimpleDataTableViewPanel(String id, final IDynamicFormConfig<T> columnsConfig, boolean sortableColumns) {
+		super(id, new ArrayList<T>(0), columnsConfig, defaultTableSize, sortableColumns);
+		useApplicationSettingForPageSize = true;
+		this.tableSize = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageSize();
+	}
+	
 	/**
 	 * Constructor.
 	 * 
@@ -97,6 +116,12 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	 */
 	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, int tableSize, ICssProvider cssSortProvider) {
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize, cssSortProvider);
+	}
+	
+	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, ICssProvider cssSortProvider) {
+		super(id, new ArrayList<T>(0), columnsConfig, defaultTableSize, cssSortProvider);
+		useApplicationSettingForPageSize = true;
+		this.tableSize = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageSize();
 	}
 	
 	/**
@@ -111,6 +136,12 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize, additionalTableColumns);
 	}
 	
+	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, List<DataTableColumn<T, ?>> additionalTableColumns ) {
+		super(id, new ArrayList<T>(0), columnsConfig, defaultTableSize, additionalTableColumns);
+		useApplicationSettingForPageSize = true;
+		this.tableSize = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageSize();
+	}
+	
 	/**
 	 * Constructor.
 	 * 
@@ -123,7 +154,6 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	public SimpleDataTableViewPanel(String id, IDynamicFormConfig<T> columnsConfig, int tableSize, ICssProvider cssSortProvider, List<DataTableColumn<T,?>> additionalTableColumns) {
 		super(id, new ArrayList<T>(0), columnsConfig, tableSize, additionalTableColumns, cssSortProvider);
 	}
-	
 	
 	@Override
 	protected void selectDataRowWithId(String rowId){
@@ -147,6 +177,18 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	
 	public void setDataTableDataSource(IDataTableDataSource<T> source) {
 		this.tableDataSource = source;  
+		
+		if (this.useApplicationSettingForPageSize && 
+				!MyStrobeWebSettingsProvider.getInstance(getApplication()).isWebSettingsAware() )  {
+		
+			if (source.getBatchSize() <= 0 ) {
+				throw new WicketDSRuntimeException("Grid view size not set correctly. Page size has to be a positive value.");
+			}
+			
+			this.tableSize = source.getBatchSize();
+		
+		}
+		
 	}
 	
 	
@@ -175,11 +217,6 @@ public class SimpleDataTableViewPanel<T extends IDataBean> extends DataBeanDataG
 	
 	public int getTableDataSize() {
 		return super.getTableDataSize();
-	}
-
-	@Override
-	public int getSize() {
-		return this.tableSize;
 	}
 	
 	public void renderHead(IHeaderResponse response) {

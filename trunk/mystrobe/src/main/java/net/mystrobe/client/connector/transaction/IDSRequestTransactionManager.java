@@ -60,6 +60,15 @@ public interface IDSRequestTransactionManager {
 	public void dataRequest(AppendPosition appendPosition); 
 	
 	/**
+	 * Data request that will use <tt>appendPosition</tt> to add data
+	 *  for the main object data buffer and will replace that for secondary objects
+	 *  
+	 * @param appendPosition Main data object buffer append position. 
+	 */
+	public void dataRequest(AppendPosition appendPosition, int positionInBuffer); 
+	
+	
+	/**
 	 * Simple data request that witch command name:<tt>commandName</tt>.</br>
 	 * 
 	 * Use this method when different command than <b>sendRows</b> has to be called on the BL. 
@@ -77,7 +86,7 @@ public interface IDSRequestTransactionManager {
 	 * @param commandName Command name to send to BL.
 	 * @param appendPosition Main data object buffer append position. 
 	 */
-	public void dataRequest(String commandName, AppendPosition appendPosition);
+	public void dataRequest(String commandName, AppendPosition appendPosition, int positionInBuffer);
 	
 	
 	/**

@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
+
 /**
  * Data buffer source implementation.</br>
  * 
@@ -34,7 +37,6 @@ import java.util.Map;
 
 public abstract class DataBufferAdaptor<T extends IDataBean> extends FilteredDataAdaptor<T> implements IDataBufferSource<T>, Serializable {
 	
-	
 	/**
 	 * 
 	 */
@@ -43,7 +45,16 @@ public abstract class DataBufferAdaptor<T extends IDataBean> extends FilteredDat
 	
 	protected List<IDataBufferListener<T>> dataBufferListeners = new ArrayList<IDataBufferListener<T>>();
 
+	
+	public DataBufferAdaptor(IAppConnector appConnector) {
+		super(appConnector);
+	}
+	
+	public  DataBufferAdaptor(IConfig config, String appName) {
+		super(config, appName);
+	}
 
+	
 	public void addDataBufferListener(IDataBufferListener<T> dataBufferListener) {
 		this.dataBufferListeners.add(dataBufferListener);
 		
@@ -60,13 +71,13 @@ public abstract class DataBufferAdaptor<T extends IDataBean> extends FilteredDat
 	 */
 	@Override
 	protected void publishOnDataBufferChanged(List<T> removedData,  Map<String, T> removedRowsMap, 
-			AppendPosition appendPosition) {
+			AppendPosition appendPosition, int positionInBuffer) {
 		
-		super.publishOnDataBufferChanged(removedData, removedRowsMap, appendPosition);
+		super.publishOnDataBufferChanged(removedData, removedRowsMap, appendPosition, positionInBuffer);
 		
 		for (IDataBufferListener<T> dataBufferListener : this.dataBufferListeners) {
 			dataBufferListener.onNewDataReceived(removedData, removedRowsMap, 
-					this.dataBuffer.getDataList(), appendPosition, this.hasFirstRow, this.hasLastRow);
+					this.dataBuffer.getDataList(), appendPosition, this.hasFirstRow, this.hasLastRow, positionInBuffer);
 		}
 	}
 	

@@ -35,7 +35,7 @@ public class CustomerDSSchema extends DSSchema {
 	@Generated
 	public CustomerDSSchema() {
 		id = "dsCustomer";
-		bathchSize = 50;
+		batchSize = 50;
 		margin = 5;
 		urn = "server.customer";
 		hasFilteredChildren = true;

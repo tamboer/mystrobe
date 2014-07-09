@@ -53,7 +53,7 @@ public interface IDataBufferListener<T extends IDataBean> {
 	 * @param deletedData Buffer changed as result of delete operation
 	 */
 	public void onNewDataReceived(List<T> removedData, Map<String, T> removedRowsMap, List<T> newDataBuffer, 
-			AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow);
+			AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow, int positionInBuffer);
 	
 	
 	

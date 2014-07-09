@@ -4,7 +4,7 @@
   <groupId>mystrobe</groupId>
   <artifactId>mystrobe-data</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.1</version>
+  <version>1.1.4</version>
   <!-- TODO project name -->
   <name>mystrobe-data</name>
   <description></description>
@@ -48,7 +48,7 @@
       <version>${log4j.version}</version>
    </dependency>
    <dependency>
-      <groupId>com.jamonapi</groupId>
+      <groupId>com.google.code.maven-play-plugin.com.jamonapi</groupId>
       <artifactId>jamon</artifactId>
       <version>2.7</version>
     </dependency>
@@ -75,18 +75,12 @@
 		</dependency>
 		
 		<!--  PROGRESS DEPENDENCIES  -->
-		<dependency>
-	        <groupId>progress</groupId>
-	        <artifactId>progress</artifactId>
-	        <version>1.0</version>
-	    </dependency>
-	    
-	    <dependency>
-	        <groupId>progress</groupId>
-	        <artifactId>messages</artifactId>
-	        <version>1.0</version>
-	    </dependency>
-    	
+		 <dependency>
+            <groupId>openedge</groupId>
+            <artifactId>o4glrt</artifactId>
+            <version>11.3</version>
+        </dependency>
+        
     	<dependency>
 	        <groupId>progress</groupId>
 	        <artifactId>quarix-connector</artifactId>
@@ -103,8 +97,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.5.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
           <optimize>true</optimize>
           <debug>true</debug>
           <excludes>
@@ -135,14 +129,25 @@
       </plugin>
       <plugin> 
        <artifactId>maven-source-plugin</artifactId> 
+       <configuration>
+          <excludes>
+      	  	<exclude>net/mystrobe/client/dynamic/**/*.*</exclude>
+      	  	<exclude>net/mystrobe/client/dynamic/config/*.*</exclude>
+      	  	<exclude>net/mystrobe/client/error/*.*</exclude>
+      	  	<exclude>net/mystrobe/client/connector/quarixbackend/generate/**/*.*</exclude>
+		    <exclude>net/mystrobe/client/connector/quarixbackend/ClassGenerator.java</exclude>
+		    <exclude>net/mystrobe/client/ajax/indicator/*.*</exclude>
+		    <exclude>net/mystrobe/client/ui/**/*.*</exclude>
+		  </excludes>
+        </configuration>	
        <executions> 
-        <execution> 
-               <id>attach-sources</id> 
-               <phase>verify</phase> 
-               <goals> 
-               	<goal>jar</goal> 
-               </goals> 
-        </execution> 
+	        <execution> 
+	        	<id>attach-sources</id> 
+	            <phase>verify</phase> 
+	            <goals> 
+	            	<goal>jar</goal> 
+	            </goals> 
+	        </execution> 
        </executions> 
       </plugin> 
     </plugins>

@@ -106,6 +106,7 @@ public abstract class DynamicFormComponentPanel<T extends Serializable> extends 
 		this.propertyName = propertyName;
 		this.readOnly = readOnly;
 		this.required = required;
+		this.setEnabled(!this.readOnly);
 	}
 	
 	public DynamicFormComponentPanel(String id, IModel<T> model) {

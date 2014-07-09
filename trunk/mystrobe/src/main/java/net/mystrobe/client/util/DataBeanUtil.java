@@ -44,7 +44,7 @@ public class DataBeanUtil {
 	private static final Logger logger = LoggerFactory.getLogger(DataBeanUtil.class);
 	
 	
-	public static void setFieldValue(Field field, Object instance, Object obj, String format, String schemaType, LocalizationProperties localizationProperties) {
+	public static void setFieldValue(final Field field, final Object instance, final Object obj, String format, String schemaType, LocalizationProperties localizationProperties) {
 		
 		Class<?> type = field.getType();
 		if (obj == null){

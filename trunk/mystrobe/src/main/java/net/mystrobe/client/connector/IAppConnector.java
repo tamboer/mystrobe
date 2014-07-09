@@ -15,11 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package net.mystrobe.client.connector;
+package net.mystrobe.client.connector;
 
 
 import net.mystrobe.client.IDSSchema;
-import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataSet;
 
 /**
@@ -72,5 +71,19 @@ public interface IAppConnector {
      * @return an instance of the application server localization properties
      */
     public LocalizationProperties getLocalizationProperties();
+    
+    /**
+     * Connector application name.
+     * 
+     * @return Application name.
+     */
+    public String getAppName() ;
+    
+    /**
+     * Connector configuration.
+     * 
+     * @return Connector configuration.
+     */
+    public IConfig getConfig() ;
 
 }

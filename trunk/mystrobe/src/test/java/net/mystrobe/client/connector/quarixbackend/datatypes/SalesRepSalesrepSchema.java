@@ -80,11 +80,12 @@ public class SalesRepSalesrepSchema extends DAOSchema<SalesRepSalesrep> {
 	@Generated
 	public SalesRepSalesrepSchema(SalesRepDSSchema dsSchema) {
 		super();
-		asignValues();	
+		assignValues();	
 	}
 
 	@Generated
-	private void asignValues() {
+	protected void assignValues() {
+		super.assignValues();
 		daoId = "tt-salesrep";
 		iDataTypeClass = SalesRepSalesrep.class;
 		batchSize = 50;

@@ -55,11 +55,5 @@ public interface IDataTableDataListener<T extends IDataBean> extends LinkListene
 	 */
 	public int getTableDataSize();
 	
-	/**
-	 * Get current table row count.
-	 * 
-	 * @return Table size.
-	 */
-	public int getSize();
 }
 

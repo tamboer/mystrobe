@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package net.mystrobe.client.connector;
+  package net.mystrobe.client.connector;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,13 +25,15 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.mystrobe.client.IDAOSchema;
@@ -40,7 +42,6 @@ import net.mystrobe.client.IDSSchema;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataSet;
 import net.mystrobe.client.IFilterParameter;
-import net.mystrobe.client.SchemaColumnProperties;
 import net.mystrobe.client.SortState;
 import net.mystrobe.client.SortState.Sort;
 import net.mystrobe.client.connector.quarixbackend.AppServerAction;
@@ -72,10 +73,20 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 
 	private static final long serialVersionUID = 8583769148567987260L;
 	
-	private transient AppServerAction action;
+	private static Logger logger = LoggerFactory.getLogger(QuarixAppConnector.class);
 	
-	private transient Logger logger = LoggerFactory.getLogger(QuarixAppConnector.class);
-	private Map<String, IDSSchema> dsSchemaCache = new HashMap<String, IDSSchema>();	
+	/**
+	 * Use different app server action for each thread.
+	 */
+	private transient ThreadLocal<AppServerAction> appServerAction = new ThreadLocal<AppServerAction>();
+	
+	/**
+	 * Xml builder used to create new XML documents for server requests
+	 */
+	private transient DocumentBuilder xmlDocBuilder;
+	
+	private ConcurrentMap<String, IDSSchema> dsSchemaCache = new ConcurrentHashMap<String, IDSSchema>();	
+	
 	private IConfig config;
 	protected AnnotationDB annotationDB = new AnnotationDB();
 	protected String appName = null;
@@ -86,10 +97,48 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 		this.config = config;
 		this.appName = appName;
 		this.appServer = appServer;
+		
+		initConnector();
+		
 		scanForAnnotations();
 	}
 	
+	public QuarixAppConnector(IAppServer appServer, String appName) {	    
+		this.appName = appName;
+		this.appServer = appServer;
+		
+		initConnector();
+	}
 	
+	protected void initConnector() {
+		try {
+			DocumentBuilderFactory xmlDocFactory = DocumentBuilderFactory.newInstance();
+			xmlDocBuilder = xmlDocFactory.newDocumentBuilder();
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Create (or retrieve) the app server action for current thread.
+	 *  
+	 * @return App server action for current thread.
+	 */
+	protected AppServerAction getAppServerAction() {
+    	if( appServerAction.get() == null ) {
+    		AppServerAction serverAction =  new AppServerAction(appServer, appName);
+    		appServerAction.set(serverAction);
+    		
+    		if (logger.isDebugEnabled()) {
+        		logger.debug("App sever action for app server : " + this.config.getValue(IConfig.APP_SERVER_URL) 
+        				+ " and app name:" + this.appName );
+        	}
+        }
+    	
+    	return appServerAction.get();
+	}
+	
+	@Deprecated
 	protected void scanForAnnotations() {
 	    URL[] urls = null;
 	    
@@ -104,7 +153,7 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 	        List<URL> urlList = new ArrayList<URL>(packages.size());
 	        URL[] pkgUrl = null;
 	        for(String pkg : packages) {	            
-	            getLogger().debug("From resource base " + pkg);
+	        	logger.debug("From resource base " + pkg);
 	            pkgUrl = ClasspathUrlFinder.findClassPaths( pkg);
 	            
 	            if( pkgUrl != null && pkgUrl.length > 0) {
@@ -124,14 +173,14 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 	    if( urls == null || urls.length == 0 ) return;
 	    
 	    try {
-	    	if( getLogger().isDebugEnabled() ) {
+	    	if( logger.isDebugEnabled() ) {
 		        for( URL u : urls) {
-		            getLogger().debug("Scanning URL for annotation " + u);
+		        	logger.debug("Scanning URL for annotation " + u);
 		        }
 		        long st = System.currentTimeMillis();
 	            annotationDB.scanArchives(urls);
 	            long tm = System.currentTimeMillis() - st;
-	            getLogger().info("Scanning for annotation total durration in milliseconds " + tm);	    		
+	            logger.info("Scanning for annotation total durration in milliseconds " + tm);	    		
 	    	} else {
 	    		annotationDB.scanArchives(urls);
 	    	}
@@ -197,7 +246,7 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 		List<Element> coms = XMLUtil.xpathQuery(expression, doc
 				.getDocumentElement());
 		if (coms.isEmpty()) {
-			getLogger().error("Incorect schema response received " + getAppServerAction().getResponseXML().toString());
+			logger.error("Incorect schema response received " + getAppServerAction().getResponseXML().toString());
 			throw new RuntimeException("No " + Globals.ELEMENT_COMM
 					+ " element found!");
 		}
@@ -270,8 +319,10 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 
 		Document doc;
 		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			doc = docFactory.newDocumentBuilder().newDocument();
+			if (xmlDocBuilder == null) {
+				initConnector();
+			}
+			doc = xmlDocBuilder.newDocument();
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -336,10 +387,7 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 					filterEl.setAttribute(Globals.ATTRIBUTE_FLD, filterParameter.getColumn());
 					filterEl.setAttribute(Globals.ATTRIBUTE_OP, filterParameter.getOperator().name().toLowerCase());
 					
-					LocalizationProperties localizationProperties = AppServerAction.getCachedLocalizationProperties(this.appServer.getUrl());
-					if (localizationProperties == null || localizationProperties.getFormatDate() == null) {
-						localizationProperties = localizationRequest();
-					}
+					LocalizationProperties localizationProperties = getAppServerAction().getLocalizationProperties();
 					String parameterStringValue =  NamingHelper.getFormattedOutputValue(filterParameter.getValue(), filterParameter.getFormat(), localizationProperties);
 					filterEl.setAttribute(Globals.ATTRIBUTE_VAL, parameterStringValue);
 					
@@ -534,122 +582,10 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
 
 			DAOSchema<?> daoSchema = new DAOSchema();
 
+			daoSchema.initDAOSchemaSettingsFromXML(properties, table);
+			
 			final String id = table.getAttribute(Globals.ATTRIBUTE_ID);
-			daoSchema.setDAOId(id);
-			Object obj = XMLUtil.getProperty(properties,
-					Globals.PROP_BATCHSIZE, Long.class);
-			if (obj != null)
-				daoSchema.setBatchSize((Long) obj);
-
-			obj = XMLUtil.getProperty(properties, Globals.PROP_MARGIN,
-					Integer.class);
-			if (obj != null)
-				daoSchema.setMargin((Integer) obj);
-
-			obj = XMLUtil.getProperty(properties, Globals.PROP_AUTOSYNC,
-					Boolean.class);
-			if (obj != null)
-				daoSchema.setAutosync((Boolean) obj);
-
-			obj = XMLUtil.getProperty(properties, Globals.PROP_OPENONINIT,
-					Boolean.class);
-			if (obj != null)
-				daoSchema.setOpenOnInit((Boolean) obj);
-
-			obj = XMLUtil.getProperty(properties, Globals.PROP_READONLY,
-					Boolean.class);
-			if (obj != null)
-				daoSchema.setReadOnly((Boolean) obj);
-
-			obj = XMLUtil.getProperty(properties, Globals.PROP_SENDCHANGESONLY,
-					Boolean.class);
-			if (obj != null)
-				daoSchema.setSendChangesOnly((Boolean) obj);
-
-			obj = XMLUtil.getProperty(properties,
-					Globals.PROP_SENDFILTEREVERYTIME, Boolean.class);
-			if (obj != null)
-				daoSchema.setFilterEveryTime((Boolean) obj);
-
-			obj = XMLUtil.getProperty(properties, Globals.PROP_DYNAMIC,
-					Boolean.class);
-			if (obj != null)
-				daoSchema.setIsDynamic((Boolean) obj);
-
-			String expression = "child::"
-					+ XMLUtil.getLowerCaseExpr(Globals.ELEMENT_COLUMNNAMES)
-					+ "/child::"
-					+ XMLUtil.getLowerCaseExpr(Globals.ELEMENT_COL);
-
-			List<Element> cols = XMLUtil.xpathQuery(expression, table);
-			String columnName = null;
-			String columnExpression = null;
-			Map<SchemaColumnProperties, String> columnProperties;
-			LinkedHashMap<String, Map<SchemaColumnProperties, String>> daoProperties = new LinkedHashMap<String, Map<SchemaColumnProperties, String>>();
-
-			for (Element col : cols) {
-				columnName = col.getAttribute(Globals.ATTRIBUTE_NAME);
-
-				if (columnName != null && !columnName.isEmpty()) {
-					columnProperties = new HashMap<SchemaColumnProperties, String>();
-
-					columnExpression = "child::"
-							+ XMLUtil
-									.getLowerCaseExpr(Globals.ELEMENT_COLUMNNAMES)
-							+ "/child::"
-							+ XMLUtil.getLowerCaseExpr(Globals.ELEMENT_COL)
-							+ "[@" + Globals.ATTRIBUTE_NAME + "='" + columnName
-							+ "']";
-
-					List<Element> columnProps = XMLUtil.xpathQuery(
-							columnExpression, table);
-					if (!columnProps.isEmpty()) {
-						Element columnProp = columnProps.get(0);
-
-						columnProperties
-								.put(
-										SchemaColumnProperties.DefaultValue,
-										columnProp
-												.getAttribute(Globals.ATTRIBUTE_DEFAULTVALUE));
-						columnProperties
-								.put(SchemaColumnProperties.Format, columnProp
-										.getAttribute(Globals.ATTRIBUTE_FORMAT));
-						columnProperties.put(SchemaColumnProperties.Label,
-								columnProp
-										.getAttribute(Globals.ATTRIBUTE_LABEL));
-						columnProperties
-								.put(
-										SchemaColumnProperties.ReadOnly,
-										columnProp
-												.getAttribute(Globals.ATTRIBUTE_READONLY));
-						columnProperties
-								.put(
-										SchemaColumnProperties.Required,
-										columnProp
-												.getAttribute(Globals.ATTRIBUTE_REQUIRED));
-						columnProperties
-								.put(
-										SchemaColumnProperties.Sortable,
-										columnProp
-												.getAttribute(Globals.ATTRIBUTE_SORTABLE));
-						columnProperties
-								.put(SchemaColumnProperties.Type, columnProp
-										.getAttribute(Globals.ATTRIBUTE_TYPE));
-						columnProperties
-								.put(SchemaColumnProperties.ViewAs, columnProp
-										.getAttribute(Globals.ATTRIBUTE_VIEWAS));
-						columnProperties
-								.put(
-										SchemaColumnProperties.Tooltip,
-										columnProp
-												.getAttribute(Globals.ATTRIBUTE_TOOLTIP));
-					}
-
-					daoProperties.put(columnName, columnProperties);
-				}
-			}
-			daoSchema.setPropertiesMap(daoProperties);
-
+			
 			map.put(id, daoSchema);
 
 		}
@@ -750,7 +686,7 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
                     }
                     
                 } catch (ClassNotFoundException e) {
-                    getLogger().warn("Found annotated class " + className + " but can not load it, ignoring class");
+                    logger.warn("Found annotated class " + className + " but can not load it, ignoring class");
                 }
             }
         }
@@ -758,7 +694,6 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
         return null;
     }
  
-    
     protected List<String> getPackages(String packageStr) {
         List<String> results = new LinkedList<String>();
         
@@ -773,17 +708,13 @@ public class QuarixAppConnector implements IAppConnector, Serializable {
         return results;
     }
 
-    
-    protected Logger getLogger() {
-    	if( logger != null ) return logger;
-    	return logger = LoggerFactory.getLogger(QuarixAppConnector.class);    	
+    public String getAppName() {
+    	return appName;
     }
     
-    
-    protected AppServerAction getAppServerAction(){
-    	if( action != null ) return action;
-		return action = new AppServerAction(appServer, appName);    	
+    public IConfig getConfig() {
+    	return this.config;
     }
-}
+ }
 
 

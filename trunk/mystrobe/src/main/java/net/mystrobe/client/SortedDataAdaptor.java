@@ -19,6 +19,9 @@
 
 import java.io.Serializable;
 
+import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
+
 /**
  * Extends the {@link DataSourceAdaptor} and adds sorting capabilities. 
  * 
@@ -32,6 +35,14 @@ public abstract class SortedDataAdaptor<T extends IDataBean> extends DataSourceA
 	
 	protected SortState            sortState         = new SortState();
 	protected ISortSource          sortSource        = null;
+	
+	public SortedDataAdaptor(IAppConnector appConnector) {
+		super(appConnector);
+	}
+	
+	public SortedDataAdaptor(IConfig config, String appName) {
+		super(config, appName);
+	}
 	
 	public ISortSource getSortSource() {
         return this.sortSource;

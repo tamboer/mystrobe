@@ -26,7 +26,9 @@ import net.mystrobe.client.WicketDSRuntimeException;
 import net.mystrobe.client.connector.DAOCommands;
 import net.mystrobe.client.connector.DSRequest;
 import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
 import net.mystrobe.client.connector.IDAOResponse;
+import net.mystrobe.client.connector.QuarixServerConnector;
 import net.mystrobe.client.connector.quarixbackend.json.Message;
 
 import org.slf4j.Logger;
@@ -41,12 +43,23 @@ public class DSTransactionManager extends AbstractTransactionManager implements 
 	
 	protected static final Logger logger = LoggerFactory.getLogger(DSTransactionManager.class);
 	
+	@Deprecated
 	public DSTransactionManager(IDSSchema dsSchema, IAppConnector appConnector) {
 		super(dsSchema, appConnector);
 	}
 	
+	@Deprecated
 	public DSTransactionManager(IDSSchema dsSchema, IAppConnector appConnector, IDSTransactionable<? extends IDataBean> ... dsTransactionables ) {
 		super(dsSchema, appConnector);
+		addTransactionParticipant(dsTransactionables);
+	}
+	
+	public DSTransactionManager(IDSSchema dsSchema, IConfig config, String appName) {
+		super(dsSchema, config, appName);
+	}
+	
+	public DSTransactionManager(IDSSchema dsSchema, IConfig config, String appName, IDSTransactionable<? extends IDataBean> ... dsTransactionables ) {
+		super(dsSchema, config, appName);
 		addTransactionParticipant(dsTransactionables);
 	}
 
@@ -55,6 +68,12 @@ public class DSTransactionManager extends AbstractTransactionManager implements 
 		
 		if (logger.isTraceEnabled()) {
 			logger.trace("Start transaction");
+		}
+		
+		if (this.transactionParticipants == null || this.transactionParticipants.isEmpty()) {
+			//no data has to be sent to the server
+			logger.warn("Commit called for transaction without adding participants");
+			return;
 		}
 		
 		boolean commitSuccess = true;
@@ -69,6 +88,8 @@ public class DSTransactionManager extends AbstractTransactionManager implements 
 		}
 		
 		this.dsRequest = dsRequest;
+		
+		IAppConnector appConnector = QuarixServerConnector.getAppConnector(this.appName, this.appServerConfig);
 		this.dsResponse = appConnector.dataRequest(this.dsSchema, this.dsRequest);
 		
 		if (this.dsResponse == null) {
@@ -118,6 +139,8 @@ public class DSTransactionManager extends AbstractTransactionManager implements 
 		
 		if (!commitSuccess) {
 			throw new WicketDSBLException(errorMessage);
+		} else {
+			transactionParticipants.clear();
 		}
 	}
 	
@@ -126,6 +149,7 @@ public class DSTransactionManager extends AbstractTransactionManager implements 
 		for (IDSTransactionable<? extends IDataBean> transactionable : transactionParticipants) {
 			transactionable.rollback();
 		}
+		transactionParticipants.clear();
 		inTransaction = false;
 	}
 

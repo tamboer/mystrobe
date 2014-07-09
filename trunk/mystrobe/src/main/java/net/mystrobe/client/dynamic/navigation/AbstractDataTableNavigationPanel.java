@@ -24,22 +24,18 @@ import net.mystrobe.client.DataSourceAdaptor.AppendPosition;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.IDataBufferListener;
 import net.mystrobe.client.WicketDSRuntimeException;
-import net.mystrobe.client.ajax.indicator.AjaxBusyIndicator;
+import net.mystrobe.client.config.MyStrobeCoreSettingsProvider;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener.DataTableNavigationDirection;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener.DataTableNavigationState;
 import net.mystrobe.client.navigator.IDataTableNavigatorSource;
 import net.mystrobe.client.ui.UICssResourceReference;
+import net.mystrobe.client.ui.config.MyStrobeWebSettingsProvider;
 
-import org.apache.wicket.ajax.WicketAjaxJQueryResourceReference;
-import org.apache.wicket.ajax.WicketEventJQueryResourceReference;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
-import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.request.resource.CssResourceReference;
-import org.apache.wicket.request.resource.JavaScriptResourceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,8 +91,19 @@ public abstract class AbstractDataTableNavigationPanel<T extends IDataBean> exte
 
 	protected boolean reloadPage = false;
 	
+	
+	public AbstractDataTableNavigationPanel(String id) {
+		super(id);
+		setOutputMarkupId(true);
+	}
+	
 	public AbstractDataTableNavigationPanel(String id, final int pageSize) {
 		super(id);
+		
+		if (pageSize <=0 ) {
+			throw new IllegalArgumentException("Page size has to be a positive value.");
+		}
+		
 		this.pageSize = pageSize;
 		setOutputMarkupId(true);
 	}
@@ -113,7 +120,7 @@ public abstract class AbstractDataTableNavigationPanel<T extends IDataBean> exte
 	}
 
 	public void onNewDataReceived(List<T> removedData,  Map<String, T> removedRowsMap, 
-			List<T> newDataBuffer, AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow) {
+			List<T> newDataBuffer, AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow, int positionInBuffer) {
 		
 	}
 	
@@ -199,8 +206,8 @@ public abstract class AbstractDataTableNavigationPanel<T extends IDataBean> exte
 		this.currentPageNumber = 1;
 		this.firstDataRowId = null;
 		this.lastDataRowId = null;
-			
-		this.navigationListener.nextPageData(this, null, pageSize, 1,  true);
+		
+		this.navigationListener.nextPageData(this, null, pageSize, 1,  this.navigationListener.isDataBufferEnabled());
 	}
 	
 	public void updateNavigatorState(DataTableNavigationState navigationState,
@@ -216,7 +223,8 @@ public abstract class AbstractDataTableNavigationPanel<T extends IDataBean> exte
 			this.currentPageNumber = 1;
 		}
 	}
-
+	
+	@Override
 	public void updateNavigatorDataChanged(DataTableNavigationDirection navigationDirection, String firstRowId, 
 			int newPageSize, int newPageNumber) {
 		
@@ -315,5 +323,10 @@ public abstract class AbstractDataTableNavigationPanel<T extends IDataBean> exte
 		super.renderHead(response);
 		response.render(CssHeaderItem.forReference(UICssResourceReference.get()));
 	 }
+	
+	public boolean getUsePageSizeForBatchSize() {
+		return MyStrobeWebSettingsProvider.getInstance(getApplication()).
+				getUseUIComponentSizeForDataObjectBatchSize();	
+	}
 }
 

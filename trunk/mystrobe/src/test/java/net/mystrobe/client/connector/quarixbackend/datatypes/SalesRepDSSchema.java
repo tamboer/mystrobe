@@ -35,7 +35,7 @@ public class SalesRepDSSchema extends DSSchema {
 	@Generated
 	public SalesRepDSSchema() {
 		id = "dsSalesRep";
-		bathchSize = 50;
+		batchSize = 50;
 		margin = 5;
 		urn = "server.salesrep";
 		hasFilteredChildren = true;

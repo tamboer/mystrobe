@@ -21,11 +21,12 @@ public enum Cols {
 
 @Generated
 public $name$() {
-	asignValues();
+	assignValues();
 }
 
 @Generated
-private void asignValues() {
+protected void assignValues() {
+	super.assignValues();
 	$if(daoId)$	daoId = "$daoId$";$endif$
 	$if(iDataTypeClass)$	iDataTypeClass = $iDataTypeClass$;$endif$
 	$if(batchSize)$	batchSize = $batchSize$;$endif$

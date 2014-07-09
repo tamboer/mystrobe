@@ -136,7 +136,9 @@ public class NamingHelper {
     }
     
     public static String getFormattedOutputValue(final Object value, final String serverDateFormat, final LocalizationProperties localizationProperties) {
-    	
+    	if (value == null){
+            return null;
+        }
     	if ( value instanceof BigDecimal ) {
         	
         	String decimalFormatSymbolsKey = (new StringBuilder(localizationProperties.getNumericalSeparator())).append(localizationProperties.getNumericalDecimalPoint()).toString();

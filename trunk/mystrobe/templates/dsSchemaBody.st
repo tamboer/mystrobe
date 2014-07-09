@@ -1,7 +1,7 @@
 @Generated
 public $name$() {
 	$if(id)$	id = "$id$";$endif$
-	$if(batchSize)$	bathchSize = $batchSize$;$endif$
+	$if(batchSize)$	batchSize = $batchSize$;$endif$
 	$if(margin)$	margin = $margin$;$endif$
 	$if(urn)$	urn = "$urn$";$endif$
 	$if(hasAtomicChanges)$	hasAtomicChanges = $hasAtomicChanges$;$endif$

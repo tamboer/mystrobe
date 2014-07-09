@@ -17,6 +17,11 @@
  */
  package net.mystrobe.client.connector;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.mystrobe.client.connector.quarixbackend.AppServerImpl;
 import net.mystrobe.client.connector.quarixbackend.api.IAppServer;
 
@@ -29,6 +34,21 @@ import net.mystrobe.client.connector.quarixbackend.api.IAppServer;
  */
 public class QuarixServerConnector implements IServerConnector {
 
+	protected static final Logger logger = LoggerFactory.getLogger(QuarixServerConnector.class);
+	
+	/**
+	 * Concurrent map of app server connectors.<br/>
+	 * 
+	 * For each server and application a separate connector will be created.
+	 * Map key = serevr_url + app_name.
+	 * 
+	 */
+	protected static ConcurrentHashMap<String, IAppConnector> appConnectorsMap = new ConcurrentHashMap<>(1);
+
+	/**
+	 * @deprecated
+	 * Used for backwards compatibility.
+	 */
 	private IConfig config;
 
 	/**
@@ -39,13 +59,9 @@ public class QuarixServerConnector implements IServerConnector {
 	 *            are expected to be passed in the constructor trough a key /
 	 *            value set of properties represented by the IConfig interface
 	 */
+	@Deprecated
 	public QuarixServerConnector(IConfig config) {
 		this.config = config;
-	}
-
-	@Override
-	public void finalize() throws Throwable {
-
 	}
 
 	/**
@@ -57,14 +73,54 @@ public class QuarixServerConnector implements IServerConnector {
 	 *            The Application name as hosted by the backend server.
 	 */
 	public IAppConnector getAppConnector(String appName) {
-		IAppServer appServer = new AppServerImpl();
-		appServer.setLog(config.getLogger());
-		appServer.setUrl(config.getValue(IConfig.APP_SERVER_URL));
-		appServer.setConnectorClassName(config.getValue(IConfig.CONNECTOR));
-		appServer.setUserName(config.getValue(IConfig.USER));
-		appServer.setPassword("", config.getValue(IConfig.PASSWORD));
-
-		return new QuarixAppConnector(appServer, appName, config);
+		return getQuarixAppServerConnector(appName, this.config);
 	}
-
+	
+	/**
+	 * Get app server for connector app name and config.
+	 * 
+	 * @param appName Application name as hosted by the backend server.
+	 * @param config App server config.
+	 * 
+	 * @return App server connector.
+	 */
+	public static IAppConnector getAppConnector(final String appName, final IConfig config) {
+		return getQuarixAppServerConnector(appName, config);
+	}
+	
+	/**
+	 * Create new or retrieve existing connector. 
+	 * 
+	 * @param appName Application name as hosted by the backend server.
+	 * @param config App server config.
+	 * 
+	 * @return App server connector.
+	 */
+	protected static IAppConnector getQuarixAppServerConnector(final String appName, final IConfig config) {
+		
+		String serverURL = config.getValue(IConfig.APP_SERVER_URL);
+		String appConnectorKey = serverURL + "_" + appName;
+		
+		if (!appConnectorsMap.containsKey(appConnectorKey)) {
+			
+			synchronized (QuarixServerConnector.class) {
+				
+				IAppServer appServer = new AppServerImpl();
+				appServer.setLog(config.getLogger());
+				appServer.setUrl(config.getValue(IConfig.APP_SERVER_URL));
+				appServer.setConnectorClassName(config.getValue(IConfig.CONNECTOR));
+				appServer.setUserName(config.getValue(IConfig.USER));
+				appServer.setPassword("", config.getValue(IConfig.PASSWORD));
+				
+				if (logger.isDebugEnabled()) {
+	        		logger.debug("New app server connetor fo server server : " + config.getValue(IConfig.APP_SERVER_URL) 
+	        				+ " and app name:" + appName );
+	        	}
+				
+				appConnectorsMap.putIfAbsent(appConnectorKey, new QuarixAppConnector(appServer, appName, config));
+			}
+		}
+		
+		return appConnectorsMap.get(appConnectorKey);
+	}
 }

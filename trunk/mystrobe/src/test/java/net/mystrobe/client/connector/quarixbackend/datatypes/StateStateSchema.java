@@ -62,11 +62,12 @@ public class StateStateSchema extends DAOSchema<StateState> {
 
 	@Generated
 	public StateStateSchema() {
-		asignValues();
+		assignValues();
 	}
 
 	@Generated
-	private void asignValues() {
+	protected void assignValues() {
+		super.assignValues();
 		daoId = "tt-state";
 		iDataTypeClass = StateState.class;
 		batchSize = 10;

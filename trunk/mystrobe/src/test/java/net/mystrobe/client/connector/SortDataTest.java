@@ -46,8 +46,7 @@ public class SortDataTest {
 		Config config = new Config();
 		config.setValue(IConfig.APP_SERVER_URL, "AppServerDC://cargomate.yonder.local:3511/qrx_rcfpg_demo");
 		config.setValue(IConfig.APP_DATABEAN_PACKAGES, "net.mystrobe.client.connector.quarixbackend.datatypes");
-		IServerConnector srvConnector = new QuarixServerConnector(config);
-		IAppConnector appConnector = srvConnector.getAppConnector("wicketds");
+		IAppConnector appConnector = QuarixServerConnector.getAppConnector("wicketds", config);
 
 		final String daoId = "tt-state";
 

@@ -17,24 +17,25 @@
  */
  package net.mystrobe.client.connector;
 
-/**
- * Interface for a data set server connection. It is expected to be implemented by
- * the actual connector which is backend dependent. The connections parameters
- * required to the actual connection are expected to be passed in the constructor
- * trough a key / value set of properties.
- * 
- * @author TVH Group NV
- */
-public interface IServerConnector {
+ /**
+  * Interface for a data set server connection. It is expected to be implemented by
+  * the actual connector which is backend dependent. The connections parameters
+  * required to the actual connection are expected to be passed in the constructor
+  * trough a key / value set of properties.
+  * 
+  * @author TVH Group NV
+  */
+ @Deprecated
+ public interface IServerConnector {
 
 
-	/**
-	 * Once a server connection established the actual application connector the
-	 * server exposes can be requested using a simple string as the key, string
-	 * representing the application name as hosted by the backend server.
-	 * 
-	 * @param appName    The Application name as hosted by the backend server.
-	 */
-	public IAppConnector getAppConnector(String appName);
+ 	/**
+ 	 * Once a server connection established the actual application connector the
+ 	 * server exposes can be requested using a simple string as the key, string
+ 	 * representing the application name as hosted by the backend server.
+ 	 * 
+ 	 * @param appName    The Application name as hosted by the backend server.
+ 	 */
+ 	public IAppConnector getAppConnector(String appName);
 
-}
+ }

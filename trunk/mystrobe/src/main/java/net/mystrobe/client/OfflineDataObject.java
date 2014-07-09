@@ -45,13 +45,17 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 	
 	private Comparator<T> itemsComparator = null;
 
-	public OfflineDataObject(final Collection<T> values, final IDAOSchema<T> schema) {
+	public OfflineDataObject(String appName, final Collection<T> values, final IDAOSchema<T> schema) {
+		super(null);
+                this.appServerName = appName;
 		this.offlineMode = true;
 		this.schema = schema;
 		this.originalValuesList = values;
 	}
 	
-	public OfflineDataObject(final Collection<T> values, final IDAOSchema<T> schema, SortState sortState) {
+	public OfflineDataObject(String appName, final Collection<T> values, final IDAOSchema<T> schema, SortState sortState) {
+		super(null);
+                this.appServerName = appName;
 		this.offlineMode = true;
 		this.schema = schema;
 		this.originalValuesList = values;
@@ -59,6 +63,10 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 		
 		this.itemsComparator = new ColumnsComparator();
 	}
+        
+        public String getAppServerName() {
+                return appServerName;
+        }
 	
 	public void setItemsComparator(Comparator<T> itemsComparator) {
 		this.itemsComparator = itemsComparator;
@@ -267,11 +275,6 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 		this.sortState = sortState;
 	}
 	
-	@Override
-	protected void assignValues() {
-		// TODO Auto-generated method stub
-	}
-	
 	protected class ColumnsComparator implements Comparator<T>, Serializable {
 
 		public int compare(T o1, T o2) {
@@ -295,6 +298,11 @@ public class OfflineDataObject<T extends IDataBean> extends DataObjectAdaptor<T>
 				return result;
 			}
 		}
+	}
+	
+	@Override
+	public boolean isDataBufferEnabled() {
+		return true;
 	}
 }
 

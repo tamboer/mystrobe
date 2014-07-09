@@ -26,6 +26,8 @@ import java.util.NoSuchElementException;
 
 import net.mystrobe.client.connector.DAOCommands;
 import net.mystrobe.client.connector.DAORequest.StartRowMarker;
+import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
 import net.mystrobe.client.connector.IDAORequest;
 import net.mystrobe.client.connector.IDAOResponse;
 import net.mystrobe.client.connector.IDAORow;
@@ -64,6 +66,14 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 	protected synchronized String getNextAppendingRowId() {
 		return "appending" + nextAppendingRowIdNumber++;
+	}
+	
+	public UpdateDataAdaptor(IAppConnector appConnector) {
+		super(appConnector);
+	}
+	
+	public UpdateDataAdaptor(IConfig config, String appName) {
+		super(config, appName);
 	}
 	
 	/**
@@ -360,7 +370,12 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		if (dataType.getRowId() == null) {
 			daoRow = this.dataBuffer.get(this.cursorPosition);
 		} else {
-			daoRow = this.dataBuffer.getRow(dataType.getRowId());
+			
+			if (currentData == null || !dataType.getRowId().equals(currentData.getRowId()) ) {
+				moveToRow(dataType.getRowId());
+			}
+			
+			daoRow = this.dataBuffer.get(this.cursorPosition);
 		}
 
 		boolean repositionBuffer = repositionOnNewAddedRecord; 
@@ -393,12 +408,8 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 			//reset/clear data object filters 
 			updateFiltersForRecordReposition();
 			
-			resetDataBuffer();
-			
 			//call navigator to reposition on new record 
-			repositionToNewRecord(daoRow.getRowId());
-			
-			moveToRow(daoRow.getRowId());
+			positionToRecord(daoRow.getRowId());
 		}
 	}
 
@@ -435,7 +446,7 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 
 		try {
 			isInternalTransaction = true;
-			IDSTransactionManager tempTransaction = new DSTransactionManager(getDSSchema(), this.appConnector);
+			IDSTransactionManager tempTransaction = new DSTransactionManager(getDSSchema(), getAppConnector());
 			tempTransaction.addTransactionParticipant(this);
 
 			if (logger.isTraceEnabled()) {
@@ -698,6 +709,10 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		bufferDeletedRows.clear();
 		bufferAddedRows.clear();
 		bufferChangedRows.clear();
+		
+		if (this.transactionManager != null && this.transactionManager.get() != null) {
+			this.transactionManager.clear();
+		}
 	}
 
 	@Override
@@ -716,6 +731,10 @@ public abstract class UpdateDataAdaptor<T extends IDataBean> extends DataTableNa
 		bufferDeletedRows.clear();
 		bufferAddedRows.clear();
 		bufferChangedRows.clear();
+		
+		if (this.transactionManager != null && this.transactionManager.get() != null) {
+			this.transactionManager.clear();
+		}
 	}
 
 	public boolean getUpdateDateCommitSuccess() {

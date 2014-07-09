@@ -26,10 +26,12 @@ import java.util.TreeSet;
 
 import net.mystrobe.client.DataSourceAdaptor.AppendPosition;
 import net.mystrobe.client.IDataBean;
+import net.mystrobe.client.WicketDSRuntimeException;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener.DataTableNavigationDirection;
 import net.mystrobe.client.navigator.IDataTableNavigatorListener.DataTableNavigationState;
 import net.mystrobe.client.navigator.IDataTableNavigatorSource;
+import net.mystrobe.client.ui.config.MyStrobeWebSettingsProvider;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -82,11 +84,55 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 	protected TreeSet<PageNavigation> pageNavigationSet = new TreeSet<PageNavigation>();
 	
 	protected boolean canNavigateToLastPage = false;
+	
+	protected boolean useApplicationSettingForPageSize = false; 
 
+	public DataTablePagesNavigationPanel(String id) {
+		super(id);
+		
+		this.visiblePagesCount = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageableNavigatorVisiblePagesCount();
+		
+		if (this.visiblePagesCount <=0 ) {
+			throw new IllegalArgumentException("Visible pages count has to be positive value.");
+		}
+		
+		this.useApplicationSettingForPageSize = true;
+		
+		this.pageSize = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageSize();
+		
+		initComponents();
+	}
+	
+	public DataTablePagesNavigationPanel(String id, int visiblePagesCount) {
+		super(id);
+		
+		if (visiblePagesCount <=0 ) {
+			throw new IllegalArgumentException("Visible pages count has to be positive value.");
+		}
+		
+		this.visiblePagesCount = visiblePagesCount;
+		
+		this.useApplicationSettingForPageSize = true;
+		
+		this.pageSize = MyStrobeWebSettingsProvider.getInstance(getApplication()).getPageSize();
+		
+		initComponents();
+	}
+	
 	public DataTablePagesNavigationPanel(String id, final int pageSize, int visiblePagesCount) {
 		super(id, pageSize);
 		
+		if (visiblePagesCount <=0 ) {
+			throw new IllegalArgumentException("Visible pages count has to be positive value.");
+		}
+		
 		this.visiblePagesCount = visiblePagesCount;
+		
+		initComponents();
+	}
+	
+	
+	protected void initComponents() {
 		
 		wmcNavigator = new WebMarkupContainer(NAVIGATOR_ID);
 	  
@@ -371,6 +417,22 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		wmcNavigator.add(nextPagesLinks);
 	}
 	
+	public void setDataTableNavigationListener(IDataTableNavigatorListener<T> navigatorListener) {
+		
+		super.setDataTableNavigationListener(navigatorListener);
+	
+		if ( useApplicationSettingForPageSize && 
+				!MyStrobeWebSettingsProvider.getInstance(getApplication()).isWebSettingsAware()) {
+			
+			if (navigatorListener.getBatchSize() <= 0 ) {
+				throw new WicketDSRuntimeException(" Navigator page size not set correctly. " +
+						" Page size has to be greater than 0.");
+			}
+			
+			this.pageSize = navigatorListener.getBatchSize();
+		}
+	}
+	
 	public void onRefreshContent(AjaxRequestTarget target){
 		
 	}
@@ -385,8 +447,8 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 	 */
 	protected void computeVisibleNavigationPages(DataTableNavigationState newNavigationState, DataTableNavigationDirection navigationDirection) {
 		
-		if (logger.isDebugEnabled()) {
-			logger.debug("Compute visible pages: " + this.pageNavigationSet);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Compute visible pages: " + this.pageNavigationSet);
 		}
 		
 		//Find navigation pages to display  
@@ -472,9 +534,9 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		this.previousPagesLinks.setList(new ArrayList<PageNavigation>(previousVisiblePages));
 		this.nextPagesLinks.setList(new ArrayList<PageNavigation>(nextVisiblePages));
 		
-		if (logger.isDebugEnabled()) {
-			logger.debug("Compute visible pages, previous: " + this.previousPagesLinks.getList());
-			logger.debug("Compute visible pages, next: " + this.nextPagesLinks.getList());
+		if (logger.isTraceEnabled()) {
+			logger.trace("Compute visible pages, previous: " + this.previousPagesLinks.getList());
+			logger.trace("Compute visible pages, next: " + this.nextPagesLinks.getList());
 		}
 	}
 	
@@ -485,11 +547,6 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		if (DataTableNavigationState.FirstPage.equals(navigationState) || 
 				DataTableNavigationState.FirstAndLastPage.equals(navigationState)) {
 			this.currentPageNumber = 1;
-		}
-		
-		if (!this.navigationListener.isDataBufferEnabled()) {
-			//build page set when data buffer is not used
-			buildNavigatorPagesSetWhenDataCacheIsDisabled(navigationState, navigationDirection, firstRowId, lastRowId);
 		}
 		
 		//set next / previous visible pages
@@ -507,88 +564,111 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		
 		pageNavigationSet.clear();
 		
-		this.canNavigateToLastPage = hasLastRow;
+		if (navigationListener.isDataBufferEnabled()) {
+			buildNavigatorPages(newDataBuffer, AppendPosition.REPLACE, hasFirstRow, hasLastRow, false);
+		} else {
+			buildNavigatorPagesSetWhenDataCacheIsDisabled(newDataBuffer, AppendPosition.REPLACE,
+					hasFirstRow, hasLastRow, false, 1);
+		}
 		
-		buildNavigatorPages(newDataBuffer, AppendPosition.REPLACE, hasFirstRow, hasLastRow, false);
+		this.canNavigateToLastPage = hasLastRow;
 		
 		super.onDataReset(newDataBuffer, bufferRowIdsMap, hasFirstRow, hasLastRow);
 		
 		this.previousPageNumber = -1;
 		
-		if (logger.isDebugEnabled()) {
-			logger.debug("Pages after removal: " + this.pageNavigationSet);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Pages after removal: " + this.pageNavigationSet);
 		}
 		
 	}
 
 	@Override
 	public void onNewDataReceived(List<T> removedData, Map<String, T> removedRowsMap,  
-			List<T> newDataBuffer, AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow) {
+			List<T> newDataBuffer, AppendPosition appendPosition, boolean hasFirstRow, boolean hasLastRow, int positionInBuffer) {
 		
-		switch(appendPosition) {
-			case BEGINING:
-				if (removedRowsMap != null ) {
-					//remove pages where rowId no longer in the buffer 
-					int smallestRemovedPageNumber = Integer.MAX_VALUE;
-					for (Iterator<PageNavigation> pagesIterator = this.pageNavigationSet.descendingIterator(); pagesIterator.hasNext();) {
-						PageNavigation pageNavigation = pagesIterator.next();
-						if (removedRowsMap.containsKey(pageNavigation.getNextPageFirstRowId()) || pageNavigation.getNextPageFirstRowId() == null) { 
-							if (removedRowsMap.containsKey(pageNavigation.getPreviousPageLastRowId())) {
-								if ( pageNavigation.getPageNumber() < smallestRemovedPageNumber) {
-									smallestRemovedPageNumber = pageNavigation.getPageNumber();
-								}
-								//remove page navigation info as it is not valid anymore
-								pagesIterator.remove();
-							} else {
-								pageNavigation.setNextPageFirstRowId(null);
-							}
-						} 
-					}
-					
-					//when only one element is deleted and it matches any of the page navigation info
-					// remove all pages after that
-					if (smallestRemovedPageNumber < Integer.MAX_VALUE ) {
-						this.pageNavigationSet.tailSet(new PageNavigation(smallestRemovedPageNumber, null, null), true).clear();
-					}
-				}
-				logger.debug("Append.BEGINNING Pages after removal: " + this.pageNavigationSet);
-				break;
-			
-			case END:
-				//remove pages where rowId no longer in the buffer 
-				if (removedRowsMap != null ) {
-					int highestRemovedPageNumber = Integer.MIN_VALUE;
-					for (Iterator<PageNavigation> pagesIterator = pageNavigationSet.iterator(); pagesIterator.hasNext();) {
-						PageNavigation pageNavigation = pagesIterator.next();
-						if (removedRowsMap.containsKey(pageNavigation.getPreviousPageLastRowId()) || pageNavigation.getPreviousPageLastRowId() == null) {
-							if (removedRowsMap.containsKey(pageNavigation.getNextPageFirstRowId())) {
-								if (pageNavigation.getPageNumber() > highestRemovedPageNumber) {
-									highestRemovedPageNumber = pageNavigation.getPageNumber();
-								}
-								pagesIterator.remove();
-							} else {
-								pageNavigation.setPreviousPageLastRowId(null);
-							}
-						}  
-					}
-					
-					//when only one element is deleted and it matches any of the page navigation info
-					// remove all pages before that
-					if (highestRemovedPageNumber > Integer.MIN_VALUE ) {
-						this.pageNavigationSet.headSet(new PageNavigation(highestRemovedPageNumber, null, null), true).clear();
-					}
-				}
-				logger.debug("Append.END Pages after removal: " + this.pageNavigationSet);
-				break;
-
-		}
-			
+		
 		this.canNavigateToLastPage = hasLastRow;
 		
-		buildNavigatorPages(newDataBuffer, appendPosition, hasFirstRow, hasLastRow, false);
-		
-		//super.onDataBufferChanged(removedData, removedRowsMap, newDataBuffer, appendPosition, hasFirstRow, hasLastRow);
+		if (this.navigationListener.isDataBufferEnabled()) {
+			
+			switch(appendPosition) {
+				case BEGINING:
+					if (removedRowsMap != null ) {
+						//remove pages where rowId no longer in the buffer 
+						int smallestRemovedPageNumber = Integer.MAX_VALUE;
+						for (Iterator<PageNavigation> pagesIterator = this.pageNavigationSet.descendingIterator(); pagesIterator.hasNext();) {
+							PageNavigation pageNavigation = pagesIterator.next();
+							if (removedRowsMap.containsKey(pageNavigation.getNextPageFirstRowId()) || pageNavigation.getNextPageFirstRowId() == null) { 
+								if (removedRowsMap.containsKey(pageNavigation.getPreviousPageLastRowId())) {
+									if ( pageNavigation.getPageNumber() < smallestRemovedPageNumber) {
+										smallestRemovedPageNumber = pageNavigation.getPageNumber();
+									}
+									//remove page navigation info as it is not valid anymore
+									pagesIterator.remove();
+								} else {
+									pageNavigation.setNextPageFirstRowId(null);
+								}
+							} 
+						}
+						
+						//when only one element is deleted and it matches any of the page navigation info
+						// remove all pages after that
+						if (smallestRemovedPageNumber < Integer.MAX_VALUE ) {
+							this.pageNavigationSet.tailSet(new PageNavigation(smallestRemovedPageNumber, null, null), true).clear();
+						}
+					}
+					
+					if (logger.isTraceEnabled()) {
+						logger.trace("Append.BEGINNING Pages after removal: " + this.pageNavigationSet);
+					}
+					
+					break;
+				
+				case END:
+					//remove pages where rowId no longer in the buffer 
+					if (removedRowsMap != null ) {
+						int highestRemovedPageNumber = Integer.MIN_VALUE;
+						for (Iterator<PageNavigation> pagesIterator = pageNavigationSet.iterator(); pagesIterator.hasNext();) {
+							PageNavigation pageNavigation = pagesIterator.next();
+							if (removedRowsMap.containsKey(pageNavigation.getPreviousPageLastRowId()) || pageNavigation.getPreviousPageLastRowId() == null) {
+								if (removedRowsMap.containsKey(pageNavigation.getNextPageFirstRowId())) {
+									if (pageNavigation.getPageNumber() > highestRemovedPageNumber) {
+										highestRemovedPageNumber = pageNavigation.getPageNumber();
+									}
+									pagesIterator.remove();
+								} else {
+									pageNavigation.setPreviousPageLastRowId(null);
+								}
+							}  
+						}
+						
+						//when only one element is deleted and it matches any of the page navigation info
+						// remove all pages before that
+						if (highestRemovedPageNumber > Integer.MIN_VALUE ) {
+							this.pageNavigationSet.headSet(new PageNavigation(highestRemovedPageNumber, null, null), true).clear();
+						}
+					}
+					
+					if (logger.isTraceEnabled()) {
+						logger.trace("Append.END Pages after removal: " + this.pageNavigationSet);
+					}
+					
+					break;
+			}
+			
+			buildNavigatorPages(newDataBuffer, appendPosition, hasFirstRow, hasLastRow, false);
+	
+		} else {
+			
+			//build pages when cache is disabled
+			buildNavigatorPagesSetWhenDataCacheIsDisabled(newDataBuffer, appendPosition, 
+					hasFirstRow, hasLastRow, false, positionInBuffer);
+			
+		}
 	}
+		
+	
 	
 	public void onDataDeleted(T removedRow, List<T> dataBuffer, 
 			boolean hasFirstRow, boolean hasLastRow, int removedRowBufferPosition) {
@@ -637,7 +717,7 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		} else {
 			//on last page
 			if (dataBuffer.isEmpty() && hasLastRow) {
-				this.currentPageNumber = this.currentPageNumber - 1;
+				this.currentPageNumber = Math.max(this.currentPageNumber - 1, 1);
 				lastValidPageNumber = this.currentPageNumber;
 			}
 			
@@ -656,10 +736,6 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 	
 	protected void buildNavigatorPages(final List<T> dataBuffer, final AppendPosition appendPosition, 
 			boolean hasFirstRow, boolean hasLastRow, boolean dataDeleted) {
-		
-		if (!this.navigationListener.isDataBufferEnabled()) {
-			return;
-		}
 		
 		int currentPosition = 0;
 		int pageNumber = 1;
@@ -692,7 +768,6 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 					if (onFirstPage) {
 						firstPage.setPreviousPageLastRowId(previousPageLastRowId);
 						onFirstPage = false;
-						logger.debug("On first page");
 					} else {
 						this.pageNavigationSet.add(new PageNavigation(pageNumber, nextPageFirstRowId, previousPageLastRowId));
 					}
@@ -705,10 +780,12 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 			case END:
 				
 				boolean onLastPage = false;
-				PageNavigation lastPage = this.pageNavigationSet.last();
+				PageNavigation lastPage = !this.pageNavigationSet.isEmpty() ? 
+						this.pageNavigationSet.last() : null;
+				
 				if (lastPage != null && lastPage.getNextPageFirstRowId() == null) {
 					//find position for lastPage.getPreviousPageLastRowId 
-					currentPosition = lastPage.getPageNumber() == 1 ? 0 : 
+					currentPosition = lastPage.getPageNumber() == 1 || !navigationListener.isDataBufferEnabled() ? 0 : 
 							findRowPositionInList(lastPage.getPreviousPageLastRowId(), dataBuffer ) + 1;
 					
 					pageNumber = lastPage.getPageNumber();
@@ -733,7 +810,6 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 					if (onLastPage) {
 						lastPage.setNextPageFirstRowId(nextPageFirstRowId);
 						onLastPage = false;
-						logger.debug("On last page"); 
 					} else {
 						if (currentPosition < dataBuffer.size() || (currentPosition == dataBuffer.size() && !hasLastRow)  ) {
 							this.pageNavigationSet.add(new PageNavigation(pageNumber, nextPageFirstRowId, previousPageLastRowId));
@@ -807,57 +883,151 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 	
 	@Override
 	public void updateNavigatorDataChanged(DataTableNavigationDirection navigationDirection, 
-			String firstRowId, int newPageSize, int newPageNumber) {
+			final String firstRowId, final int newPageSize, final int newPageNumber) {
 		
-		if (this.firstDataRowId != null) {
-			this.previousPageNumber =  this.currentPageNumber;
-		}
+		if (navigationListener.isDataBufferEnabled()) {
 		
-		PageNavigation pageToNavigate = this.navigationListener.findNavigatorRepositionInfo(firstRowId, this.firstDataRowId, currentPageNumber, pageSize, navigationDirection,
-				newPageSize, newPageNumber); 
-		
-		if (pageToNavigate.getPageNumber() < currentPageNumber ) {
-			this.currentPageNumber = pageToNavigate.getPageNumber();
-			this.navigationListener.previousPageData(this, pageToNavigate.getNextPageFirstRowId(),
-					pageSize, this.currentPageNumber, true);
-		} else if (pageToNavigate.getPageNumber() > currentPageNumber) {
-			this.currentPageNumber = pageToNavigate.getPageNumber();
-			this.navigationListener.nextPageData(this, pageToNavigate.getPreviousPageLastRowId(), 
-					pageSize, this.currentPageNumber, true);
-		}
-	}
-	
-	
-	protected void buildNavigatorPagesSetWhenDataCacheIsDisabled(DataTableNavigationState navigationState, DataTableNavigationDirection navigationDirection,
-			String firstRowId, String lastRowId) {
-		
-		if (this.pageNavigationSet.isEmpty() && currentPageNumber == 1) {
-			this.pageNavigationSet.add(new PageNavigation(1, null, null));
-			if (!DataTableNavigationState.FirstAndLastPage.equals(navigationState) &&
-					!DataTableNavigationState.LastPage.equals(navigationState)) {
-				this.pageNavigationSet.add(new PageNavigation(2, null, lastRowId));
+			if (this.firstDataRowId != null) {
+				this.previousPageNumber =  this.currentPageNumber;
 			}
+			
+			PageNavigation pageToNavigate = this.navigationListener.findNavigatorRepositionInfo(firstRowId, this.firstDataRowId, currentPageNumber, pageSize, navigationDirection,
+					newPageSize, newPageNumber); 
+			
+			if (pageToNavigate.getPageNumber() < currentPageNumber ) {
+				this.currentPageNumber = pageToNavigate.getPageNumber();
+				this.navigationListener.previousPageData(this, pageToNavigate.getNextPageFirstRowId(),
+						pageSize, this.currentPageNumber, true);
+			} else if (pageToNavigate.getPageNumber() > currentPageNumber) {
+				this.currentPageNumber = pageToNavigate.getPageNumber();
+				this.navigationListener.nextPageData(this, pageToNavigate.getPreviousPageLastRowId(), 
+						pageSize, this.currentPageNumber, true);
+			}
+			
 		} else {
 			
-			PageNavigation currentPage = this.pageNavigationSet.tailSet(new PageNavigation(currentPageNumber), true).first();
-			
-			PageNavigation previousPageNavigation = this.pageNavigationSet.lower(currentPage);
-			if (previousPageNavigation == null && currentPageNumber > 1 ) {
-				previousPageNavigation = new PageNavigation(currentPageNumber - 1, firstRowId, null); 
-				this.pageNavigationSet.add(previousPageNavigation);
-			} else if (previousPageNavigation != null) {
-				previousPageNavigation.setNextPageFirstRowId(firstRowId);
+			if (this.firstDataRowId != null) {
+				this.previousPageNumber =  this.currentPageNumber;
 			}
 			
-			PageNavigation nextPageNavigation = this.pageNavigationSet.higher(currentPage);
-			if (nextPageNavigation == null && 
-					!(navigationState.equals(DataTableNavigationState.FirstAndLastPage ) || navigationState.equals(DataTableNavigationState.LastPage))) {
-				nextPageNavigation = new PageNavigation(currentPageNumber + 1, null, lastRowId);
-				this.pageNavigationSet.add(nextPageNavigation);
-			} else if (nextPageNavigation != null) {
-				nextPageNavigation.setPreviousPageLastRowId(lastRowId);
+			//build navigator pages 
+			int computedPageNumber = ( (newPageNumber -1 ) * newPageSize ) / this.pageSize + 1;
+			
+			if (computedPageNumber != currentPageNumber) {
+				
+				PageNavigation pageToNavigate = this.pageNavigationSet.floor(new PageNavigation(computedPageNumber));
+				
+				if (pageToNavigate.getPageNumber() < currentPageNumber ) {
+					this.currentPageNumber = pageToNavigate.getPageNumber();
+					this.navigationListener.previousPageData(this, pageToNavigate.getNextPageFirstRowId(),
+							pageSize, this.currentPageNumber, true);
+				} else if (pageToNavigate.getPageNumber() > currentPageNumber) {
+					this.currentPageNumber = pageToNavigate.getPageNumber();
+					this.navigationListener.nextPageData(this, pageToNavigate.getPreviousPageLastRowId(), 
+							pageSize, this.currentPageNumber, true);
+				}
 			}
 		}
 	}
+	
+	
+	protected void buildNavigatorPagesSetWhenDataCacheIsDisabled(final List<T> dataBuffer, final AppendPosition appendPosition, 
+			boolean hasFirstRow, boolean hasLastRow, boolean dataDeleted, int positionInBuffer) {
+		
+		int batchSize = navigationListener.getBatchSize();
+		
+		int batchStartPage;
+		
+		if (batchSize > 0) {
+			
+			int batchCount = batchSize > 0 ? (int) ( (positionInBuffer ) / batchSize) : 1;
+		
+			if (((positionInBuffer ) % batchSize ) > 0) {
+				batchCount++; 
+			}
+		
+			batchStartPage = (int) ((batchSize * batchCount)/ this.pageSize - (batchSize/this.pageSize)) + 1;
+		
+		} else {
+			
+			batchStartPage = 1;
+		}
+		
+		
+		if (batchStartPage > 1) {
+			//update previous page before this one
+			PageNavigation lastPageBeforeCurrentBatch;
+			if (!this.pageNavigationSet.contains(new PageNavigation(batchStartPage - 1))) {
+				this.pageNavigationSet.add(new PageNavigation(batchStartPage - 1, dataBuffer.get(0).getRowId(), null));
+			} else {
+				lastPageBeforeCurrentBatch = this.pageNavigationSet.floor(new PageNavigation(batchStartPage - 1));
+				lastPageBeforeCurrentBatch.setNextPageFirstRowId(dataBuffer.get(0).getRowId());
+			}
+		}
+		
+		int currentPosition = 0;
+		int pageNumber = batchStartPage;
+		while (dataBuffer.size() >= currentPosition ) {
+			
+			String nextPageFirstRowId = (currentPosition + this.pageSize) < dataBuffer.size() ? 
+					dataBuffer.get(currentPosition + this.pageSize).getRowId() : null;
+			String previousPageLastRowId = currentPosition - 1 >= 0 ? dataBuffer.get(currentPosition - 1).getRowId() : null;
+			
+			if (currentPosition < dataBuffer.size() || (currentPosition == dataBuffer.size() && !hasLastRow)  ) {
+				
+				if (!this.pageNavigationSet.contains(new PageNavigation(pageNumber))) {
+					this.pageNavigationSet.add(new PageNavigation(pageNumber, nextPageFirstRowId, previousPageLastRowId));
+				} else {
+					PageNavigation page = this.pageNavigationSet.floor(new PageNavigation(pageNumber));
+					if (nextPageFirstRowId != null ) {
+						page.setNextPageFirstRowId(nextPageFirstRowId);
+					}
+					if (previousPageLastRowId != null) {
+						page.setPreviousPageLastRowId(previousPageLastRowId);
+					}
+				}
+			}
+			
+			currentPosition += this.pageSize;
+			pageNumber++; 
+		}
+		
+		if (logger.isTraceEnabled()) {
+			logger.trace("Computed pages non batching, size: " + this.pageSize + "  pages:" + this.pageNavigationSet);
+		}
+	}
+	
+	
+//	protected void buildNavigatorPagesSetWhenDataCacheIsDisabled(DataTableNavigationState navigationState, DataTableNavigationDirection navigationDirection,
+//			String firstRowId, String lastRowId) {
+//		
+//		if (this.pageNavigationSet.isEmpty() && currentPageNumber == 1) {
+//			this.pageNavigationSet.add(new PageNavigation(1, null, null));
+//			if (!DataTableNavigationState.FirstAndLastPage.equals(navigationState) &&
+//					!DataTableNavigationState.LastPage.equals(navigationState)) {
+//				this.pageNavigationSet.add(new PageNavigation(2, null, lastRowId));
+//			}
+//		} else {
+//			
+//			PageNavigation currentPage = this.pageNavigationSet.tailSet(new PageNavigation(currentPageNumber), true).first();
+//			
+//			PageNavigation previousPageNavigation = this.pageNavigationSet.lower(currentPage);
+//			if (previousPageNavigation == null && currentPageNumber > 1 ) {
+//				previousPageNavigation = new PageNavigation(currentPageNumber - 1, firstRowId, null); 
+//				this.pageNavigationSet.add(previousPageNavigation);
+//			} else if (previousPageNavigation != null) {
+//				previousPageNavigation.setNextPageFirstRowId(firstRowId);
+//			}
+//			
+//			PageNavigation nextPageNavigation = this.pageNavigationSet.higher(currentPage);
+//			if (nextPageNavigation == null && 
+//					!(navigationState.equals(DataTableNavigationState.FirstAndLastPage ) || navigationState.equals(DataTableNavigationState.LastPage))) {
+//				nextPageNavigation = new PageNavigation(currentPageNumber + 1, null, lastRowId);
+//				this.pageNavigationSet.add(nextPageNavigation);
+//			} else if (nextPageNavigation != null) {
+//				nextPageNavigation.setPreviousPageLastRowId(lastRowId);
+//			}
+//		}
+//	}
 }
 

@@ -32,18 +32,26 @@ import org.slf4j.LoggerFactory;
  * @version $Revision: 1.7 $ $Date: 2009/01/13 06:12:17 $
  */
 public class AppServerImpl implements IAppServer {
-	/**
-	 * 
-	 */
+	
+	
 	private static final long serialVersionUID = -5976207426484962788L;
+	
+	/*
+	 * App server connection properties.
+	 */
 	protected String url;
 	protected String info;
 	protected String userName;
 	protected String password;
+	
 	protected boolean reuseConnection = false;
+	
 	protected int sessionModel = -1;
+	
 	protected transient Logger log = LoggerFactory.getLogger(AppServerImpl.class);
-	protected String   connectorClassName = "net.quarix.QuarixOODispatcher";
+	
+	protected String connectorClassName = "net.quarix.QuarixOODispatcher";
+	
 	protected transient IDispatcher dispatcher = null;
 
 
@@ -208,8 +216,13 @@ public class AppServerImpl implements IAppServer {
 	 */
 	public IDispatcher getDispatcher() {
 		if( this.dispatcher != null ) {
-			if( !this.dispatcher.isInitialized() ) this.dispatcher.initialize(this);
+			//initialize dispatcher if not initialized
+			if( !this.dispatcher.isInitialized() ) {
+				this.dispatcher.initialize(this);
+			}
+	
 		} else {
+			//initialize dispatcher
 			initialize();
 			if( this.dispatcher == null ) {
 				getLog().error("No dispatcher instance available"); 
@@ -221,7 +234,7 @@ public class AppServerImpl implements IAppServer {
 			getLog().error("Unable to initialize dispatcher");
 			throw new RuntimeException("Unable to initialize dispatcher");
 		}
-		return dispatcher;
+		return this.dispatcher;
 	}
 
 
@@ -247,15 +260,20 @@ public class AppServerImpl implements IAppServer {
 		try {
 			Class connectorClass = Class.forName(this.connectorClassName);
 			if( IDispatcher.class.isAssignableFrom(connectorClass) ) {
+				
 				this.dispatcher = (IDispatcher) connectorClass.newInstance();
+				
 				if( this.dispatcher != null )  {
 					this.dispatcher.setLog(this.getLog());
 					this.dispatcher.initialize(this);
 				}
+				
 			} else {
+				//can not create dispatcher from connector class   
 				getLog().error("The connector instance speciffied in the config file: " + this.connectorClassName + " is not a valid connector class (IDispatcher)");
 				throw new RuntimeException("The connector instance speciffied in the config file: " + this.connectorClassName + " is not a valid connector class (IDispatcher)");
 			}
+			
 		} catch (ClassNotFoundException cnex) {
 			getLog().error( "Unable to find connector class: " + this.connectorClassName, cnex);
                         throw new RuntimeException("Unable to find connector class: " + this.connectorClassName, cnex);

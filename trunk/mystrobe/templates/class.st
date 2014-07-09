@@ -10,7 +10,6 @@ public class $className$ $if(extends)$extends $extends$$endif$$if(extendsGeneric
 	$body$
 	
 	$userMainClassCode$
-	
 }
 
 $userAfterMainClassCode$

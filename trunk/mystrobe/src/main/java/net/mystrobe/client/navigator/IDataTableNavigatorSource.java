@@ -88,5 +88,10 @@ public interface IDataTableNavigatorSource<T extends IDataBean> extends LinkSour
 	 */
 	public int getPageSize();
 	
+	/**
+	 * Use pages as data object batch size
+	 */
+	public boolean getUsePageSizeForBatchSize();
+	
 }
 

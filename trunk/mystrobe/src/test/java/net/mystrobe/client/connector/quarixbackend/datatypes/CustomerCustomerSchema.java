@@ -75,11 +75,12 @@ public class CustomerCustomerSchema extends DAOSchema<CustomerCustomer> {
 
 	@Generated
 	public CustomerCustomerSchema() {
-		asignValues();
+		assignValues();
 	}
 
 	@Generated
-	private void asignValues() {
+	protected void assignValues() {
+		super.assignValues();
 		daoId = "tt-customer";
 		iDataTypeClass = CustomerCustomer.class;
 		batchSize = 50;

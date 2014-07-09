@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.List;
 
 import net.mystrobe.client.connector.DAOCommands;
+import net.mystrobe.client.connector.IConfig;
 import net.mystrobe.client.connector.DAORequest.StartRowMarker;
+import net.mystrobe.client.connector.IAppConnector;
 
 
 /**
@@ -45,6 +47,15 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
 	 * Navigation source
 	 */
 	protected List<INavigationSource> navigationSources = new ArrayList<INavigationSource>();
+	
+	
+	public DataNavigationAdaptor(IAppConnector appConnector) {
+		super(appConnector);
+	}
+	
+	public  DataNavigationAdaptor(IConfig config, String appName) {
+		super(config, appName);
+	}
 	
 	/**
 	 * Invoke navigation sources state callback.
@@ -72,8 +83,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         }
         
         //request data and replace current buffer
-        requestData(DAOCommands.sendRows.name(), StartRowMarker.first.name(),  getSchema().getBatchSize() ,
-        		false, AppendPosition.REPLACE, true);
+        requestData(DAOCommands.sendRows.name(), StartRowMarker.first.name(), this.batchSize,
+        		false, AppendPosition.REPLACE, true, 0);
         
         if( this.hasFirstRow() ) { 
         	return this.moveToRow(0, true);
@@ -92,8 +103,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         }
 
         //request data and replace current buffer
-        requestData(DAOCommands.sendRows.name(), StartRowMarker.last.name(),  getSchema().getBatchSize() * -1,
-        		false, AppendPosition.REPLACE, true);
+        requestData(DAOCommands.sendRows.name(), StartRowMarker.last.name(),  this.batchSize * -1,
+        		false, AppendPosition.REPLACE, true, - 1);
         
         if( hasLastRow() ) return moveToRow( this.dataBuffer.size() - 1, true);
         return false;
@@ -110,8 +121,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         		return false;
         }
         //request next data and append it to the end of thge buffer
-        requestData(DAOCommands.sendRows.name(), this.lastNextFetchedRowId, getSchema().getBatchSize(),
-        		false, AppendPosition.END, true);
+        requestData(DAOCommands.sendRows.name(), this.lastNextFetchedRowId, this.batchSize,
+        		false, AppendPosition.END, true, -1);
 
         if( this.canMove( this.cursorPosition + 1) ) {
         	return moveToRow(this.cursorPosition + 1, true);
@@ -130,8 +141,8 @@ public abstract class DataNavigationAdaptor<T extends IDataBean> extends DataBuf
         int oldSize = this.dataBuffer.size();
         
         //request data and append it at the beginning of the data buffer
-        requestData(DAOCommands.sendRows.name(), this.lastPreviousFetchedRowId, getSchema().getBatchSize() * -1,
-        		false, AppendPosition.BEGINING, true);
+        requestData(DAOCommands.sendRows.name(), this.lastPreviousFetchedRowId, this.batchSize * -1,
+        		false, AppendPosition.BEGINING, true, -1);
         
         int newSize = this.dataBuffer.size();
 

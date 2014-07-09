@@ -112,6 +112,13 @@ public interface IDataTableNavigatorListener<T extends IDataBean> extends IConne
 	 * @param source Data table navigation source.
 	 */
 	public void removeDataTableNavigationSource(IDataTableNavigatorSource<T> source);
+	
+	/**
+	 * Fetch data until page with <tt>recordRowId</tt> is found or last page reached.
+	 * 
+	 * @param recordRowId Record to position cursor. 
+	 */
+	public void positionToRecord(String recordRowId);
 }
 
 
