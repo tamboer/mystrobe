@@ -1,2 +1,0 @@
-@Generated
-protected $type$ $name$;
