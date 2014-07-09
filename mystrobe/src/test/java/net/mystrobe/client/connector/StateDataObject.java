@@ -19,19 +19,17 @@
 
 import net.mystrobe.client.DataObjectAdaptor;
 import net.mystrobe.client.connector.quarixbackend.datatypes.StateDSSchema;
+import net.mystrobe.client.connector.quarixbackend.datatypes.StateState;
 import net.mystrobe.client.connector.quarixbackend.datatypes.StateStateSchema;
 
 
 /**
  * @author TVH Group NV
  */
-public class StateDataObject extends DataObjectAdaptor {
+public class StateDataObject extends DataObjectAdaptor<StateState> {
 
-    @Override
-	protected void assignValues() {
-		this.defaultDSSchema = new StateDSSchema();
-		this.schema = new StateStateSchema();
-		
+	public StateDataObject(IAppConnector connector) {
+		super(connector, new StateDSSchema(), new StateStateSchema());
 	}
 }
 

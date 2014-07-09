@@ -30,7 +30,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -56,8 +55,8 @@ import net.mystrobe.client.connector.IServerConnector;
 import net.mystrobe.client.connector.QuarixServerConnector;
 import net.mystrobe.client.connector.quarixbackend.generate.GenerateFileType;
 import net.mystrobe.client.connector.quarixbackend.generate.GeneratedFilesDataLoader;
-import net.mystrobe.client.connector.quarixbackend.generate.SourceFileInfo;
 import net.mystrobe.client.connector.quarixbackend.generate.GeneratedFilesDataLoader.GeneratedFilesInfo;
+import net.mystrobe.client.connector.quarixbackend.generate.SourceFileInfo;
 import net.mystrobe.client.impl.DAOSchema;
 import net.mystrobe.client.impl.DSSchema;
 import net.mystrobe.client.util.StringUtil;
@@ -303,9 +302,8 @@ public class ClassGenerator {
         ClassGenerator.appName = appName;
         ClassGenerator.dsName = dsName;
         
-        IServerConnector srvConnector = new QuarixServerConnector(config);
-        IAppConnector appConnector = srvConnector.getAppConnector(appName);
-
+        IAppConnector appConnector = QuarixServerConnector.getAppConnector(appName, config); 
+     
         IDSSchema dsSchema = appConnector.getSchema(dsName);
         if (dsSchema == null) {
             logger.error("No schema found for: " + dsName);
@@ -373,7 +371,7 @@ public class ClassGenerator {
                     dsClassName, dataObjectClassNamesPrefix, dataObjectSourceFileInfo);
 
             // generate data type class
-            generateDataType(filePaths.get(BEANS_PACKAGE_NAME), packageNames, dsSchema, daoSchema, dataObjectClassNamesPrefix, dataTypeSourceFileInfo);
+            generateDataType(filePaths.get(BEANS_PACKAGE_NAME), packageNames, dsSchema, daoSchema, dsClassName, dataObjectClassNamesPrefix, dataTypeSourceFileInfo);
         }
     }
 
@@ -436,7 +434,7 @@ public class ClassGenerator {
     }
 
     private static void generateDataType(String filePath, Map<String, String> packageNames, IDSSchema dsSchema,
-            IDAOSchema daoSchema, String classNamePrefix, SourceFileInfo sourceFileInfo) {
+            IDAOSchema daoSchema, String dsClassName, String classNamePrefix, SourceFileInfo sourceFileInfo) {
 
         String className = classNamePrefix;
 
@@ -446,7 +444,7 @@ public class ClassGenerator {
 //        }
 
         // generate the class body
-        String content = generateClassFile(className, dsSchema, daoSchema, sourceFileInfo, packageNames);
+        String content = generateClassFile(className, dsSchema, daoSchema, dsClassName, sourceFileInfo, packageNames);
 
         // writing out to file
         writeClassFile(filePath, className + ".java", content);
@@ -572,9 +570,12 @@ public class ClassGenerator {
         
         String [] classImports = new String[] { DataObjectAdaptor.class.getName(),
                 IDAOSchema.class.getName(),
+                IDSSchema.class.getName(),
                 Serializable.class.getName(),
                 GeneratorMeta.class.getName(),
-                Generated.class.getName()};
+                Generated.class.getName(),
+                IAppConnector.class.getName(),
+                IConfig.class.getName()};
         
         String daoSChemaClassName = generateDAOSchemaClassName(classNamePrexif);
         Set<String> additionalImports = new HashSet<String>();
@@ -653,7 +654,11 @@ public class ClassGenerator {
         body.setAttribute("dsSchema", dsClassName);
         body.setAttribute("daoId", daoSchema.getDAOId());
         body.setAttribute("iDataTypeClass",	classNamePrefix + ".class");
-        body.setAttribute("batchSize", daoSchema.getBatchSize() > 0 ? daoSchema.getBatchSize() : 50);
+        
+        if(daoSchema.getBatchSize() > 0 ) {
+        	body.setAttribute("batchSize", daoSchema.getBatchSize());
+        }
+        	
         body.setAttribute("margin", daoSchema.getMargin());
         body.setAttribute("isAutosync", daoSchema.isAutosync());
         body.setAttribute("isOpenOnInit", daoSchema.isOpenOnInit());
@@ -775,8 +780,7 @@ public class ClassGenerator {
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
         classST.setAttribute("packageName", filePackages.get(META_PACKAGE_NAME));
         
-        String [] classImports = new String[] { Collections.class.getName(),
-                DSSchema.class.getName(), GeneratorMeta.class.getName(),
+        String [] classImports = new String[] { DSSchema.class.getName(), GeneratorMeta.class.getName(),
                 Generated.class.getName()};
         
         if (dsSchemaSourceFileInfo != null || !alreadyGeneratedDaosImorts.isEmpty() ) {
@@ -802,7 +806,8 @@ public class ClassGenerator {
     }
 
     private static String generateClassFile(String className,
-            IDSSchema dsSchema, IDAOSchema daoSchema, SourceFileInfo sourceFileInfo, Map<String, String> filePackages) {
+            IDSSchema dsSchema, IDAOSchema daoSchema, final String dsClassName, 
+            SourceFileInfo sourceFileInfo, final Map<String, String> filePackages) {
 
         String idField = null;
         String javaField = null;
@@ -921,6 +926,14 @@ public class ClassGenerator {
         imports.add(IDataBean.class.getName());
         imports.add(GeneratorMeta.class.getName());
         imports.add(Generated.class.getName());
+        imports.add(IDSSchema.class.getName());
+        imports.add(DAOSchema.class.getName());
+        
+        String daoSchemaClassName = generateDAOSchemaClassName(className);
+        if (!filePackages.get(BEANS_PACKAGE_NAME).equals(filePackages.get(META_PACKAGE_NAME))) {
+        	imports.add(filePackages.get(META_PACKAGE_NAME) + "." + dsClassName);
+        	imports.add(filePackages.get(META_PACKAGE_NAME) + "." + daoSchemaClassName);
+        }
 
         StringTemplate body = TEMPLATES.getInstanceOf("dataTypeBody");
         body.setAttribute("serialVersionUID", System.currentTimeMillis());
@@ -928,6 +941,8 @@ public class ClassGenerator {
         body.setAttribute("fields", fields.toArray());
         body.setAttribute("methods", methods.toArray());
         body.setAttribute("toString", toStringBuilder.toString());
+        body.setAttribute("daoSchemaClass", daoSchemaClassName);
+        body.setAttribute("dsSchemaClass", dsClassName);
 
         StringTemplate classST = TEMPLATES.getInstanceOf("class");
         classST.setAttribute("packageName", filePackages.get(BEANS_PACKAGE_NAME));

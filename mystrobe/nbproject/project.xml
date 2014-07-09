@@ -3,15 +3,13 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>MyStroBe</name>
+            <name>MyStrobe</name>
             <source-roots>
-                <root id="src.dir"/>
-                <root id="datatypes.dir"/>
+                <root id="java.dir" name="Source Packages"/>
                 <root id="connector-oo-quarix.dir"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>
-                <root id="test.resources.dir"/>
             </test-roots>
         </data>
     </configuration>

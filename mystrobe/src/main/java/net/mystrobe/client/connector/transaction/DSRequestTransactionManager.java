@@ -27,8 +27,10 @@ import net.mystrobe.client.DataSourceAdaptor.AppendPosition;
 import net.mystrobe.client.connector.DAOCommands;
 import net.mystrobe.client.connector.DSRequest;
 import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
 import net.mystrobe.client.connector.IDAORequest;
 import net.mystrobe.client.connector.IDAOResponse;
+import net.mystrobe.client.connector.QuarixServerConnector;
 import net.mystrobe.client.connector.quarixbackend.json.Message;
 
 
@@ -41,33 +43,49 @@ public class DSRequestTransactionManager extends AbstractTransactionManager impl
 	
 	private static final long serialVersionUID = 7001671415137585495L;
 
+	@Deprecated
 	public DSRequestTransactionManager(IDSSchema dsSchema, IAppConnector appConnector) {
 		super(dsSchema, appConnector);
 	}
 	
+	@Deprecated
 	public DSRequestTransactionManager(IDSSchema dsSchema, IAppConnector appConnector, IDSTransactionable<? extends IDataBean> ... dsTransactionables) {
 		super(dsSchema, appConnector);
 		addRequestTransactionParticipant(dsTransactionables);
 	}
 	
+	public DSRequestTransactionManager(IDSSchema dsSchema, IConfig config, String appName) {
+		super(dsSchema, config, appName);
+	}
+	
+	public DSRequestTransactionManager(IDSSchema dsSchema, IConfig config, String appName, IDSTransactionable<? extends IDataBean> ... dsTransactionables) {
+		super(dsSchema, config, appName);
+		addRequestTransactionParticipant(dsTransactionables);
+	}
+	
 	@Override
 	public void dataRequest() {
-		dataRequest(DAOCommands.sendRows.name(), AppendPosition.REPLACE);
+		dataRequest(DAOCommands.sendRows.name(), AppendPosition.REPLACE, 1);
 	}
 	
 	@Override
 	public void dataRequest(String commandName) {
-		dataRequest(commandName, AppendPosition.REPLACE);
+		dataRequest(commandName, AppendPosition.REPLACE, 1);
+	}
+	
+	@Override
+	public void dataRequest(AppendPosition appendPosition, int positionInBuffer) {
+		dataRequest(DAOCommands.sendRows.name(), appendPosition, positionInBuffer);
 	}
 	
 	@Override
 	public void dataRequest(AppendPosition appendPosition) {
-		dataRequest(DAOCommands.sendRows.name(), appendPosition);
+		dataRequest(DAOCommands.sendRows.name(), appendPosition, -1);
 		
 	}
-
+	
 	@Override
-	public void dataRequest(String commandName, AppendPosition appendPosition) {
+	public void dataRequest(String commandName, AppendPosition appendPosition, int positionInBuffer) {
 		this.dsRequest = new DSRequest();
 		
 		this.dsRequest.setActionCommand(commandName);
@@ -77,6 +95,7 @@ public class DSRequestTransactionManager extends AbstractTransactionManager impl
 			dsRequest.addDAORequest(daoRequest);
 		}
 		
+		IAppConnector appConnector = QuarixServerConnector.getAppConnector(this.appName, this.appServerConfig);
 		this.dsResponse = appConnector.dataRequest(this.dsSchema, this.dsRequest);
 		
 		if (this.dsResponse == null) {
@@ -122,13 +141,13 @@ public class DSRequestTransactionManager extends AbstractTransactionManager impl
 				mainRequestObject = transactionable;
 				mainRequestObjectResponse = daoResponse;
 			} else {
-				transactionable.processDataResponse(daoResponse, appendPosition);
+				transactionable.processDataResponse(daoResponse, appendPosition, -1);
 			}
 		}
 		
 		//main data object should be processed last
 		if (mainRequestObject != null) {
-			mainRequestObject.processDataResponse(mainRequestObjectResponse, appendPosition);
+			mainRequestObject.processDataResponse(mainRequestObjectResponse, appendPosition, positionInBuffer);
 		}
 		
 		if (hasErrors) {

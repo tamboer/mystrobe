@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package net.mystrobe.client;
+package net.mystrobe.client;
 
-import org.apache.wicket.model.IDetachable;
+import java.io.Serializable;
 
 /**
  * An actual instance of data containing a reference to the data source and an
@@ -25,7 +25,7 @@ import org.apache.wicket.model.IDetachable;
  *
  * @author TVH Group NV
  */
-public interface IDataBean extends IDetachable, Cloneable {
+public interface IDataBean extends Cloneable, Serializable  {
 
 	/**
 	 * Columns used for state management and identification  
@@ -34,11 +34,6 @@ public interface IDataBean extends IDetachable, Cloneable {
 	
 	public static final String ROW_STATE_FIELD_NAME = "rowstate";
 	
-	/**
-	 * Returns the data source responsible for fetch this record instance
-	 */
-	public IDataSource getDataSource();
-
 	/**
 	 * Returns an unique string the identfies the record in the backend data object.
 	 */

@@ -21,6 +21,8 @@ import java.io.Serializable;
 
 import net.mystrobe.client.DataObjectAdaptor;
 import net.mystrobe.client.IDAOSchema;
+import net.mystrobe.client.IDSSchema;
+import net.mystrobe.client.connector.IAppConnector;
 import net.mystrobe.client.connector.quarixbackend.Generated;
 import net.mystrobe.client.connector.quarixbackend.GeneratorMeta;
 
@@ -37,23 +39,9 @@ public class StateStateDataObject extends DataObjectAdaptor<StateState> implemen
 
 	@Generated
 	private static final long serialVersionUID = 1308428585635L;
-
-	@Generated
-	@Override
-	public IDAOSchema<StateState> getSchema() {
-		if (super.getSchema() != null) {
-			return super.getSchema();
-		}
-
-		setSchema((StateStateSchema)(new StateDSSchema()).getDataObjectSchema("tt-state"));
-		
-		return super.getSchema();
-	}
-
-	@Override
-	protected void assignValues() {
-		// TODO Auto-generated method stub
-		
+	
+	public StateStateDataObject(IAppConnector connector) {
+		super(connector, new StateDSSchema(), new StateStateSchema());
 	}
 }
 

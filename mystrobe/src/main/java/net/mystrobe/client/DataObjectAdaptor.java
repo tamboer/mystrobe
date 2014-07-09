@@ -18,8 +18,12 @@
  package net.mystrobe.client;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 
 import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
+import net.mystrobe.client.impl.DAOSchema;
 
 
 //~--- non-JDK imports --------------------------------------------------------
@@ -32,75 +36,88 @@ import net.mystrobe.client.connector.IAppConnector;
  */
 public class DataObjectAdaptor<T extends IDataBean> extends UpdateDataAdaptor<T> implements IDataObject<T>, Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2999847020307247019L;
 
-
-	/**
-	 * Standard constructor
-	 */
-	public DataObjectAdaptor() {
-		super();
-		assignValues();
-	}
-	
-	/**
-	 * DSSchema Constructor
-	 */
-	public DataObjectAdaptor(IDSSchema dsSchema) {
-		super();
-		this.dsSchema = dsSchema;
-		assignValues();
-	}
-	
 	/**
 	 * Constructs a regular data object instance connected to the provided app connector
 	 * @param connector The app connector to which this data object will be connected
-	 */
-	public DataObjectAdaptor(IAppConnector connector) {
-		super();
-		setAppConnector(connector);
-		assignValues();
-	}
-	
-	/**
-	 * Constructs a regular data object instance connected to the provided app connector
-	 * @param connector The app connector to which this data object will be connected
-	 * 
-	 */
-	public DataObjectAdaptor(IAppConnector connector, IDSSchema dsSchema) {
-		super();
-		setAppConnector(connector);
-		this.dsSchema = dsSchema;
-		assignValues();
-	}
-	
-	public DataObjectAdaptor(IAppConnector connector, IDSSchema dsSchema, IDAOSchema<T> daoSchema) {
-		super();
-		setAppConnector(connector);
-		this.dsSchema = dsSchema;
-		this.defaultDSSchema = dsSchema;
-		this.schema = daoSchema;
-		assignValues();
-	}
-	
-	/**
-	 * Support older versions.
-	 * 
-	 * Method is overridden when generation DO classes.
-	 * Data objects don't need to be generated anymore but 
-	 *  DAO schema and default data set schema have to be set.
 	 */
 	@Deprecated
-	protected void assignValues(){
-		if (this.schema == null) {
-			throw new IllegalStateException("DAO schema not set."); 
-		}
+	public DataObjectAdaptor(IAppConnector connector) {
+		super(connector);
+        if (connector != null) /*needed for OfflineDataObject*/
+            initializeSchemasFromGenericType(true);
+	}
+	
+	public DataObjectAdaptor(IConfig config, String appName) {
+		super(config, appName);
+        if (config != null && appName != null) /*needed for OfflineDataObject*/
+            initializeSchemasFromGenericType(true);
+	}
+	
+	public DataObjectAdaptor(IConfig config, String appName, int batchSize) {
+		super(config, appName);
+        
+		if (config != null && appName != null) /*needed for OfflineDataObject*/
+            initializeSchemasFromGenericType(false);
+        
+		this.batchSize = batchSize;
+		this.lockBatchSize = true;
+	}
+	
+	@Deprecated
+	public DataObjectAdaptor(IAppConnector connector, IDSSchema dsSchema, IDAOSchema<T> daoSchema) {
+		super(connector);
+		this.dsSchema = dsSchema;
+		this.schema = daoSchema;
 		
-		if (this.defaultDSSchema == null) {
-			throw new IllegalStateException("Defaults data set schema not set."); 
+		this.batchSize = (int) this.schema.getBatchSize();
+	}
+	
+	public DataObjectAdaptor(IConfig config, String appName, IDSSchema dsSchema, IDAOSchema<T> daoSchema) {
+		super(config, appName);
+		this.dsSchema = dsSchema;
+		this.schema = daoSchema;
+		
+		this.batchSize = (int) this.schema.getBatchSize();
+	}
+	
+	public DataObjectAdaptor(IConfig config, String appName, IDSSchema dsSchema, IDAOSchema<T> daoSchema, int batchSize) {
+		super(config, appName);
+		this.dsSchema = dsSchema;
+		this.schema = daoSchema;
+		
+		this.batchSize = batchSize;
+		this.lockBatchSize = true;
+	}
+	
+	private void initializeSchemasFromGenericType(boolean initBatchSize) {
+		try {
+			 
+			ParameterizedType superclass = (ParameterizedType)
+	  	        getClass().getGenericSuperclass();
+	
+			Class<? extends IDataBean> beanClass = (Class<? extends IDataBean>) superclass.getActualTypeArguments()[0];
+	 
+			Class<? extends IDSSchema> dsSchemaClass = (Class<IDSSchema>) beanClass.getMethod("getDSSchemaClass").invoke(null, new Object [] {});
+			Class<? extends DAOSchema<T>> daoSchemaClass = (Class<? extends DAOSchema<T>>) beanClass.getMethod("getDAOSchemaClass").invoke(null, new Object [] {});
+		
+			this.dsSchema = dsSchemaClass.newInstance();
+			this.schema = daoSchemaClass.newInstance();
+			
+			if (initBatchSize) {
+				this.batchSize = (int) this.schema.getBatchSize();
+			}
+			
+			
+		} catch (IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException
+				| SecurityException | InstantiationException | ClassCastException e) {
+			
+			logger.error("Can not instantiate schema and ds schema for data object.\n" +
+					"Must specify data bean generic when using this constructor.", e);
+			
+			throw new WicketDSRuntimeException(e);
 		}
 	}
 }

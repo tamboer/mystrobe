@@ -21,6 +21,8 @@ import java.io.Serializable;
 
 import net.mystrobe.client.DataObjectAdaptor;
 import net.mystrobe.client.IDAOSchema;
+import net.mystrobe.client.IDSSchema;
+import net.mystrobe.client.connector.IAppConnector;
 import net.mystrobe.client.connector.quarixbackend.Generated;
 import net.mystrobe.client.connector.quarixbackend.GeneratorMeta;
 
@@ -37,23 +39,9 @@ public class SalesRepSalesrepDataObject extends DataObjectAdaptor<SalesRepSalesr
 
 	@Generated
 	private static final long serialVersionUID = 1308428581984L;
-
-	@Generated
-	@Override
-	public IDAOSchema<SalesRepSalesrep> getSchema() {
-		if (super.getSchema() != null) {
-			return super.getSchema();
-		}
-
-		setSchema((SalesRepSalesrepSchema)(new SalesRepDSSchema()).getDataObjectSchema("tt-salesrep"));
-		
-		return super.getSchema();
-	}
-
-	@Override
-	protected void assignValues() {
-		// TODO Auto-generated method stub
-		
+	
+	public SalesRepSalesrepDataObject(IAppConnector connector) {
+		super(connector, new SalesRepDSSchema(), new SalesRepSalesrepSchema());
 	}
 }
 

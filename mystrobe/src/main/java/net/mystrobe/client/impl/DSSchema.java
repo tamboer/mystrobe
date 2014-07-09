@@ -40,7 +40,7 @@ public abstract class DSSchema implements IDSSchema {
 	private static final long serialVersionUID = -5611737103628595887L;
 	
 	protected String id;
-	protected long bathchSize;
+	protected long batchSize;
 	protected int margin;
 	protected String urn;
 	protected boolean hasAtomicChanges;
@@ -54,7 +54,7 @@ public abstract class DSSchema implements IDSSchema {
 	private transient Enumeration<IDSRelation> dsRelations;
 
 	public long getBatchSize() {
-		return bathchSize;
+		return batchSize;
 	}
 
 	public Enumeration<String> getDataObjectIds() {

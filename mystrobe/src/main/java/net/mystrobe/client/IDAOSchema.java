@@ -109,9 +109,4 @@ public interface IDAOSchema<T extends IDataBean>  extends Serializable {
      * @return true if this schema is dynamicaly generated, false otherwise
      */
     public boolean isDynamic();
-    
-    /**
-	 * Set request batch size.
-	 */
-	public void setBatchSize(long batchSize);
 }

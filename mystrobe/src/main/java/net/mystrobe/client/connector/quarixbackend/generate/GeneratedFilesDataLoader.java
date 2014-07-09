@@ -18,6 +18,7 @@
  package net.mystrobe.client.connector.quarixbackend.generate;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,7 +87,12 @@ public class GeneratedFilesDataLoader {
 		
 		List<File> sourceFiles = new ArrayList<File>();
 		
-		for (File sourceFolderFile : sourceFolder.listFiles()) {
+		for (File sourceFolderFile : sourceFolder.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        return !pathname.getAbsolutePath().contains(".svn");
+                    }
+                })) {
 			if (sourceFolderFile.isFile()) {
 				sourceFiles.add(sourceFolderFile);
 			} else {

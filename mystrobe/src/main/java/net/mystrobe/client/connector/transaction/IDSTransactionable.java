@@ -98,7 +98,7 @@ public interface IDSTransactionable<T extends IDataBean> {
 	 * Process data request response.
 	 * 
 	 */
-	public void processDataResponse(IDAOResponse daoResponse, AppendPosition appendPosition);
+	public void processDataResponse(IDAOResponse daoResponse, AppendPosition appendPosition, int positionInBuffer);
 	
 	/**
 	 * Get dao request main object flag.  

@@ -33,22 +33,22 @@ import net.mystrobe.client.SortState;
 import net.mystrobe.client.connector.quarixbackend.NamingHelper;
 import net.mystrobe.client.dynamic.config.IDynamicFormConfig;
 import net.mystrobe.client.dynamic.config.IDynamicFormFieldConfig;
-import net.mystrobe.client.dynamic.navigation.DataTablePagesNavigationPanel;
+import net.mystrobe.client.ui.config.MyStrobeWebSettingsProvider;
 import net.mystrobe.client.util.StringUtil;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.attributes.AjaxRequestAttributes;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.DataGridView;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByLink;
-import org.apache.wicket.extensions.markup.html.repeater.data.sort.SortOrder;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByLink.ICssProvider;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.sort.SortOrder;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -57,7 +57,6 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.markup.repeater.data.ListDataProvider;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.slf4j.Logger;
@@ -79,10 +78,15 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	protected static final String DATA_TABLE_HEADER_MARKUP_ID = "header";
 
 	protected static final String DATA_TABLE_HEADER_LABEL_MARKUP_ID = "header_label";
+	
+	protected boolean selectableRows = true;
+
+	protected boolean selectedRowCssEnabled = false;
+	
 	/**
 	 * Current page
 	 */
-	protected int tableSize = 30;
+	protected int tableSize = 10;
 	
 	/**
 	 * Columns config.
@@ -112,8 +116,6 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	
 	protected ICssProvider cssSortProvider = new OrderByLink.CssProvider("sort-asc-btn", "sort-desc-btn", "sort-btn");
 	
-	protected boolean selectableRows = true;
-
 	protected String selectedRowCSSClassName = null;
 	
 	protected String selectedRowId = null;
@@ -157,6 +159,12 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 		this.cssSortProvider = cssSortProvider;
 		this.additionalTableColumns = additionalTableColumns;
 		this.sortableColumns = sortableColumns;
+		
+		this.selectedRowCssEnabled = MyStrobeWebSettingsProvider.getInstance(getApplication()).isSelectedTableRowCssEnabled();
+		
+		this.selectedRowCSSClassName = MyStrobeWebSettingsProvider.getInstance(getApplication()).getSelectedTableRowCssSelector() != null ?
+					MyStrobeWebSettingsProvider.getInstance(getApplication()).getSelectedTableRowCssSelector() : CSS_CLASS_SELECTED;
+		
 	}
 	
 	protected void initialize(List<T> listData) {
@@ -419,19 +427,26 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 						@Override
 						protected void onEvent(AjaxRequestTarget target) {
 							selectDataRowWithId(dataBean.getRowId());
-							target.appendJavaScript("selectTableRow('" + result.getMarkupId() + "' , '" + getSelectedRowCSSClassName() + "');");
+							
+							if (DataBeanDataGridView.this.selectedRowCssEnabled) {
+								target.appendJavaScript("selectTableRow('" + result.getMarkupId() + "' , '" + getSelectedRowCSSClassName() + "');");
+							}
+							
 							onDataRowClick(target);
 						}
 						
 						@Override
-						protected void updateAjaxAttributes(org.apache.wicket.ajax.attributes.AjaxRequestAttributes attributes) {
+						protected void updateAjaxAttributes(AjaxRequestAttributes attributes) {
 							super.updateAjaxAttributes(attributes);
 							attributes.setAllowDefault(true);
 							
 						};
 					});
 					
-					result.add(new SelectRowCssModifier(dataBean));
+					if (DataBeanDataGridView.this.selectedRowCssEnabled) {
+						result.add(new SelectRowCssModifier(dataBean));
+					}
+					
 					
 					result.add(new AttributeAppender("style", new Model<String>("cursor:pointer;")));
 				}
@@ -485,13 +500,6 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	}
 	
 	/**
-	 * @param selectableRows the selectableRows to set
-	 */
-	public void setSelectableRows(boolean selectableRows) {
-		this.selectableRows = selectableRows;
-	}
-
-	/**
 	 * @return the selectedRowCSSClassName
 	 */
 	public String getSelectedRowCSSClassName() {
@@ -504,6 +512,10 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	public void setSelectedRowCSSClassName(String selectedRowCSSClassName) {
 		this.selectedRowCSSClassName = selectedRowCSSClassName;
 	}
+        
+        public void setSelectedRowCssEnabled(boolean selectedRowCssEnabled){
+            this.selectedRowCssEnabled = selectedRowCssEnabled;
+        }
 	
 	/**
 	 * Get nr. of rows displayed in the table.

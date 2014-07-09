@@ -106,6 +106,37 @@ public interface IDataSource<T extends IDataBean> extends LinkSource {
 	 * @return Data object meta data class instance 
 	 */
 	public IDAOSchema<T> getSchema();
-
+	
+	/**
+	 * Get data object meta data information.
+	 * @return Data object meta data class instance 
+	 */
+	public int getBatchSize();
+	
+	/**
+	 * Set data object batch size.
+	 * Method will automatically set the freeze batch flag to true. 
+	 *  
+	 * @param batchSize
+	 */
+	public void setBatchSize( int batchSize);
+	
+	/**
+	 * Let UI components change batch size according to their view size (default).
+	 * When set to true batch size will not be updated by the UI components.
+	 * 
+	 * @param freezeBatchSize
+	 */
+	public void setLockBatchSize(boolean lockBatchSize);
+	
+	/**
+	 * Batch size setting cleared to be overridden by subsequent setting(s)
+	 */
+	public void clearBatchSize();
+	
+	/**
+	 * Get all records,  do not consider batching 
+	 */
+	public void fetchAllRecords();
 
 }

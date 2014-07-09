@@ -131,13 +131,5 @@ public class TestPersonSchema implements IDAOSchema {
     public IDSSchema getDataSetSchema() {
         return null;
     }
-
-
-
-	@Override
-	public void setBatchSize(long batchSize) {
-		this.batchSize = batchSize;
-	}
-
 }
 

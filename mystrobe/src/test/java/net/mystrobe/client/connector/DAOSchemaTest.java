@@ -50,8 +50,7 @@ public class DAOSchemaTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		IConfig config = new Config();
-		IServerConnector srvConnector = new QuarixServerConnector(config);
-		IAppConnector appConnector = srvConnector.getAppConnector("wicketds");
+		IAppConnector appConnector = QuarixServerConnector.getAppConnector("wicketds", config);
 		dsSchema = appConnector.getSchema("server.state");
 		if (dsSchema != null) {
 			daoSchema = dsSchema.getDataObjectSchema(daoID);

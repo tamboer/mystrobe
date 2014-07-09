@@ -24,6 +24,7 @@ import java.util.Set;
 import net.mystrobe.client.IDSSchema;
 import net.mystrobe.client.IDataBean;
 import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
 import net.mystrobe.client.connector.IDSRequest;
 import net.mystrobe.client.connector.IDSResponse;
 
@@ -53,12 +54,21 @@ public abstract class AbstractTransactionManager implements Serializable {
 	/**
 	 * App connector 
 	 */
-	protected IAppConnector appConnector;
-
+	protected String appName;
 	
+	protected IConfig appServerConfig;
+	
+	@Deprecated
 	public AbstractTransactionManager(IDSSchema dsSchema, IAppConnector appConnector) {
 		this.dsSchema = dsSchema;
-		this.appConnector = appConnector;
+		this.appName = appConnector.getAppName();
+		this.appServerConfig = appConnector.getConfig();
+	}
+	
+	public AbstractTransactionManager(IDSSchema dsSchema, IConfig appServerConfig, String appName) {
+		this.dsSchema = dsSchema;
+		this.appName = appName;
+		this.appServerConfig = appServerConfig;
 	}
 }
 

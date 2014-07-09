@@ -47,8 +47,7 @@ public class DataObjectTest {
 		Config config = new Config();
 		config.setValue(IConfig.APP_SERVER_URL, "AppServerDC://cargomate.yonder.local:3511/qrx_rcfpg_demo");
 		config.setValue(IConfig.APP_DATABEAN_PACKAGES, "net.mystrobe.client.connector.quarixbackend.datatypes");
-		IServerConnector srvConnector = new QuarixServerConnector(config);
-		appConnector = srvConnector.getAppConnector("wicketds");
+		appConnector = QuarixServerConnector.getAppConnector("wicketds", config);
     }
 
 
@@ -58,9 +57,7 @@ public class DataObjectTest {
 
     @Before
     public void setUp() {
-        stateDo = new StateDataObject();
-        stateDo.setAppConnector(appConnector);
-       
+        stateDo = new StateDataObject(appConnector );
     }
 
     @After

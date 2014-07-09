@@ -41,11 +41,11 @@ public class DAORequestCrudTest {
 	protected final String daoId = "tt-state";
 	
 
-	public static Config Config = new Config();
+	public static Config config = new Config();
     
     static {
-        Config.setValue(IConfig.APP_SERVER_URL, "AppServerDC://cargomate.yonder.local:3511/qrx_rcfpg_demo");
-		Config.setValue(IConfig.APP_DATABEAN_PACKAGES, "net.mystrobe.client.connector.quarixbackend.datatypes");
+        config.setValue(IConfig.APP_SERVER_URL, "AppServerDC://cargomate.yonder.local:3511/qrx_rcfpg_demo");
+		config.setValue(IConfig.APP_DATABEAN_PACKAGES, "net.mystrobe.client.connector.quarixbackend.datatypes");
     }
     
     public static String AppName= "wicketds";	
@@ -54,12 +54,10 @@ public class DAORequestCrudTest {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		appConnector = new QuarixServerConnector(Config).getAppConnector(AppName);				
-
+		appConnector = QuarixServerConnector.getAppConnector("wicketds", config);				
 		IDAORequest daoRequest = DAORequest.FetchFirst("tt-state");
 		appConnector.dataRequest("server.state", new DSRequest(daoRequest));
-		
-    }
+	}
 
 	@Test
 	public void addOne() {

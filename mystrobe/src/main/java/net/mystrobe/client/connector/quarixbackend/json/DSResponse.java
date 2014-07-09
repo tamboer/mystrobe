@@ -34,7 +34,6 @@ import net.mystrobe.client.connector.IDAOResponse;
 import net.mystrobe.client.connector.IDAORow;
 import net.mystrobe.client.connector.IDSResponse;
 import net.mystrobe.client.connector.LocalizationProperties;
-import net.mystrobe.client.connector.QuarixAppConnector;
 import net.mystrobe.client.connector.quarixbackend.StringListDAORow;
 
 import org.slf4j.Logger;
@@ -51,8 +50,6 @@ public class DSResponse implements IDSResponse, Serializable {
 	private Logger logger = LoggerFactory.getLogger(DSResponse.class);
     
 	private LocalizationProperties localizationProperties;
-
-	private QuarixAppConnector appConnector = null;
 
 	private List<DAOResponse<? extends IDataBean>> tables;
 
@@ -164,22 +161,5 @@ public class DSResponse implements IDSResponse, Serializable {
     public void setLocalizationProperties(LocalizationProperties localizationProperties) {
         this.localizationProperties = localizationProperties;
     }
-
-    /**
-     * @return the appConnector
-     */
-    public QuarixAppConnector getAppConnector() {
-        return appConnector;
-    }
-
-    /**
-     * @param appConnector the appConnector to set
-     */
-    public void setAppConnector(QuarixAppConnector appConnector) {
-        this.appConnector = appConnector;
-    }
-
-
-    
 }
 

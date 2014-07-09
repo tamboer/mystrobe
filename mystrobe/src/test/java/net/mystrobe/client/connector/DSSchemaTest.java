@@ -20,15 +20,9 @@
 import java.util.Enumeration;
 
 import junit.framework.Assert;
-
 import net.mystrobe.client.IDAOSchema;
 import net.mystrobe.client.IDSRelation;
 import net.mystrobe.client.IDSSchema;
-import net.mystrobe.client.connector.Config;
-import net.mystrobe.client.connector.IAppConnector;
-import net.mystrobe.client.connector.IConfig;
-import net.mystrobe.client.connector.IServerConnector;
-import net.mystrobe.client.connector.QuarixServerConnector;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,8 +42,7 @@ public class DSSchemaTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		IConfig config = new Config();
-		IServerConnector srvConnector = new QuarixServerConnector(config);
-		IAppConnector appConnector = srvConnector.getAppConnector("wicketds");
+		IAppConnector appConnector = QuarixServerConnector.getAppConnector("wicketds", config);
 		dsSchema = appConnector.getSchema("server.state");
 	}
 

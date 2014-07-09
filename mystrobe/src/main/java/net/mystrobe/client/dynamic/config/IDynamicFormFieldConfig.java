@@ -61,7 +61,9 @@ public class IDynamicFormFieldConfig {
 		
 		DescriptionColumn("descriptionColumn"),
 
-		SelectRecordTableConfig("selectRecordTableConfig");
+		SelectRecordTableConfig("selectRecordTableConfig"),
+		
+		Custom("custom");
 		
 		private String name;
 		

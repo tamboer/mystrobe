@@ -32,6 +32,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerException;
 
 import net.mystrobe.client.WicketDSRuntimeException;
+import net.mystrobe.client.config.MyStrobeCoreSettingsProvider;
 import net.mystrobe.client.connector.LocalizationProperties;
 import net.mystrobe.client.connector.quarixbackend.api.IAppServer;
 import net.mystrobe.client.connector.quarixbackend.api.IDispatcherRequestParameters;
@@ -61,7 +62,9 @@ public class AppServerAction {
     protected transient IDispatcherResponseParameters dispatcherResponse;
     protected transient IDispatcherRequestParameters dispatcherRequest = new DispatcherRequestParameters();
     protected transient Logger log = LoggerFactory.getLogger(AppServerAction.class);
-    protected transient LocalizationProperties localizationProperties = null;
+    public static final String TIME_LOGGING_NAME = "TimeLogging";
+    protected transient Logger timeLog = LoggerFactory.getLogger(TIME_LOGGING_NAME);
+//    protected transient LocalizationProperties localizationProperties = null;
     
     /**
      * @param context
@@ -115,6 +118,7 @@ public class AppServerAction {
         }
         end = System.currentTimeMillis();
         getLog().trace("Request served in " + (end - start) + " ms progress time " + (progressEnd - progressStart) + " ms");
+        timeLog.info("MyStrobe_OpenEdge " + daoClassName + " took [" + (progressEnd - progressStart) + "] milis");
     }
 
     public Document getResponseXML() {
@@ -163,11 +167,12 @@ public class AppServerAction {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 ret = mapper.readValue(json, DSResponse.class);
-                if ( ret.getLocalizationProperties() == null ) {
-                	ret.setLocalizationProperties((LocalizationProperties) localizationProperties.clone());
-                } else {
-                	this.localizationProperties = ret.getLocalizationProperties();
-                }
+                ret.setLocalizationProperties(getLocalizationProperties());
+//                if ( ret.getLocalizationProperties() == null ) {
+//                	ret.setLocalizationProperties((LocalizationProperties) localizationProperties.clone());
+//                } else {
+//                	this.localizationProperties = ret.getLocalizationProperties();
+//                }
             } catch (Exception ex) {
                 log.error(null, ex);
             }
@@ -201,8 +206,8 @@ public class AppServerAction {
             try {
                 ret = mapper.readValue(json, LocalizationProperties.class);
                 if ( ret != null ) {
-                	this.localizationProperties = ret;
-                	localizationPropertiesCachedMap.put(this.appServer.getUrl(), this.localizationProperties);
+                	String key = this.appServer.getUrl() + "_" + this.appName;
+                	localizationPropertiesCachedMap.put(key, ret);
                 }
             } catch (Exception ex) {
                 log.error(null, ex);
@@ -259,13 +264,16 @@ public class AppServerAction {
         dispatcherRequest.addCGIParameter("CHECK_ATTACHMENTS", String.valueOf(false));
         dispatcherRequest.addCGIParameter("CHECK_BODY_DATA", String.valueOf(false));
 
-
-
         //faking the session
         long now = System.currentTimeMillis();
-        String sessionID = appName + "." + daoClassName + "." + now;
         long creationTime = now - 5000;
         long maxInactivInterval = 300000;
+        String sessionID;
+        if (MyStrobeCoreSettingsProvider.getInstance().canProvideBLSessionIDs()) {
+        	sessionID = MyStrobeCoreSettingsProvider.getInstance().getBLSessionID();
+        } else {
+	        sessionID = appName + "." + daoClassName + "." + now;
+	    }
 
         // faking the locale
         Locale usedLocale = Locale.getDefault();
@@ -294,65 +302,63 @@ public class AppServerAction {
 
 
     protected void loadDispatcherResponse(IDispatcherResponseParameters dispatcherResponse) {
-        if( dispatcherResponse == null ) return;
-        
-        if (localizationProperties == null) {
-        	localizationProperties = new LocalizationProperties();
-        }
-
-        if( dispatcherResponse.hasBrokerParameterName("LOCALE_LANG")) {
-            localizationProperties.setLanguageCode(dispatcherResponse.getBrokerParameter("LOCALE_LANG"));
-        }
-
-        if( dispatcherResponse.hasBrokerParameterName("LOCALE_DATE_FORMAT")){
-            localizationProperties.setDateFormat(dispatcherResponse.getBrokerParameter("LOCALE_DATE_FORMAT"));
-        }
-
-        if( dispatcherResponse.hasBrokerParameterName("LOCALE_LOGIC_FORMAT")){
-            localizationProperties.setLogicalFormat(dispatcherResponse.getBrokerParameter("LOCALE_LOGIC_FORMAT"));
-        }
-
-        if( dispatcherResponse.hasBrokerParameterName("LOCALE_NUM_DEC")){
-            String value = dispatcherResponse.getBrokerParameter("LOCALE_NUM_DEC");
-            if( value != null && value.length() >= 1) localizationProperties.setNumericalDecimalPoint(value.charAt(0));
-        }
-
-        if( dispatcherResponse.hasBrokerParameterName("LOCALE_NUM_FORMAT")){
-            localizationProperties.setNumericalFormat(dispatcherResponse.getBrokerParameter("LOCALE_NUM_FORMAT"));
-        }
-
-        if( dispatcherResponse.hasBrokerParameterName("LOCALE_NUM_SEP")){
-            String value = dispatcherResponse.getBrokerParameter("LOCALE_NUM_SEP");
-            if( value != null && value.length() >= 1) localizationProperties.setNumericalSeparator(value.charAt(0));
-        }
-        
-        setAppServerLocalizationProperties(appServer.getUrl(), localizationProperties);
+//        if( dispatcherResponse == null ) return;
+//        
+//        if (localizationProperties == null) {
+//        	localizationProperties = new LocalizationProperties();
+//        }
+//
+//        if( dispatcherResponse.hasBrokerParameterName("LOCALE_LANG")) {
+//            localizationProperties.setLanguageCode(dispatcherResponse.getBrokerParameter("LOCALE_LANG"));
+//        }
+//
+//        if( dispatcherResponse.hasBrokerParameterName("LOCALE_DATE_FORMAT")){
+//            localizationProperties.setDateFormat(dispatcherResponse.getBrokerParameter("LOCALE_DATE_FORMAT"));
+//        }
+//
+//        if( dispatcherResponse.hasBrokerParameterName("LOCALE_LOGIC_FORMAT")){
+//            localizationProperties.setLogicalFormat(dispatcherResponse.getBrokerParameter("LOCALE_LOGIC_FORMAT"));
+//        }
+//
+//        if( dispatcherResponse.hasBrokerParameterName("LOCALE_NUM_DEC")){
+//            String value = dispatcherResponse.getBrokerParameter("LOCALE_NUM_DEC");
+//            if( value != null && value.length() >= 1) localizationProperties.setNumericalDecimalPoint(value.charAt(0));
+//        }
+//
+//        if( dispatcherResponse.hasBrokerParameterName("LOCALE_NUM_FORMAT")){
+//            localizationProperties.setNumericalFormat(dispatcherResponse.getBrokerParameter("LOCALE_NUM_FORMAT"));
+//        }
+//
+//        if( dispatcherResponse.hasBrokerParameterName("LOCALE_NUM_SEP")){
+//            String value = dispatcherResponse.getBrokerParameter("LOCALE_NUM_SEP");
+//            if( value != null && value.length() >= 1) localizationProperties.setNumericalSeparator(value.charAt(0));
+//        }
+//        
+//        setAppServerLocalizationProperties(appServer.getUrl(), localizationProperties);
     }
     
     public LocalizationProperties getLocalizationProperties() {
-        LocalizationProperties result = null;
-    	if (this.localizationProperties == null) {
-    		result = getCachedLocalizationProperties(appServer.getUrl());
-    		
-    		if (result == null ) {
-    			
-    			process(Globals.LOCALIZATION_URN, Globals.METHOD_DATA, null);
-    			getLocalizationResponseJSON();
-    			
-    			result = getCachedLocalizationProperties(appServer.getUrl());
-    		}
-        } else {
-        	result = this.localizationProperties;
-        }
-    	return result != null ? result : new LocalizationProperties();
+        LocalizationProperties result = getCachedLocalizationProperties(appServer.getUrl(), appName);
+    	if (result == null) {
+    		synchronized (AppServerAction.class) {
+    			if (getCachedLocalizationProperties(appServer.getUrl(), appName) == null) {
+    				process(Globals.LOCALIZATION_URN, Globals.METHOD_DATA, null);
+    				getLocalizationResponseJSON();
+    			}
+			}
+    		result = getCachedLocalizationProperties(appServer.getUrl(), appName);
+    	} 
+        return result != null ? result : new LocalizationProperties();
     }
 
-    public static void setAppServerLocalizationProperties(String appServerUrl, LocalizationProperties localizationProps) {
-    	localizationPropertiesCachedMap.putIfAbsent(appServerUrl, localizationProps);
+    public static void setAppServerLocalizationProperties(String appServerUrl, String appName, LocalizationProperties localizationProps) {
+    	String key = appServerUrl + "_" + appName;
+    	localizationPropertiesCachedMap.putIfAbsent(key, localizationProps);
     }
     
-    public static LocalizationProperties getCachedLocalizationProperties(String appServerUrl) {
-    	return localizationPropertiesCachedMap.get(appServerUrl);
+    public static LocalizationProperties getCachedLocalizationProperties(String appServerUrl, String appName) {
+    	String key = appServerUrl + "_" + appName;
+    	return localizationPropertiesCachedMap.get(key);
     }
     
     public static void clearCachedLocalizationProperties() {

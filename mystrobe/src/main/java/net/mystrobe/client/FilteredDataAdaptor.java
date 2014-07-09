@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import net.mystrobe.client.connector.IAppConnector;
+import net.mystrobe.client.connector.IConfig;
 import net.mystrobe.client.filter.SearchFilter;
 import net.mystrobe.client.impl.FilterParameter;
 import net.mystrobe.client.util.DataBeanUtil;
@@ -76,6 +78,14 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
     protected Set<IFilterParameter> filters  = new HashSet<IFilterParameter>();
     protected Set<IFilterParameter> options  = new HashSet<IFilterParameter>();
 	
+    public FilteredDataAdaptor(IAppConnector appConnector) {
+		super(appConnector);
+	}
+    
+    public FilteredDataAdaptor(IConfig config, String appName) {
+		super(config, appName);
+	}
+    
 	public Set<IFilterParameter> getFilters() {
         return this.filters;
     }
@@ -231,8 +241,12 @@ public abstract class FilteredDataAdaptor<T extends IDataBean> extends SortedDat
     	if (CursorStates.NoRecordAvailable.equals(cursorState)) {
     		setFilters();
     		clearDataBuffer();
-    	} else if (fkFilterValueChanged) {
-    		setFilters();
+    	} else {
+    		
+    		if (fkFilterValueChanged) {
+    			setFilters();	
+    		}
+    		
     		resetDataBuffer();
     	}
     }
