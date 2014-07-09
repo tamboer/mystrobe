@@ -18,11 +18,11 @@
  package net.mystrobe.client.connector;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 import net.mystrobe.client.connector.quarixbackend.json.DSResponse;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

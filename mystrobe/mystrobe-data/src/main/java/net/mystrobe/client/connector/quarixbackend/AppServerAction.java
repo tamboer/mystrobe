@@ -17,8 +17,10 @@
  */
  package net.mystrobe.client.connector.quarixbackend;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jamonapi.Monitor;
 import com.jamonapi.MonitorFactory;
+ 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +41,6 @@ import net.mystrobe.client.connector.quarixbackend.api.IDispatcherRequestParamet
 import net.mystrobe.client.connector.quarixbackend.api.IDispatcherResponseParameters;
 import net.mystrobe.client.connector.quarixbackend.json.DSResponse;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
