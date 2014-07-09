@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:wicket="http://wicket.apache.org">
+
+ <head>
+   
+</head>    
+
+<body>
+
+ <wicket:head>
+    <style type="text/css">
+    	
+		table.striped tr.selected{
+			border-top: 2px solid #eab808;
+			border-bottom: 2px solid #eab808;
+			background-color: #FF9;
+		}
+    
+		.invalid {
+			border: 1px solid red;
+		} 
+	</style>
+</wicket:head>
+
+<wicket:panel>
+
+	<wicket:child/>
+
+	<div wicket:id="dataTableId"/>
+
+	<div wicket:id="dataTableNavigatorId"/>
+	
+	<div wicket:id="editPanel"/>
+
+	<div class="box-buttons-right">	
+		<input type="button" class="button ok-btn" wicket:id="selectLinkId" value="Select"/>
+		<input type="button"  class="button cancel-btn" wicket:id="cancelLinkId" value="Cancel"/>
+	</div>
+
+</wicket:panel>	
+
+</body>
+</html>
+
