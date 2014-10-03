@@ -79,7 +79,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 
 	protected static final String DATA_TABLE_HEADER_LABEL_MARKUP_ID = "header_label";
 	
-	protected boolean selectableRows = true;
+	protected boolean selectableRows = false;
 
 	protected boolean selectedRowCssEnabled = false;
 	
@@ -420,7 +420,7 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 				
 				result.setOutputMarkupId(true);
 				
-				if (DataBeanDataGridView.this.selectableRows) {
+				if (DataBeanDataGridView.this.isRowSelectable(result)) {
 					result.add(new AjaxEventBehavior("onclick") {
 						private static final long serialVersionUID = 1L;
 						
@@ -458,6 +458,10 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 			}
 		};
 	}
+        
+        protected boolean isRowSelectable(Item<T> rowItem) {
+            return DataBeanDataGridView.this.selectableRows;
+        }
 	
 	protected void onChangeSortState(SortState sortState) {
 		//TODO implement default column sorting class
@@ -489,6 +493,11 @@ public class DataBeanDataGridView<T extends IDataBean> extends Panel  {
 	public boolean isSelectableRows() {
 		return selectableRows;
 	}
+
+        public void setSelectableRows(boolean selectableRows) {
+            this.selectableRows = selectableRows;
+        }
+        
 
 	/**
 	 * Method executed when current selected data is changed.

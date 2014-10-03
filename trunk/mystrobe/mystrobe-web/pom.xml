@@ -18,11 +18,11 @@
   <parent>
     <groupId>mystrobe</groupId>
     <artifactId>mystrobe-parent</artifactId>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
   </parent>
   
   <properties>
-    <wicket.version>6.15.0</wicket.version>
+    <wicket.version>6.17.0</wicket.version>
   </properties>
 
   <dependencies>
