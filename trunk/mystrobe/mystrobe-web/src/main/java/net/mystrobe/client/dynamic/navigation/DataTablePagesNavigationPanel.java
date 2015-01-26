@@ -197,19 +197,7 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 
 			@Override
 	        public void onClick(AjaxRequestTarget target) {
-	        	currentPageNumber = 1;
-				
-				if (pageNavigationSet.first().getPageNumber() == 1) {
-					//if first page is available than just navigate to it
-					navigationListener.previousPageData(DataTablePagesNavigationPanel.this,
-							pageNavigationSet.first().getNextPageFirstRowId(), pageSize, currentPageNumber, false);
-				} else {
-					navigationListener.resetDataTableNavigation(DataTablePagesNavigationPanel.this, pageSize);
-				}
-			
-	        	navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
-	        	target.add(DataTablePagesNavigationPanel.this);
-	        	onRefreshContent(target);
+                onFirstClick(target);
 	        }
 	
 	        public boolean isVisible() {
@@ -237,12 +225,7 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 
 			@Override
 	        public void onClick(AjaxRequestTarget target) {
-        		currentPageNumber--;
-				navigationListener.previousPageData(DataTablePagesNavigationPanel.this, firstDataRowId, pageSize,
-						currentPageNumber, false);
-				navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
-				target.add(DataTablePagesNavigationPanel.this);
-				onRefreshContent(target);
+        		onPrevClick(target);
 			}
 	
 	        @Override
@@ -271,12 +254,7 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 
 			@Override
 	        public void onClick(AjaxRequestTarget target) {
-				currentPageNumber++;
-				navigationListener.nextPageData(DataTablePagesNavigationPanel.this, lastDataRowId,
-						pageSize, currentPageNumber, false);
-				navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
-				target.add(DataTablePagesNavigationPanel.this);
-				onRefreshContent(target);
+                onNextClick(target);
 			}
 	
 	        @Override
@@ -305,12 +283,7 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 
 			@Override
 	        public void onClick(AjaxRequestTarget target) {
-				currentPageNumber = pageNavigationSet.last().getPageNumber();
-				navigationListener.nextPageData(DataTablePagesNavigationPanel.this, pageNavigationSet.last().getPreviousPageLastRowId(),
-						pageSize, currentPageNumber, false);
-				navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
-				target.add(DataTablePagesNavigationPanel.this);
-				onRefreshContent(target);
+				onLastClick(target);
 			}
 	
 	        @Override
@@ -326,6 +299,46 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 	    
 	    add(wmcNavigator);
 	}
+        
+    public void onFirstClick(AjaxRequestTarget target) {
+        currentPageNumber = 1;
+
+        if (pageNavigationSet.first().getPageNumber() == 1) {
+            //if first page is available than just navigate to it
+            navigationListener.previousPageData(DataTablePagesNavigationPanel.this,
+                    pageNavigationSet.first().getNextPageFirstRowId(), pageSize, currentPageNumber, false);
+        } else {
+            navigationListener.resetDataTableNavigation(DataTablePagesNavigationPanel.this, pageSize);
+        }
+
+        navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
+        target.add(DataTablePagesNavigationPanel.this);
+        onRefreshContent(target);
+    }
+    public void onPrevClick(AjaxRequestTarget target) {
+        currentPageNumber--;
+        navigationListener.previousPageData(DataTablePagesNavigationPanel.this, firstDataRowId,
+                pageSize, currentPageNumber, false);
+        navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
+        target.add(DataTablePagesNavigationPanel.this);
+        onRefreshContent(target);
+    }
+    public void onNextClick(AjaxRequestTarget target) {
+        currentPageNumber++;
+        navigationListener.nextPageData(DataTablePagesNavigationPanel.this, lastDataRowId,
+                pageSize, currentPageNumber, false);
+        navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
+        target.add(DataTablePagesNavigationPanel.this);
+        onRefreshContent(target);
+    }
+    public void onLastClick(AjaxRequestTarget target) {
+        currentPageNumber = pageNavigationSet.last().getPageNumber();
+        navigationListener.nextPageData(DataTablePagesNavigationPanel.this, pageNavigationSet.last().getPreviousPageLastRowId(),
+                pageSize, currentPageNumber, false);
+        navigationListener.moveToRow(DataTablePagesNavigationPanel.this.firstDataRowId);
+        target.add(DataTablePagesNavigationPanel.this);
+        onRefreshContent(target);
+    }
 	
 	protected void addPreviousPageLinks() {
 		
@@ -997,7 +1010,11 @@ public class DataTablePagesNavigationPanel<T extends IDataBean> extends Abstract
 		}
 	}
 	
-	
+
+    public DataTableNavigationState getNavigationState() {
+        return navigationState;
+    }
+
 //	protected void buildNavigatorPagesSetWhenDataCacheIsDisabled(DataTableNavigationState navigationState, DataTableNavigationDirection navigationDirection,
 //			String firstRowId, String lastRowId) {
 //		
