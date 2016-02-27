@@ -1,0 +1,3 @@
+Imagine a developing environment in which your company creates multi-tier, distributed applications, in significantly less time and using far less resources than using traditional developing tools and technologies.
+
+That is exactly what we set as target when we started developing the myStroBe a framework specially created to fulfill the need of rapid development and deployment of modern web applications with the power of Open Edge and Progress in the backend.
